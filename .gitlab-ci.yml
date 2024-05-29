@@ -1,0 +1,72 @@
+.deploy: &deploy
+  tags: [docker]
+  image: alpine:latest
+  before_script:
+    - 'which ssh-agent || ( apk update && apk add openssh-client )'
+    - eval $(ssh-agent -s)
+    - echo "$CAJA_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  stage: deploy
+  when: manual
+
+
+stages:
+  - upload_code
+  - build_package
+  - deploy
+
+upload_code:
+  tags: [docker]
+  image:
+    entrypoint: ['']
+    name: alpine/git
+  stage: upload_code
+  before_script:
+    - echo '10.250.1.78 tfs.gobiernocba.gov.ar' >> /etc/hosts
+  script:
+    - git checkout -B desarrollo
+    - git pull origin develop
+    - git config --global user.email "jigcaffaratti@gmail.com"
+    - git config --global user.name "jigcaffaratti"
+    - git pull http://20361467559:Dan1Kp0%23@tfs.gobiernocba.gov.ar/tfs/Caja%20de%20Jubilaciones/NuevoSipresCaja/_git/consulta desarrollo
+    - git push http://20361467559:Dan1Kp0%23@tfs.gobiernocba.gov.ar/tfs/Caja%20de%20Jubilaciones/NuevoSipresCaja/_git/consulta desarrollo
+  only:
+    - develop
+  when: manual
+
+build_package:
+  tags: [docker]
+  stage: build_package
+  image: docker:18
+  before_script:
+    - docker info
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --build-arg $CI_COMMIT_BRANCH
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  only:
+    - testing
+  when: manual
+
+deploy_tst:
+  <<: *deploy
+  script:
+    - ssh -o "StrictHostKeyChecking=no" -p 22 root@192.99.7.179 "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
+    - ssh -o "StrictHostKeyChecking=no" -p 22 root@192.99.7.179 "export CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE && export CI_COMMIT_SHA=$CI_COMMIT_SHA && cd /root/caja-jubilaciones/consultas && docker-compose down --rmi all && docker-compose up --build -d"
+  only:
+    - testing 
+  when: manual

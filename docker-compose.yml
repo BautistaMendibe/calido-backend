@@ -1,0 +1,18 @@
+version: "3"
+services:
+   caja-consultas:
+     image: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+     restart: unless-stopped
+     container_name: caja-consultas
+     env_file: .env
+     environment:
+       - TZ=America/Argentina/Cordoba
+     extra_hosts:
+       - "cidi.test.cba.gov.ar cuentacidi.test.cba.gov.ar comunicacioncidi.test.cba.gov.ar documentacioncidi.test.cba.gov.ar apidocumentoscdd.test.cba.gov.ar interaccioncidi.test.cba.gov.ar mobilecidi.test.cba.gov.ar gruposfamiliares.test.cba.gov.ar padronbeneficiarios.test.cba.gov.ar:10.250.10.30"
+       - "gruposfamiliares.cba.gov.ar:10.250.7.29"
+     networks:
+       - network_caja
+networks:
+    network_caja:
+        external:
+            name: network_caja

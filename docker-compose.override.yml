@@ -1,0 +1,4 @@
+version: "3"
+services:
+   caja-consultas:
+     image: ${IMAGE_NAME}
