@@ -13,7 +13,7 @@ import { connectDatabase } from './config/database.config';
 export const app = express();
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
-process.env.TZ = 'America/Argentina/Cordoba';
+
 // register all application routes
 AppRoutes.forEach((route) => {
   app.use(route.path, checkSchema(route.schema), (request: Request, response: Response, next: Function) => {
