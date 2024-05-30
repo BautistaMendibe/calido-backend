@@ -29,7 +29,7 @@ AppRoutes.forEach((route) => {
 });
 
 const startServer = async () => {
-  await app.listen(process.env.PORT || 8080, () => {
+  await app.listen(8080, () => {
     logger.info(`Server running on http://127.0.0.1:${process.env.PORT}`);
   });
 };

@@ -1,35 +1,21 @@
-import { appConfig } from './app.config';
-import { logger } from '../src/logger';
-import OracleDB from 'oracledb';
-import { setPoolAlias } from 'oracle-sp-types';
-import { Message } from '../src/models/Logger';
+import { Client } from 'pg';
 
-const dbConfig = { ...appConfig.database };
+const connectionString = 'postgresql://CALIDO-DESARROLLO_owner:fcwzrF0QJj1Y@ep-dark-bird-a5pxkbln.us-east-2.aws.neon.tech/CALIDO_DESARROLLO?sslmode=require';
 
-const conn = async (): Promise<void> => {
-  const pool = await OracleDB.createPool({
-    user: dbConfig.user,
-    password: dbConfig.password,
-    connectString: `(DESCRIPTION = (CONNECT_TIMEOUT=10)(RETRY_COUNT=3)(ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = ${dbConfig.host})(PORT = ${parseInt(dbConfig.port ?? '1521')})))(CONNECT_DATA =(SERVICE_NAME = ${dbConfig.serviceName})))`,
-    poolMin: 1,
-    poolIncrement: 1,
-    poolTimeout: 60,
-    queueMax: -1,
-    queueTimeout: 60000,
-    enableStatistics: true,
-    poolAlias: 'caja'
-  });
-  logger.info(`Pool created: ${pool.connectionsOpen}`);
-}
+const client = new Client({
+  connectionString: connectionString
+});
 
-export const connectDatabase = (): void => {
-  conn()
-    .then(() => {
-      logger.info(`Database connected: ${dbConfig.serviceName ?? '-'} on ${dbConfig.host ?? '-'}`);
-      setPoolAlias('caja');
-    })
-    .catch((error: Message) => {
-      logger.error('Error during Data Source initialization');
-      logger.error(error);
+export const connectDatabase = (): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    client.connect((err: Error | null) => {
+      if (err) {
+        console.error('Error connecting to database', err.stack);
+        reject(err);
+      } else {
+        console.log('Connected to database');
+        resolve();
+      }
     });
-}
+  });
+};
