@@ -30,7 +30,7 @@ AppRoutes.forEach((route) => {
 
 const startServer = async () => {
   await app.listen(8080, () => {
-    logger.info(`Server running on http://127.0.0.1:${process.env.PORT}`);
+    logger.info(`Server running on http://127.0.0.1:8080`);
   });
 };
 
