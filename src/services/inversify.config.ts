@@ -22,6 +22,6 @@ container.bind<IConsultManagmentRepository>(TYPES.ConsultManagmentRepository).to
 container.bind<IConsultManagmentService>(TYPES.ConsultManagmentService).to(ConsultManagmentService);
 container.bind<ISurveyRepository>(TYPES.SurveyRepository).to(SurveyRepository);
 container.bind<ISurveyService>(TYPES.SurveyService).to(SurveyService);
-container.bind<IUsersRepository>(TYPES.SurveyRepository).to(UsersRepository);
+container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
 container.bind<IUsersService>(TYPES.UsersService).to(UsersService);
 export default container;
