@@ -2,8 +2,9 @@ import { schemaCreateConsultWebUser, schemaEmpty, schemaGetConsultWebBenefit, sc
 import { ConsultWebUserController } from './src/controllers';
 import { SurveyController } from './src/controllers';
 import { ConsultManagmentController } from './src/controllers/ConsultManagmentController';
+import { UsersController, validarUsuarioLogeado } from './src/controllers/UsersController';
 /**
- * Rutas del microservicio.
+ * Rutas del Backend.
  */
 export const AppRoutes = [
   //#region Consult web user
@@ -258,6 +259,16 @@ export const AppRoutes = [
     method: 'post',
     action: ConsultManagmentController.changeConsultStateWithObservation,
     schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Usuarios
+  {
+    path: '/usuarios/validar-usuario-logeado',
+    method: 'post',
+    action: UsersController.validarUsuarioLogeado,
+    schema: schemaEmpty
   }
+
   //#endregion
 ];

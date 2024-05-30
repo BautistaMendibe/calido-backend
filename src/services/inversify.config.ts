@@ -6,6 +6,9 @@ import { TYPES } from './types/types';
 import { ISurveyRepository, SurveyRepository } from '../repositories';
 import { ConsultManagmentRepository, IConsultManagmentRepository } from '../repositories/ConsultManagmentRepository';
 import { ConsultManagmentService, IConsultManagmentService } from './implementations/ConsultManagmentService';
+import { IUsersService } from './interfaces/IUserService';
+import { UsersService } from './implementations/UsersService';
+import { IUsersRepository, UsersRepository } from '../repositories/UsersRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -19,4 +22,6 @@ container.bind<IConsultManagmentRepository>(TYPES.ConsultManagmentRepository).to
 container.bind<IConsultManagmentService>(TYPES.ConsultManagmentService).to(ConsultManagmentService);
 container.bind<ISurveyRepository>(TYPES.SurveyRepository).to(SurveyRepository);
 container.bind<ISurveyService>(TYPES.SurveyService).to(SurveyService);
+container.bind<IUsersRepository>(TYPES.SurveyRepository).to(UsersRepository);
+container.bind<IUsersService>(TYPES.UsersService).to(UsersService);
 export default container;

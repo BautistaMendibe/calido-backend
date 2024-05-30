@@ -5,5 +5,7 @@ export const TYPES = {
   SurveyService: Symbol('ISurveyService'),
   SurveyRepository: Symbol('ISurveyRepository'),
   ConsultManagmentService: Symbol('IConsultManagmentService'),
-  ConsultManagmentRepository: Symbol('IConsultManagmentRepository')
+  ConsultManagmentRepository: Symbol('IConsultManagmentRepository'),
+  UsersService: Symbol('IUsersService'),
+  UsersRepository: Symbol('IUsersRepository')
 };
