@@ -13,6 +13,7 @@ import { ValidacionAdjuntarDocumento } from '../models/ValidacionAdjuntarDocumen
 import { ValidacionArchivoTipoDocumento } from '../models/ValidacionArchivoTipoDocumento';
 import { atob } from 'buffer';
 import { Connection } from 'oracledb';
+import PoolDb from '../data/db';
 
 /**
  * Interfaz del repositorio de usuarios
@@ -62,7 +63,7 @@ export interface IUsersRepository {
 
   addAffair(userCuil: string, affairId: number): Promise<ComboResultado[]>;
 
-  validarUsuarioLogeado(nombreUsuario: string, contrasena: string): Promise<SpResult>;
+  validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult>;
 }
 
 /**
@@ -452,14 +453,19 @@ export class UsersRepository implements IUsersRepository {
    * @param {string} contrasena - contrasena del usuario
    * @returns {SpResult} - devuelve un SpResult
    */
-  async validarUsuarioLogeado(nombreUsuario: string, contrasena: string): Promise<SpResult> {
+  async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult> {
+    const client = await PoolDb.connect();
     const params = [nombreUsuario, contrasena];
-    const sp = new StoreProcedureDb('PKG_ARCHIVOS.PR_VINCULAR_ARCHIVO_PERSONA', params, true);
-    return await sp.executeSp().then(async (x: SpResult[]) => {
-      const result: SpResult[] = plainToClass(SpResult, x, {
-        excludeExtraneousValues: true
-      });
-      return result[0];
-    });
+
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM VALIDAR_INICIO_SESION($1, $2)', params);
+      const result: SpResult = res.rows[0];
+      return result;
+    } catch (err) {
+      logger.error('Error al validar el usuario: ' + err);
+      throw new Error('Error al validar los datos del usuario.');
+    } finally {
+      client.release();
+    }
   }
 }

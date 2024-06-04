@@ -14,7 +14,7 @@ import { IConsultWebUserService } from '../interfaces';
 import { TYPES } from '../types/types';
 import { UtilsService } from './UtilsService';
 import { IUsersService } from '../interfaces/IUserService';
-import { validarUsuarioLogeado } from '../../controllers/UsersController';
+import { validarInicioSesion } from '../../controllers/UsersController';
 import { IUsersRepository } from '../../repositories/UsersRepository';
 
 /**
@@ -432,10 +432,10 @@ export class UsersService implements IUsersService {
       });
   }
 
-  public async validarUsuarioLogeado(nombreUsuario: string, contrasena: string): Promise<SpResult> {
+  public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._usersRepository.validarUsuarioLogeado(nombreUsuario, contrasena);
+        const result = await this._usersRepository.validarInicioSesion(nombreUsuario, contrasena);
         resolve(result);
       } catch (e) {
         logger.error(e);

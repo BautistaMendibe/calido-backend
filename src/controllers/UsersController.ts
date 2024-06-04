@@ -234,12 +234,12 @@ async function getMessageConsultById(request: Request, response: Response): Prom
   }
 }
 
-export async function validarUsuarioLogeado(request: Request, response: Response): Promise<Response> {
+export async function validarInicioSesion(request: Request, response: Response): Promise<Response> {
   const nombreUsuario: string = request.body.nombreUsuario;
   const contrasena: string = request.body.contrasena;
 
   return _usersService
-    .validarUsuarioLogeado(nombreUsuario, contrasena)
+    .validarInicioSesion(nombreUsuario, contrasena)
     .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -265,5 +265,5 @@ export const UsersController = {
   getStatesHistory,
   addAffair,
   getMessageConsultById,
-  validarUsuarioLogeado
+  validarInicioSesion
 };

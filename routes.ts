@@ -2,7 +2,7 @@ import { schemaCreateConsultWebUser, schemaEmpty, schemaGetConsultWebBenefit, sc
 import { ConsultWebUserController } from './src/controllers';
 import { SurveyController } from './src/controllers';
 import { ConsultManagmentController } from './src/controllers/ConsultManagmentController';
-import { UsersController, validarUsuarioLogeado } from './src/controllers/UsersController';
+import { UsersController } from './src/controllers/UsersController';
 /**
  * Rutas del Backend.
  */
@@ -264,9 +264,9 @@ export const AppRoutes = [
 
   // region Usuarios
   {
-    path: '/usuarios/validar-usuario-logeado',
+    path: '/usuarios/validar-inicio-sesion',
     method: 'post',
-    action: UsersController.validarUsuarioLogeado,
+    action: UsersController.validarInicioSesion,
     schema: schemaEmpty
   }
 
