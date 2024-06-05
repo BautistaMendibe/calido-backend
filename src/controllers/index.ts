@@ -1,2 +1,1 @@
-export * from './ConsultWebUserController';
-export * from './SurveyController';
+export * from './UsersController';

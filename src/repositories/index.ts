@@ -1,2 +1,1 @@
-export * from './ConsultWebUserRepository';
-export * from './SurveyRepository';
+export * from './UsersRepository';

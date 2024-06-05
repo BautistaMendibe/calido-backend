@@ -1,1 +1,1 @@
-export * from './IConsultWebUserService';
+export * from './IUserService';

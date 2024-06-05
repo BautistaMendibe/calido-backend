@@ -1,11 +1,5 @@
 import { Container } from 'inversify';
-import { ConsultWebUserRepository, IConsultWebUserRepository } from '../repositories/ConsultWebUserRepository';
-import { ConsultWebUserService, ISurveyService, SurveyService } from './implementations';
-import { IConsultWebUserService } from './interfaces';
 import { TYPES } from './types/types';
-import { ISurveyRepository, SurveyRepository } from '../repositories';
-import { ConsultManagmentRepository, IConsultManagmentRepository } from '../repositories/ConsultManagmentRepository';
-import { ConsultManagmentService, IConsultManagmentService } from './implementations/ConsultManagmentService';
 import { IUsersService } from './interfaces/IUserService';
 import { UsersService } from './implementations/UsersService';
 import { IUsersRepository, UsersRepository } from '../repositories/UsersRepository';
@@ -16,12 +10,6 @@ import { IUsersRepository, UsersRepository } from '../repositories/UsersReposito
  */
 
 const container = new Container();
-container.bind<IConsultWebUserRepository>(TYPES.ConsultWebUserRepository).to(ConsultWebUserRepository);
-container.bind<IConsultWebUserService>(TYPES.ConsultWebUserService).to(ConsultWebUserService);
-container.bind<IConsultManagmentRepository>(TYPES.ConsultManagmentRepository).to(ConsultManagmentRepository);
-container.bind<IConsultManagmentService>(TYPES.ConsultManagmentService).to(ConsultManagmentService);
-container.bind<ISurveyRepository>(TYPES.SurveyRepository).to(SurveyRepository);
-container.bind<ISurveyService>(TYPES.SurveyService).to(SurveyService);
 container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
 container.bind<IUsersService>(TYPES.UsersService).to(UsersService);
 export default container;
