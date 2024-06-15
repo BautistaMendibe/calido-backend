@@ -8,11 +8,17 @@ import { checkSchema, validationResult } from 'express-validator';
 import { logger } from './src/logger/CustomLogger';
 import cookieParser from 'cookie-parser';
 import { connectDatabase } from './config/database.config';
+import cors from 'cors';
 
 // create express app
 export const app = express();
 app.use(bodyParser.json({ limit: '200mb' }));
-app.use(cookieParser());
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
+app.use(cors());
 
 // register all application routes
 AppRoutes.forEach((route) => {

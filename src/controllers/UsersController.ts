@@ -8,7 +8,7 @@ import { UsersService } from '../services/implementations/UsersService';
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
 export async function validarInicioSesion(request: Request, response: Response): Promise<Response> {
-  const nombreUsuario: string = request.body.nombreUsuario;
+  const nombreUsuario: string = request.body.usuario;
   const contrasena: string = request.body.contrasena;
 
   return _usersService
