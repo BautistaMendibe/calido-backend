@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { logger } from '../logger/CustomLogger';
 import { SpResult } from '../models';
 import PoolDb from '../data/db';
+import { plainToClass } from 'class-transformer';
 
 /**
  * Interfaz del repositorio de usuarios
@@ -26,8 +27,10 @@ export class UsersRepository implements IUsersRepository {
     const params = [nombreUsuario, contrasena];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM VALIDAR_INICIO_SESION($1, $2)', params);
-      const result: SpResult = res.rows[0];
+      const res = await client.query<SpResult>('SELECT * FROM SEGURIDAD.VALIDAR_INICIO_SESION($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
       return result;
     } catch (err) {
       logger.error('Error al validar el usuario: ' + err);

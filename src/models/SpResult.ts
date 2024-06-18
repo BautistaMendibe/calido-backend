@@ -3,7 +3,7 @@ import { Expose } from 'class-transformer';
 export class SpResult {
   @Expose({ name: 'Id' })
   id: number;
-  @Expose({ name: 'Mensaje' })
+  @Expose({ name: 'mensaje' })
   mensaje: string;
   @Expose({ name: 'Error' })
   error: string;
