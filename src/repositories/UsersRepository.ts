@@ -23,7 +23,7 @@ export class UsersRepository implements IUsersRepository {
    * Método asíncrono para consultar si existe un usuario en la base
    * @param {string} nombreUsuario - nombre de usuario
    * @param {string} contrasena - contrasena del usuario
-   * @returns {SpResult} - devuelve un SpResult
+   * @returns {string} - devuelve un string. Si es correcto devuelve el token si no ERROR
    */
   async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     const client = await PoolDb.connect();
