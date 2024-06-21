@@ -4,12 +4,14 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Usuario } from '../models/Usuario';
+const jwt = require('jsonwebtoken');
+const secretKey = 'secret';
 
 /**
  * Interfaz del repositorio de usuarios
  */
 export interface IUsersRepository {
-  validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario>;
+  validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
 }
 
 /**
@@ -23,7 +25,7 @@ export class UsersRepository implements IUsersRepository {
    * @param {string} contrasena - contrasena del usuario
    * @returns {SpResult} - devuelve un SpResult
    */
-  async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario> {
+  async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     const client = await PoolDb.connect();
     const params = [nombreUsuario, contrasena];
 
@@ -32,7 +34,14 @@ export class UsersRepository implements IUsersRepository {
       const result: Usuario = plainToClass(Usuario, res.rows[0], {
         excludeExtraneousValues: true
       });
-      return result;
+
+      // Si la BD nos devuelve un usuario, lo que hacemos es armar el token con la informacion del mismo
+      if (result) {
+        const token: string = jwt.sign({ result }, secretKey, { expiresIn: '6h' });
+        return token;
+      } else {
+        return 'ERROR';
+      }
     } catch (err) {
       logger.error('Error al validar el usuario: ' + err);
       throw new Error('Error al validar los datos del usuario.');

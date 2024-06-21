@@ -14,7 +14,7 @@ export async function validarInicioSesion(request: Request, response: Response):
 
   return _usersService
     .validarInicioSesion(nombreUsuario, contrasena)
-    .then((x: Usuario) => {
+    .then((x: string) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {

@@ -22,7 +22,7 @@ export class UsersService implements IUsersService {
     this._usersRepository = repository;
   }
 
-  public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario> {
+  public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.validarInicioSesion(nombreUsuario, contrasena);
