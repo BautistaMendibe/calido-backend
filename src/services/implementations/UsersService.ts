@@ -5,6 +5,7 @@ import { TYPES } from '../types/types';
 import { IUsersService } from '../interfaces/IUserService';
 import { IUsersRepository } from '../../repositories/UsersRepository';
 import { SpResult } from '../../models';
+import { Usuario } from '../../models/Usuario';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -21,7 +22,7 @@ export class UsersService implements IUsersService {
     this._usersRepository = repository;
   }
 
-  public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult> {
+  public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.validarInicioSesion(nombreUsuario, contrasena);

@@ -4,6 +4,7 @@ import { HttpCodes, SpResult } from '../models';
 import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
 import { UsersService } from '../services/implementations/UsersService';
+import { Usuario } from '../models/Usuario';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -13,7 +14,7 @@ export async function validarInicioSesion(request: Request, response: Response):
 
   return _usersService
     .validarInicioSesion(nombreUsuario, contrasena)
-    .then((x: SpResult) => {
+    .then((x: Usuario) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {

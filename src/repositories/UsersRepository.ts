@@ -3,12 +3,13 @@ import { logger } from '../logger/CustomLogger';
 import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
+import { Usuario } from '../models/Usuario';
 
 /**
  * Interfaz del repositorio de usuarios
  */
 export interface IUsersRepository {
-  validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult>;
+  validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario>;
 }
 
 /**
@@ -22,13 +23,13 @@ export class UsersRepository implements IUsersRepository {
    * @param {string} contrasena - contrasena del usuario
    * @returns {SpResult} - devuelve un SpResult
    */
-  async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<SpResult> {
+  async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<Usuario> {
     const client = await PoolDb.connect();
     const params = [nombreUsuario, contrasena];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM SEGURIDAD.VALIDAR_INICIO_SESION($1, $2)', params);
-      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+      const res = await client.query<Usuario>('SELECT * FROM PUBLIC.VALIDAR_INICIO_SESION($1, $2)', params);
+      const result: Usuario = plainToClass(Usuario, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
