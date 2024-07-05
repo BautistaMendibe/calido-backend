@@ -1,11 +1,7 @@
 // Archivo de configuración para inversify sin repositorios
 export const TYPES = {
-  ConsultWebUserService: Symbol('IConsultWebUserService'),
-  ConsultWebUserRepository: Symbol('IConsultWebUserRepository'),
-  SurveyService: Symbol('ISurveyService'),
-  SurveyRepository: Symbol('ISurveyRepository'),
-  ConsultManagmentService: Symbol('IConsultManagmentService'),
-  ConsultManagmentRepository: Symbol('IConsultManagmentRepository'),
   UsersService: Symbol('IUsersService'),
-  UsersRepository: Symbol('IUsersRepository')
+  UsersRepository: Symbol('IUsersRepository'),
+  ProveedoresService: Symbol('IProveedoresService'),
+  ProveedoresRepository: Symbol('')
 };
