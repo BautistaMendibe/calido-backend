@@ -5,6 +5,7 @@ import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
 import { ProveedoresService } from '../services/implementations/ProveedoresService';
 import { Proveedor } from '../models/Proveedor';
+import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 
 const _proveedoresService = container.get<ProveedoresService>(TYPES.ProveedoresService);
 
@@ -22,6 +23,21 @@ export async function registrarProveedor(request: Request, response: Response): 
     });
 }
 
+export async function consultarProveedores(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltrosProveedores = request.body;
+
+  return _proveedoresService
+    .consultarProveedores(filtro)
+    .then((x: Proveedor[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProveedoresController = {
-  registrarProveedor
+  registrarProveedor,
+  consultarProveedores
 };

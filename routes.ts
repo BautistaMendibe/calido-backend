@@ -20,7 +20,12 @@ export const AppRoutes = [
     method: 'post',
     action: ProveedoresController.registrarProveedor,
     schema: schemaEmpty
+  },
+  {
+    path: '/proveedores/consultar-proveedores',
+    method: 'post',
+    action: ProveedoresController.consultarProveedores,
+    schema: schemaEmpty
   }
-
   //#endregion
 ];

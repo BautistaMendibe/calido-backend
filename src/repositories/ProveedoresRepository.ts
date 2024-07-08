@@ -4,12 +4,15 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Proveedor } from '../models/Proveedor';
+import { consultarProveedores } from '../controllers/ProveedoresController';
+import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 
 /**
  * Interfaz del repositorio de Proveedores
  */
 export interface IProveedoresRepository {
   registrarProveedor(proveedor: Proveedor): Promise<SpResult>;
+  consultarProveedores(filtro: FiltrosProveedores): Promise<Proveedor[]>;
 }
 
 /**
@@ -34,6 +37,30 @@ export class ProveedoresRepository implements IProveedoresRepository {
     } catch (err) {
       logger.error('Error al registrar Proveedor: ' + err);
       throw new Error('Error al registrar Proveedor.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar proveedores
+   * @param {FiltrosProveedores} filtros de busqueda
+   * @returns {Proveedor []} arreglo de proveedores
+   */
+  async consultarProveedores(filtro: FiltrosProveedores): Promise<Proveedor[]> {
+    const client = await PoolDb.connect();
+
+    const nombre = filtro.nombre;
+    const params = [nombre];
+    try {
+      const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.BUSCAR_PROVEEDORES($1)', params);
+      const result: Proveedor[] = plainToClass(Proveedor, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Proveedores: ' + err);
+      throw new Error('Error al consultar Proveedores.');
     } finally {
       client.release();
     }
