@@ -59,4 +59,16 @@ export class ProveedoresService implements IProveedoresService {
       }
     });
   }
+
+  public async eliminarProveedor(idProveedor: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._proveedoresRepository.eliminarProveedor(idProveedor);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

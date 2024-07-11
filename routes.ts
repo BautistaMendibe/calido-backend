@@ -32,6 +32,12 @@ export const AppRoutes = [
     method: 'post',
     action: ProveedoresController.modificarProveedor,
     schema: schemaEmpty
+  },
+  {
+    path: '/proveedores/eliminar-proveedor/:id',
+    method: 'get',
+    action: ProveedoresController.eliminarProveedor,
+    schema: schemaEmpty
   }
   //#endregion
 ];

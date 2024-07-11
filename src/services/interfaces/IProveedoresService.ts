@@ -6,4 +6,5 @@ export interface IProveedoresService {
   registrarProveedor(proveedor: Proveedor): Promise<SpResult>;
   consultarProveedores(filtro: FiltrosProveedores): Promise<Proveedor[]>;
   modificarProveedor(proveedor: Proveedor): Promise<SpResult>;
+  eliminarProveedor(idProveedor: number): Promise<SpResult>;
 }
