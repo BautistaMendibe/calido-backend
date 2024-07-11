@@ -37,7 +37,37 @@ export async function consultarProveedores(request: Request, response: Response)
     });
 }
 
+export async function modificarProveedor(request: Request, response: Response): Promise<Response> {
+  const proveedor: Proveedor = request.body;
+
+  return _proveedoresService
+    .modificarProveedor(proveedor)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarProveedor(request: Request, response: Response): Promise<Response> {
+  const idProveedor: number = +request.params.id;
+
+  return _proveedoresService
+    .eliminarProveedor(idProveedor)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProveedoresController = {
   registrarProveedor,
-  consultarProveedores
+  consultarProveedores,
+  modificarProveedor,
+  eliminarProveedor
 };
