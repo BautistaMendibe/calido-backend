@@ -37,7 +37,22 @@ export async function consultarProveedores(request: Request, response: Response)
     });
 }
 
+export async function modificarProveedor(request: Request, response: Response): Promise<Response> {
+  const proveedor: Proveedor = request.body;
+
+  return _proveedoresService
+    .modificarProveedor(proveedor)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProveedoresController = {
   registrarProveedor,
-  consultarProveedores
+  consultarProveedores,
+  modificarProveedor
 };

@@ -13,6 +13,7 @@ import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 export interface IProveedoresRepository {
   registrarProveedor(proveedor: Proveedor): Promise<SpResult>;
   consultarProveedores(filtro: FiltrosProveedores): Promise<Proveedor[]>;
+  modificarProveedor(proveedor: Proveedor): Promise<SpResult>;
 }
 
 /**
@@ -61,6 +62,28 @@ export class ProveedoresRepository implements IProveedoresRepository {
     } catch (err) {
       logger.error('Error al consultar Proveedores: ' + err);
       throw new Error('Error al consultar Proveedores.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para modificar los datos de un proveedor
+   * @param {Proveedor} proveedor
+   * @returns {SpResult}
+   */
+  async modificarProveedor(proveedor: Proveedor): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [proveedor.id, proveedor.nombre, proveedor.telefono, proveedor.email, 1, proveedor.cuit];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROVEEDOR($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar el proveedor: ' + err);
+      throw new Error('Error al modificar el proveedor.');
     } finally {
       client.release();
     }
