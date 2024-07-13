@@ -38,6 +38,12 @@ export const AppRoutes = [
     method: 'get',
     action: ProveedoresController.eliminarProveedor,
     schema: schemaEmpty
+  },
+  {
+    path: '/proveedores/buscar-tipos-proveedores',
+    method: 'get',
+    action: ProveedoresController.buscarTiposProveedores,
+    schema: schemaEmpty
   }
   //#endregion
 ];
