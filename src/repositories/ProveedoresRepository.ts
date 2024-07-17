@@ -17,6 +17,7 @@ export interface IProveedoresRepository {
   modificarProveedor(proveedor: Proveedor): Promise<SpResult>;
   eliminarProveedor(idProveedor: number): Promise<SpResult>;
   buscarTiposProveedores(): Promise<TipoProveedor[]>;
+  buscarTipoProveedor(id: number): Promise<TipoProveedor>;
 }
 
 /**
@@ -123,6 +124,27 @@ export class ProveedoresRepository implements IProveedoresRepository {
     try {
       const res = await client.query<TipoProveedor[]>('SELECT * FROM PUBLIC.TIPO_PROVEEDOR');
       const result: TipoProveedor[] = plainToClass(TipoProveedor, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el proveedor: ' + err);
+      throw new Error('Error al eliminar el proveedor.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener un proveedor segun su id
+   * @param {id} number id del tipoProveedor
+   * @returns {TipoProveedor}
+   */
+  async buscarTipoProveedor(id: number): Promise<TipoProveedor> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<TipoProveedor>(`SELECT * FROM PUBLIC.TIPO_PROVEEDOR WHERE idtipoproveedor = ${id}`);
+      const result: TipoProveedor = plainToClass(TipoProveedor, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;

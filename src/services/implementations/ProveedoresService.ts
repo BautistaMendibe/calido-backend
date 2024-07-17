@@ -41,7 +41,16 @@ export class ProveedoresService implements IProveedoresService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._proveedoresRepository.consultarProveedores(filtro);
-        resolve(result);
+
+        // Mapea sobre los proveedores para buscar su tipo correspondiente
+        const proveedores = await Promise.all(
+          result.map(async (proveedor) => {
+            const tipoProveedor: TipoProveedor = await this.buscarTipoProveedor(proveedor.idTipoProveedor);
+            return { ...proveedor, tipoProveedor };
+          })
+        );
+
+        resolve(proveedores);
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -77,6 +86,18 @@ export class ProveedoresService implements IProveedoresService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._proveedoresRepository.buscarTiposProveedores();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarTipoProveedor(id: number): Promise<TipoProveedor> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._proveedoresRepository.buscarTipoProveedor(id);
         resolve(result);
       } catch (e) {
         logger.error(e);

@@ -9,4 +9,5 @@ export interface IProveedoresService {
   modificarProveedor(proveedor: Proveedor): Promise<SpResult>;
   eliminarProveedor(idProveedor: number): Promise<SpResult>;
   buscarTiposProveedores(): Promise<TipoProveedor[]>;
+  buscarTipoProveedor(id: number): Promise<TipoProveedor>;
 }
