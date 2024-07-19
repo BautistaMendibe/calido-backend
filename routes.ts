@@ -66,6 +66,12 @@ export const AppRoutes = [
     method: 'get',
     action: PromocionesController.eliminarPromocion,
     schema: schemaEmpty
+  },
+  {
+    path: '/promociones/buscar-productos',
+    method: 'get',
+    action: PromocionesController.buscarProductos,
+    schema: schemaEmpty
   }
   //#endregion
 ];

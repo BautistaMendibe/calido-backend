@@ -7,6 +7,7 @@ import { IPromocionesRepository } from '../../repositories/PromocionesRepository
 import { Promocion } from '../../models/Promocion';
 import { SpResult } from '../../models';
 import { FiltrosPromociones } from '../../models/comandos/FiltroPromociones';
+import { Producto } from '../../models/Producto';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -39,7 +40,15 @@ export class PromocionesService implements IPromocionesService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._promocionesRepository.consultarPromociones(filtro);
-        resolve(result);
+
+        // Mapea sobre las promociones para buscar su producto correspondiente
+        const promociones = await Promise.all(
+          result.map(async (promocion) => {
+            const producto: Producto = await this.buscarProducto(promocion.idProducto);
+            return { ...promocion, producto };
+          })
+        );
+        resolve(promociones);
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -63,6 +72,30 @@ export class PromocionesService implements IPromocionesService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._promocionesRepository.eliminarPromocion(idPromocion);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarProductos(): Promise<Producto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._promocionesRepository.buscarProductos();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarProducto(idProducto: number): Promise<Producto> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._promocionesRepository.buscarProducto(idProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);

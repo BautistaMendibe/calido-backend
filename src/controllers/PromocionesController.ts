@@ -6,6 +6,7 @@ import { TYPES } from '../services/types/types';
 import { PromocionesService } from '../services/implementations/PromocionesService';
 import { Promocion } from '../models/Promocion';
 import { FiltrosPromociones } from '../models/comandos/FiltroPromociones';
+import { Producto } from '../models/Producto';
 
 const _promocionesService = container.get<PromocionesService>(TYPES.PromocionesService);
 
@@ -65,9 +66,22 @@ export async function eliminarPromocion(request: Request, response: Response): P
     });
 }
 
+export async function buscarProductos(request: Request, response: Response): Promise<Response> {
+  return _promocionesService
+    .buscarProductos()
+    .then((x: Producto[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const PromocionesController = {
   registrarPromocion,
   consultarPromociones,
   modificarPromocion,
-  eliminarPromocion
+  eliminarPromocion,
+  buscarProductos
 };

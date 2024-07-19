@@ -4,8 +4,8 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Promocion } from '../models/Promocion';
-import { consultarPromociones } from '../controllers/PromocionesController';
 import { FiltrosPromociones } from '../models/comandos/FiltroPromociones';
+import { Producto } from '../models/Producto';
 
 /**
  * Interfaz del repositorio de Promociones
@@ -15,6 +15,8 @@ export interface IPromocionesRepository {
   consultarPromociones(filtro: FiltrosPromociones): Promise<Promocion[]>;
   modificarPromocion(promocion: Promocion): Promise<SpResult>;
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
+  buscarProductos(): Promise<Producto[]>;
+  buscarProducto(idProducto: number): Promise<Producto>;
 }
 
 /**
@@ -107,6 +109,47 @@ export class PromocionesRepository implements IPromocionesRepository {
     } catch (err) {
       logger.error('Error al eliminar la promocion: ' + err);
       throw new Error('Error al eliminar la promocion.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar los productos
+   * @returns {Producto[]}
+   */
+  async buscarProductos(): Promise<Producto[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Producto[]>('SELECT * FROM PUBLIC.PRODUCTO');
+      const result: Producto[] = plainToClass(Producto, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el producto: ' + err);
+      throw new Error('Error al eliminar el producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener un producto segun su id
+   * @param {idProducto} number id del Producto
+   * @returns {Producto}
+   */
+  async buscarProducto(idProducto: number): Promise<Producto> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Producto>(`SELECT * FROM PUBLIC.PRODUCTO WHERE idproducto = ${idProducto}`);
+      const result: Producto = plainToClass(Producto, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el producto: ' + err);
+      throw new Error('Error al eliminar el producto.');
     } finally {
       client.release();
     }
