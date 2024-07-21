@@ -5,6 +5,7 @@ import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
 import { UsersService } from '../services/implementations/UsersService';
 import { Usuario } from '../models/Usuario';
+import {registrarProveedor} from "./ProveedoresController";
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -23,6 +24,21 @@ export async function validarInicioSesion(request: Request, response: Response):
     });
 }
 
+export async function registrarUsuario(request: Request, response: Response): Promise<Response> {
+  const usuario: Usuario = request.body;
+
+  return _usersService
+    .registrarUsuario(usuario)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
-  validarInicioSesion
+  validarInicioSesion,
+  registrarUsuario
 };

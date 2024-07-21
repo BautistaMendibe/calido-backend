@@ -22,6 +22,17 @@ export class UsersService implements IUsersService {
     this._usersRepository = repository;
   }
 
+  public async registrarUsuario(usuario: Usuario): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarUsuario(usuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
   public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
