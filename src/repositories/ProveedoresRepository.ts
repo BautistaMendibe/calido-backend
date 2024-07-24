@@ -32,7 +32,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
    */
   async registrarProveedor(proveedor: Proveedor): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [proveedor.nombre, proveedor.telefono, proveedor.email, 1, proveedor.cuit, proveedor.tipoProveedor.id];
+    const params = [proveedor.nombre, proveedor.telefono, proveedor.email, proveedor.domicilio.id, proveedor.cuit, proveedor.tipoProveedor.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROVEEDOR($1, $2, $3, $4, $5, $6)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {

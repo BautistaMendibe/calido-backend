@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { TipoProveedor } from './TipoProveedor';
+import { Domicilio } from './Domicilio';
 
 export class Proveedor {
   @Expose({ name: 'idproveedor' })
@@ -17,9 +18,20 @@ export class Proveedor {
   @Expose({ name: 'idtipoproveedor' })
   idTipoProveedor: number;
 
+  domicilio: Domicilio;
   tipoProveedor: TipoProveedor;
 
-  constructor(id?: number, nombre?: string, telefono?: string, email?: string, idDomicilio?: number, cuit?: string, idTipoProveedor?: number, tipoProveedor?: TipoProveedor) {
+  constructor(
+    id?: number,
+    nombre?: string,
+    telefono?: string,
+    email?: string,
+    idDomicilio?: number,
+    cuit?: string,
+    idTipoProveedor?: number,
+    tipoProveedor?: TipoProveedor,
+    domicilio?: Domicilio
+  ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.telefono = telefono ? telefono : null;
@@ -28,5 +40,6 @@ export class Proveedor {
     this.cuit = cuit ? cuit : null;
     this.idTipoProveedor = idTipoProveedor ? idTipoProveedor : null;
     this.tipoProveedor = tipoProveedor ? tipoProveedor : null;
+    this.domicilio = domicilio ? domicilio : null;
   }
 }

@@ -9,6 +9,7 @@ import { SpResult } from '../../models';
 import { FiltrosProveedores } from '../../models/comandos/FiltroProveedores';
 import { consultarProveedores, modificarProveedor } from '../../controllers/ProveedoresController';
 import { TipoProveedor } from '../../models/TipoProveedor';
+import { IDomicilioRepository } from '../../repositories/DomicilioRepository';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -17,17 +18,25 @@ import { TipoProveedor } from '../../models/TipoProveedor';
 @injectable()
 export class ProveedoresService implements IProveedoresService {
   private readonly _proveedoresRepository: IProveedoresRepository;
+  private readonly _domicilioRepository: IDomicilioRepository;
 
   constructor(
     @inject(TYPES.ProveedoresRepository)
-    repository: IProveedoresRepository
+    repository: IProveedoresRepository,
+    @inject(TYPES.DomicilioRepository)
+    domicilioRepository: IDomicilioRepository
   ) {
     this._proveedoresRepository = repository;
+    this._domicilioRepository = domicilioRepository;
   }
 
   public async registrarProveedor(proveedor: Proveedor): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
+        // Registramos el domicilio y obtenemos el id, si ya existe devuelve el id del mismo
+        const idDomicilio = await this._domicilioRepository.registrarDomicilio(proveedor);
+        proveedor.domicilio.id = idDomicilio;
+
         const result = await this._proveedoresRepository.registrarProveedor(proveedor);
         resolve(result);
       } catch (e) {
