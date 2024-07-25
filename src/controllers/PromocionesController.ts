@@ -6,9 +6,24 @@ import { TYPES } from '../services/types/types';
 import { PromocionesService } from '../services/implementations/PromocionesService';
 import { Promocion } from '../models/Promocion';
 import { FiltrosPromociones } from '../models/comandos/FiltroPromociones';
+import path from 'node:path';
+import multer from 'multer';
 import { Producto } from '../models/Producto';
 
 const _promocionesService = container.get<PromocionesService>(TYPES.PromocionesService);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Se guarda la imagen en la carpeta de imagenes de instagram
+    cb(null, path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram'));
+  },
+  filename: (req, file, cb) => {
+    // Se asigna un nombre único a la imagen
+    cb(null, `imagen_${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const multerUpload = multer({ storage });
 
 export async function registrarPromocion(request: Request, response: Response): Promise<Response> {
   const promocion: Promocion = request.body;
@@ -78,10 +93,39 @@ export async function buscarProductos(request: Request, response: Response): Pro
     });
 }
 
+export async function notificarPromocion(request: Request, response: Response): Promise<Response> {
+  return new Promise<Response>((resolve, reject) => {
+    multerUpload.single('imagen')(request, response, async (err) => {
+      if (err) {
+        logger.error(err);
+        return resolve(response.status(HttpCodes.BAD_REQUEST).json({ mensaje: 'Error al cargar la imagen' }));
+      }
+
+      const file = request.file;
+      const comentario = request.body.comentario;
+
+      if (!file) {
+        return resolve(response.status(HttpCodes.BAD_REQUEST).json({ mensaje: 'No se ha recibido una imagen' }));
+      }
+
+      const fileName = file.filename; // Nombre del archivo cargado
+
+      try {
+        const result = await _promocionesService.notificarPromocion(fileName, comentario);
+        resolve(response.status(HttpCodes.OK).json({ mensaje: 'OK', resultado: result }));
+      } catch (error) {
+        logger.error(error);
+        resolve(response.status(HttpCodes.CONFLICT).json({ mensaje: 'Error', error: error.message }));
+      }
+    });
+  });
+}
+
 export const PromocionesController = {
   registrarPromocion,
   consultarPromociones,
   modificarPromocion,
   eliminarPromocion,
-  buscarProductos
+  buscarProductos,
+  notificarPromocion
 };

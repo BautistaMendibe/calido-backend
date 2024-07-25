@@ -72,6 +72,12 @@ export const AppRoutes = [
     method: 'get',
     action: PromocionesController.buscarProductos,
     schema: schemaEmpty
+  },
+  {
+    path: '/promociones/notificar-promocion',
+    method: 'post',
+    action: PromocionesController.notificarPromocion,
+    schema: schemaEmpty
   }
   //#endregion
 ];

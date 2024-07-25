@@ -103,4 +103,16 @@ export class PromocionesService implements IPromocionesService {
       }
     });
   }
+
+  public async notificarPromocion(imagen: string, comentario: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._promocionesRepository.notificarPromocion(imagen, comentario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

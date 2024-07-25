@@ -6,6 +6,10 @@ import { plainToClass } from 'class-transformer';
 import { Promocion } from '../models/Promocion';
 import { FiltrosPromociones } from '../models/comandos/FiltroPromociones';
 import { Producto } from '../models/Producto';
+import { IgApiClient } from 'instagram-private-api';
+import { promisify } from 'util';
+import { readFile } from 'fs';
+import path from 'node:path';
 
 /**
  * Interfaz del repositorio de Promociones
@@ -17,6 +21,7 @@ export interface IPromocionesRepository {
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
   buscarProductos(): Promise<Producto[]>;
   buscarProducto(idProducto: number): Promise<Producto>;
+  notificarPromocion(imagen: string, comentario: string): Promise<string>;
 }
 
 /**
@@ -153,5 +158,30 @@ export class PromocionesRepository implements IPromocionesRepository {
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Método asíncrono para notificar una promoción en Instagram
+   * @param {string} imagen - Localización de imágen en backend para publicar.
+   * @param {string} comentario - Comentario para publicar.
+   * @returns {Promise<string>}
+   */
+  async notificarPromocion(nombreImagen: string, comentario: string): Promise<string> {
+    const { config } = await import('dotenv');
+    config({ path: '.env.calido' });
+
+    const ig = new IgApiClient();
+    const readFileAsync = promisify(readFile);
+    ig.state.generateDevice(process.env.IG_USERNAME);
+    await ig.account.login(process.env.IG_USERNAME, process.env.IG_PASSWORD);
+
+    const pathImage = path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram', nombreImagen);
+
+    const publishResult = await ig.publish.photo({
+      file: await readFileAsync(pathImage),
+      caption: comentario
+    });
+
+    return publishResult.status.toUpperCase();
   }
 }
