@@ -33,10 +33,6 @@ export class ProveedoresService implements IProveedoresService {
   public async registrarProveedor(proveedor: Proveedor): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        // Registramos el domicilio y obtenemos el id, si ya existe devuelve el id del mismo
-        const idDomicilio = await this._domicilioRepository.registrarDomicilio(proveedor);
-        proveedor.domicilio.id = idDomicilio;
-
         const result = await this._proveedoresRepository.registrarProveedor(proveedor);
         resolve(result);
       } catch (e) {
@@ -52,14 +48,14 @@ export class ProveedoresService implements IProveedoresService {
         const result = await this._proveedoresRepository.consultarProveedores(filtro);
 
         // Mapea sobre los proveedores para buscar su tipo correspondiente
-        const proveedores = await Promise.all(
-          result.map(async (proveedor) => {
-            const tipoProveedor: TipoProveedor = await this.buscarTipoProveedor(proveedor.idTipoProveedor);
-            return { ...proveedor, tipoProveedor };
-          })
-        );
+        //const proveedores = await Promise.all(
+        //  result.map(async (proveedor) => {
+        //    const tipoProveedor: TipoProveedor = await this.buscarTipoProveedor(proveedor.idTipoProveedor);
+        //    return { ...proveedor, tipoProveedor };
+        //  })
+        //);
 
-        resolve(proveedores);
+        resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);
