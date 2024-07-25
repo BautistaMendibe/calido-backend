@@ -1,6 +1,7 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
 import { UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
+import { ProductosController } from './src/controllers/ProductosController';
 /**
  * Rutas del Backend.
  */
@@ -25,6 +26,12 @@ export const AppRoutes = [
     path: '/proveedores/consultar-proveedores',
     method: 'post',
     action: ProveedoresController.consultarProveedores,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/consultar-productos',
+    method: 'post',
+    action: ProductosController.consultarProductos,
     schema: schemaEmpty
   }
   //#endregion

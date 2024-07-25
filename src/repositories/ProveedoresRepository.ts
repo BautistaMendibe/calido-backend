@@ -4,7 +4,6 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Proveedor } from '../models/Proveedor';
-import { consultarProveedores } from '../controllers/ProveedoresController';
 import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 
 /**
@@ -44,7 +43,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
 
   /**
    * Método asíncrono para consultar proveedores
-   * @param {FiltrosProveedores} filtros de busqueda
+
    * @returns {Proveedor []} arreglo de proveedores
    */
   async consultarProveedores(filtro: FiltrosProveedores): Promise<Proveedor[]> {
@@ -54,10 +53,9 @@ export class ProveedoresRepository implements IProveedoresRepository {
     const params = [nombre];
     try {
       const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.BUSCAR_PROVEEDORES($1)', params);
-      const result: Proveedor[] = plainToClass(Proveedor, res.rows, {
+      return plainToClass(Proveedor, res.rows, {
         excludeExtraneousValues: true
       });
-      return result;
     } catch (err) {
       logger.error('Error al consultar Proveedores: ' + err);
       throw new Error('Error al consultar Proveedores.');

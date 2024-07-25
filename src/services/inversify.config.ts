@@ -6,6 +6,9 @@ import { IUsersRepository, UsersRepository } from '../repositories/UsersReposito
 import { IProveedoresRepository, ProveedoresRepository } from '../repositories/ProveedoresRepository';
 import { IProveedoresService } from './interfaces/IProveedoresService';
 import { ProveedoresService } from './implementations/ProveedoresService';
+import { IProductosService } from './interfaces/IProductosService';
+import { ProductosService } from './implementations/ProductosService';
+import { IProductosRepository, ProductosRepository } from '../repositories/ProductosRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -17,4 +20,6 @@ container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
 container.bind<IUsersService>(TYPES.UsersService).to(UsersService);
 container.bind<IProveedoresRepository>(TYPES.ProveedoresRepository).to(ProveedoresRepository);
 container.bind<IProveedoresService>(TYPES.ProveedoresService).to(ProveedoresService);
+container.bind<IProductosService>(TYPES.ProductosService).to(ProductosService);
+container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
 export default container;
