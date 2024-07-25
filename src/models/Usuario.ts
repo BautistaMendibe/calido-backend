@@ -25,6 +25,8 @@ export class Usuario {
   idGenero: number;
   @Expose({ name: 'iddomicilio' })
   idDomicilio: number;
+  @Expose({ name: 'activo' })
+  activo: number;
 
   constructor(
     id?: number,
@@ -38,7 +40,8 @@ export class Usuario {
     contrasena?: string,
     idTipoUsuario?: number,
     idGenero?: number,
-    idDomicilio?: number
+    idDomicilio?: number,
+    activo?: number
   ) {
     this.id = id ? id : null;
     this.nombreUsuario = nombreUsuario ? nombreUsuario : null;
@@ -52,5 +55,6 @@ export class Usuario {
     this.idTipoUsuario = idTipoUsuario ? idTipoUsuario : null;
     this.idGenero = idGenero ? idGenero : null;
     this.idDomicilio = idDomicilio ? idDomicilio : null;
+    this.activo = activo ? activo : null;
   }
 }

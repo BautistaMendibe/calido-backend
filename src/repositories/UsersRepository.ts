@@ -4,6 +4,7 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Usuario } from '../models/Usuario';
+import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 
 const jwt = require('jsonwebtoken');
 const secretKey = 'secret';
@@ -14,6 +15,9 @@ const secretKey = 'secret';
 export interface IUsersRepository {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
   registrarUsuario(usuario: Usuario): Promise<SpResult>;
+  consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]>;
+  modificarEmpleado(usuario: Usuario): Promise<SpResult>;
+  eliminarUsuario(idUsuario: number): Promise<SpResult>;
 }
 
 /**
@@ -53,6 +57,8 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async registrarUsuario(usuario: Usuario): Promise<SpResult> {
+    console.log(usuario.idGenero);
+    console.log(usuario.codigoPostal);
     const client = await PoolDb.connect();
     const params = [
       usuario.nombreUsuario,
@@ -63,8 +69,8 @@ export class UsersRepository implements IUsersRepository {
       usuario.dni,
       usuario.cuil,
       usuario.contrasena,
-      1, // usuario.idTipoUsuario, la funcion pide number y estos tiran string, adaptar y hacerlo bien.
-      1, // usuario.idGenero,
+      1, // fuerza tipo 1, empleado. // usuario.idTipoUsuario, la funcion pide number y estos tiran string, adaptar y hacerlo bien.
+      usuario.idGenero,
       1 // usuario.idDomicilio
     ];
     try {
@@ -76,6 +82,76 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al registrar Usuario: ' + err);
       throw new Error('Error al registrar Usuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar empleados
+   * @param {FiltrosEmpleados} filtros de busqueda
+   * @returns {Usuario []} arreglo de empleados
+   */
+  async consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+
+    const nombre = filtro.nombre;
+    const params = [nombre];
+    try {
+      const res = await client.query<Usuario[]>('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1)', params);
+      const result: Usuario[] = plainToClass(Usuario, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Empleados: ' + err);
+      throw new Error('Error al consultar Empleados. ');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarEmpleado(usuario: Usuario): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [
+      usuario.nombreUsuario,
+      usuario.nombre,
+      usuario.apellido,
+      usuario.fechaNacimiento,
+      usuario.codigoPostal,
+      usuario.dni,
+      usuario.cuil,
+      usuario.contrasena,
+      1, // siempre empleado
+      usuario.idGenero,
+      1
+    ]; // usuario.idDomicilio
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar el usuario: ' + err);
+      throw new Error('Error al modificar el usuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarUsuario(idUsuario: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idUsuario];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_USUARIO($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el usuario: ' + err);
+      throw new Error('Error al eliminar el usuario.');
     } finally {
       client.release();
     }
