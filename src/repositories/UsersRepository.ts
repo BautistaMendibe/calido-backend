@@ -5,9 +5,27 @@ import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
+import * as argon2 from 'argon2';
+import * as jwt from 'jsonwebtoken';
 
-const jwt = require('jsonwebtoken');
 const secretKey = 'secret';
+
+/**
+ * Configuración de argon2 para hashear contraseñas
+ * Se toma la configuración recomendada y la utilizada por BitWarden
+ * @type {Object} Se utiliza el tipo Argon2id.
+ * @property {number} memoryCost El costo de memoria 65536 (2^16) KiB.
+ * @property {number} timeCost El costo de tiempo a utilizar.
+ * @property {number} parallelism El paralelismo a utilizar.
+ * @property {number} hashLength La longitud del hash a generar.
+ */
+const argonConfig = {
+  type: argon2.argon2id,
+  memoryCost: 2 ** 16,
+  timeCost: 3,
+  parallelism: 4,
+  hashLength: 32
+};
 
 /**
  * Interfaz del repositorio de usuarios
@@ -26,25 +44,43 @@ export interface IUsersRepository {
 @injectable()
 export class UsersRepository implements IUsersRepository {
   /**
-   * Método asíncrono para consultar si existe un usuario en la base
+   * Método asíncrono para validar el hash de una contraseña enviada para un usuario
    * @param {string} nombreUsuario - nombre de usuario
    * @param {string} contrasena - contrasena del usuario
-   * @returns {string} - devuelve un string. Si es correcto devuelve el token si no ERROR
+   * @returns {string} - devuelve un string. Si es correcto devuelve el token, si no ERROR
    */
   async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     const client = await PoolDb.connect();
-    const params = [nombreUsuario, contrasena];
 
     try {
-      const res = await client.query<Usuario>('SELECT * FROM PUBLIC.VALIDAR_INICIO_SESION($1, $2)', params);
-      const result: Usuario = plainToClass(Usuario, res.rows[0], {
-        excludeExtraneousValues: true
-      });
+      // Consultar la base de datos para obtener el hash del usuario enviado como parámetro
+      const res = await client.query<{ contrasena: string }>('SELECT * FROM PUBLIC.OBTENER_HASH_CONTRASENA($1)', [nombreUsuario]);
+      if (res.rows.length === 0) {
+        return 'ERROR';
+      }
 
-      // Si la BD nos devuelve un usuario, lo que hacemos es armar el token con la informacion del mismo
-      if (result) {
-        const token: string = jwt.sign({ result }, secretKey, { expiresIn: '6h' });
-        return token;
+      const hashContrasena: string = res.rows[0].contrasena;
+
+      // Validar la contraseña hasheada con la que se encuentra en la base de datos
+      const verificacionValida = await argon2.verify(hashContrasena, contrasena);
+
+      if (verificacionValida) {
+        // Obtener el ID, nombre y apellido del empleado para crear el payload del JWT
+        const idResult = await client.query<{ idusuario: number; nombre: string; apellido: string }>('SELECT * FROM public.OBTENER_PAYLOAD_EMPLEADO($1)', [nombreUsuario]);
+
+        // Verificar si se obtuvo un resultado de ID
+        if (idResult.rows.length === 0) {
+          return 'ERROR';
+        }
+
+        const payload = {
+          idusuario: idResult.rows[0].idusuario,
+          nombre: idResult.rows[0].nombre,
+          apellido: idResult.rows[0].apellido
+        };
+
+        // Generar y devolver el token JWT con el ID del usuario
+        return jwt.sign(payload, secretKey, { expiresIn: '6h' });
       } else {
         return 'ERROR';
       }
@@ -57,9 +93,11 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async registrarUsuario(usuario: Usuario): Promise<SpResult> {
-    console.log(usuario.idGenero);
-    console.log(usuario.codigoPostal);
     const client = await PoolDb.connect();
+
+    // Hashear la contraseña antes de enviarla a la base de datos
+    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+
     const params = [
       usuario.nombreUsuario,
       usuario.nombre,
@@ -68,7 +106,7 @@ export class UsersRepository implements IUsersRepository {
       usuario.codigoPostal,
       usuario.dni,
       usuario.cuil,
-      usuario.contrasena,
+      contrasenaHashed, // envía la contraseña hasheada directamente.
       1, // fuerza tipo 1, empleado. // usuario.idTipoUsuario, la funcion pide number y estos tiran string, adaptar y hacerlo bien.
       usuario.idGenero,
       1 // usuario.idDomicilio
@@ -113,6 +151,10 @@ export class UsersRepository implements IUsersRepository {
 
   async modificarEmpleado(usuario: Usuario): Promise<SpResult> {
     const client = await PoolDb.connect();
+
+    // Hashear la nueva contraseña antes de enviarla a la base de datos
+    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+
     const params = [
       usuario.nombreUsuario,
       usuario.nombre,
@@ -121,7 +163,7 @@ export class UsersRepository implements IUsersRepository {
       usuario.codigoPostal,
       usuario.dni,
       usuario.cuil,
-      usuario.contrasena,
+      contrasenaHashed, // La nueva contraseña tendrá que hashearse de nuevo.
       1, // siempre empleado
       usuario.idGenero,
       1
