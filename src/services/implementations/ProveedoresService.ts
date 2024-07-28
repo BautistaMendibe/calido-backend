@@ -8,6 +8,8 @@ import { Proveedor } from '../../models/Proveedor';
 import { SpResult } from '../../models';
 import { FiltrosProveedores } from '../../models/comandos/FiltroProveedores';
 import { consultarProveedores, modificarProveedor } from '../../controllers/ProveedoresController';
+import { TipoProveedor } from '../../models/TipoProveedor';
+import { IDomicilioRepository } from '../../repositories/DomicilioRepository';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -16,12 +18,16 @@ import { consultarProveedores, modificarProveedor } from '../../controllers/Prov
 @injectable()
 export class ProveedoresService implements IProveedoresService {
   private readonly _proveedoresRepository: IProveedoresRepository;
+  private readonly _domicilioRepository: IDomicilioRepository;
 
   constructor(
     @inject(TYPES.ProveedoresRepository)
-    repository: IProveedoresRepository
+    repository: IProveedoresRepository,
+    @inject(TYPES.DomicilioRepository)
+    domicilioRepository: IDomicilioRepository
   ) {
     this._proveedoresRepository = repository;
+    this._domicilioRepository = domicilioRepository;
   }
 
   public async registrarProveedor(proveedor: Proveedor): Promise<SpResult> {
@@ -64,6 +70,30 @@ export class ProveedoresService implements IProveedoresService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._proveedoresRepository.eliminarProveedor(idProveedor);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarTiposProveedores(): Promise<TipoProveedor[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._proveedoresRepository.buscarTiposProveedores();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarTipoProveedor(id: number): Promise<TipoProveedor> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._proveedoresRepository.buscarTipoProveedor(id);
         resolve(result);
       } catch (e) {
         logger.error(e);
