@@ -4,7 +4,6 @@ import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Producto } from '../models/Producto';
-import { consultarProductos } from '../controllers/ProductosController';
 import { FiltrosProductos } from '../models/comandos/FiltroProductos';
 
 /**
@@ -27,7 +26,7 @@ export class ProductosRepository implements IProductosRepository {
    */
   async registrarProducto(producto: Producto): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [producto.nombre, producto.costo, producto.costoIva, producto.tipoProducto.id, producto.proveedor.id, producto.marca.id];
+    const params = [producto.nombre, producto.costo, producto.costoIva, producto.idTipoProducto, producto.idProveedor, producto.idMarca];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PRODUCTO($1, $2, $3, $4, $5, $6)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {

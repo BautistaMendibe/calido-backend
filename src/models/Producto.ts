@@ -1,8 +1,4 @@
 import { Expose, Type } from 'class-transformer';
-import { Proveedor } from './Proveedor';
-import { TipoProducto } from './TipoProducto';
-import { Marca } from './Marca';
-
 export class Producto {
   @Expose({ name: 'idproducto' })
   id: number;
@@ -17,24 +13,21 @@ export class Producto {
   costoIva: number;
 
   @Expose({ name: 'idTipoProducto' })
-  @Type(() => TipoProducto)
-  tipoProducto: TipoProducto;
+  idTipoProducto: number;
 
   @Expose({ name: 'idProveedor' })
-  @Type(() => Proveedor)
-  proveedor: Proveedor;
+  idProveedor: number;
 
   @Expose({ name: 'idMarca' })
-  @Type(() => Marca)
-  marca: Marca;
+  idMarca: number;
 
-  constructor(id?: number, nombre?: string, costo?: number, costoIva?: number, tipoProducto?: TipoProducto, proveedor?: Proveedor, marca?: Marca) {
+  constructor(id?: number, nombre?: string, costo?: number, costoIva?: number, idTipoProducto?: number, idProveedor?: number, idMarca?: number) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.costo = costo ? costo : null;
     this.costoIva = costoIva ? costoIva : null;
-    this.tipoProducto = tipoProducto ? tipoProducto : null;
-    this.proveedor = proveedor ? proveedor : null;
-    this.marca = marca ? marca : null;
+    this.idTipoProducto = idTipoProducto ? idTipoProducto : null;
+    this.idProveedor = idProveedor ? idProveedor : null;
+    this.idMarca = idMarca ? idMarca : null;
   }
 }

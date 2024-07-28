@@ -3,7 +3,7 @@ export const TYPES = {
   UsersService: Symbol('IUsersService'),
   UsersRepository: Symbol('IUsersRepository'),
   ProveedoresService: Symbol('IProveedoresService'),
-  ProveedoresRepository: Symbol(''),
-  ProductosService: Symbol('IProductosService'),
-  ProductosRepository: Symbol('')
+  ProveedoresRepository: Symbol('IProveedoresRepository'),
+  DomicilioService: Symbol('IDomicilioService'),
+  DomicilioRepository: Symbol('IDomicilioRepository')
 };
