@@ -105,6 +105,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
   async modificarProveedor(proveedor: Proveedor): Promise<SpResult> {
     const client = await PoolDb.connect();
     const params = [
+      proveedor.id,
       proveedor.nombre,
       proveedor.telefono,
       proveedor.email,
@@ -115,7 +116,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
       proveedor.tipoProveedor.id
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROVEEDOR($1, $2, $3, $4, $5, $6, $7, $8)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROVEEDOR($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
