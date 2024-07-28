@@ -50,14 +50,17 @@ export class ProductosRepository implements IProductosRepository {
   async consultarProductos(filtro: FiltrosProductos): Promise<Producto[]> {
     const client = await PoolDb.connect();
 
-    const id: number = filtro.id;
-    const nombre = filtro.nombre;
-    const marca: number = filtro.marca;
-    const tipoProducto: number = filtro.tipoProducto;
-    const proveedor: number = filtro.proveedor;
+    // Convertir las propiedades del filtro a tipos apropiados, asumiendo que valores vacíos son null
+    const id = filtro.id ? parseInt(String(filtro.id), 10) : null;
+    const nombre = filtro.nombre || null;
+    const marca = filtro.marca ? parseInt(String(filtro.marca), 10) : null;
+    const tipoProducto = filtro.tipoProducto ? parseInt(String(filtro.tipoProducto), 10) : null;
+    const proveedor = filtro.proveedor ? parseInt(String(filtro.proveedor), 10) : null;
+
     const params = [id, nombre, marca, tipoProducto, proveedor];
+
     try {
-      const res = await client.query<Producto[]>('SELECT * FROM PUBLIC.BUSCAR_PRODUCTOS($1,$2,$3,$4,$5)', params);
+      const res = await client.query<Producto[]>('SELECT * FROM public.buscar_productos($1, $2, $3, $4, $5)', params);
       const result: Producto[] = plainToClass(Producto, res.rows, {
         excludeExtraneousValues: true
       });
