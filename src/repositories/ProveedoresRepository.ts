@@ -7,6 +7,9 @@ import { Proveedor } from '../models/Proveedor';
 import { consultarProveedores } from '../controllers/ProveedoresController';
 import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 import { TipoProveedor } from '../models/TipoProveedor';
+import { Domicilio } from '../models/Domicilio';
+import { Provincia } from '../models/Provincia';
+import { Localidad } from '../models/Localidad';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -67,11 +70,25 @@ export class ProveedoresRepository implements IProveedoresRepository {
     const nombre = filtro.nombre;
     const params = [nombre];
     try {
-      const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.BUSCAR_PROVEEDORES($1)', params);
-      const result: Proveedor[] = plainToClass(Proveedor, res.rows, {
-        excludeExtraneousValues: true
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_PROVEEDORES($1)', params);
+
+      const proveedores = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Proveedor
+        const tipoProveedor: TipoProveedor = plainToClass(TipoProveedor, row, { excludeExtraneousValues: true });
+        const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
+        const localidad: Localidad = plainToClass(Localidad, row, { excludeExtraneousValues: true });
+        const domicilio: Domicilio = plainToClass(Domicilio, row, { excludeExtraneousValues: true });
+        const proveedor: Proveedor = plainToClass(Proveedor, row, { excludeExtraneousValues: true });
+
+        domicilio.localidad = localidad;
+        localidad.provincia = provincia;
+        proveedor.tipoProveedor = tipoProveedor;
+        proveedor.domicilio = domicilio;
+
+        return proveedor;
       });
-      return result;
+
+      return proveedores;
     } catch (err) {
       logger.error('Error al consultar Proveedores: ' + err);
       throw new Error('Error al consultar Proveedores.');

@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { Provincia } from './Provincia';
 
 export class Localidad {
   @Expose({ name: 'idlocalidad' })
@@ -7,13 +8,13 @@ export class Localidad {
   nombre: string;
   @Expose({ name: 'codigopostal' })
   codigoPostal: string;
-  @Expose({ name: 'idprovincia' })
-  idProvincia: number;
 
-  constructor(id?: number, nombre?: string, codigoPostal?: string, idProvincia?: number) {
+  provincia: Provincia;
+
+  constructor(id?: number, nombre?: string, codigoPostal?: string, provincia?: Provincia) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.codigoPostal = codigoPostal ? codigoPostal : null;
-    this.idProvincia = idProvincia ? idProvincia : null;
+    this.provincia = provincia ? provincia : null;
   }
 }

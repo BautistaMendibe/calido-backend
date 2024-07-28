@@ -46,16 +46,7 @@ export class ProveedoresService implements IProveedoresService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._proveedoresRepository.consultarProveedores(filtro);
-
-        // Mapea sobre los proveedores para buscar su tipo correspondiente
-        const proveedores = await Promise.all(
-          result.map(async (proveedor) => {
-            const tipoProveedor: TipoProveedor = await this.buscarTipoProveedor(proveedor.idTipoProveedor);
-            return { ...proveedor, tipoProveedor };
-          })
-        );
-
-        resolve(proveedores);
+        resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);
