@@ -9,6 +9,9 @@ import { ProveedoresService } from './implementations/ProveedoresService';
 import { IProductosService } from './interfaces/IProductosService';
 import { ProductosService } from './implementations/ProductosService';
 import { IProductosRepository, ProductosRepository } from '../repositories/ProductosRepository';
+import { DomicilioRepository, IDomicilioRepository } from '../repositories/DomicilioRepository';
+import { IDomicilioService } from './interfaces/IDomicilioService';
+import { DomicilioService } from './implementations/DomicilioService';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -22,4 +25,6 @@ container.bind<IProveedoresRepository>(TYPES.ProveedoresRepository).to(Proveedor
 container.bind<IProveedoresService>(TYPES.ProveedoresService).to(ProveedoresService);
 container.bind<IProductosService>(TYPES.ProductosService).to(ProductosService);
 container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
+container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
+container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
 export default container;
