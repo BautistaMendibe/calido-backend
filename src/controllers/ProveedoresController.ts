@@ -6,6 +6,7 @@ import { TYPES } from '../services/types/types';
 import { ProveedoresService } from '../services/implementations/ProveedoresService';
 import { Proveedor } from '../models/Proveedor';
 import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
+import { TipoProveedor } from '../models/TipoProveedor';
 
 const _proveedoresService = container.get<ProveedoresService>(TYPES.ProveedoresService);
 
@@ -65,9 +66,22 @@ export async function eliminarProveedor(request: Request, response: Response): P
     });
 }
 
+export async function buscarTiposProveedores(request: Request, response: Response): Promise<Response> {
+  return _proveedoresService
+    .buscarTiposProveedores()
+    .then((x: TipoProveedor[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProveedoresController = {
   registrarProveedor,
   consultarProveedores,
   modificarProveedor,
-  eliminarProveedor
+  eliminarProveedor,
+  buscarTiposProveedores
 };

@@ -2,6 +2,7 @@ import { schemaEmpty } from './middlewares/ValidationSchema';
 import { UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
+import { DomicilioController } from './src/controllers/DomicilioController';
 /**
  * Rutas del Backend.
  */
@@ -38,6 +39,27 @@ export const AppRoutes = [
     path: '/proveedores/eliminar-proveedor/:id',
     method: 'get',
     action: ProveedoresController.eliminarProveedor,
+    schema: schemaEmpty
+  },
+  {
+    path: '/proveedores/buscar-tipos-proveedores',
+    method: 'get',
+    action: ProveedoresController.buscarTiposProveedores,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Domicilio
+  {
+    path: '/domicilio/obtener-provincias',
+    method: 'get',
+    action: DomicilioController.obtenerProvincias,
+    schema: schemaEmpty
+  },
+  {
+    path: '/domicilio/obtener-localidades-por-provincia/:idProvincia',
+    method: 'get',
+    action: DomicilioController.obtenerLocalidadesPorProvincia,
     schema: schemaEmpty
   },
   //#endregion
