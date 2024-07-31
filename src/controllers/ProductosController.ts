@@ -1,0 +1,42 @@
+import { Request, Response } from 'express';
+import { logger } from '../logger/CustomLogger';
+import { HttpCodes, SpResult } from '../models';
+import container from '../services/inversify.config';
+import { TYPES } from '../services/types/types';
+import { ProductosService } from '../services/implementations/ProductosService';
+import { Producto } from '../models/Producto';
+import { FiltrosProductos } from '../models/comandos/FiltroProductos';
+
+const _productosService = container.get<ProductosService>(TYPES.ProductosService);
+
+export async function registrarProducto(request: Request, response: Response): Promise<Response> {
+  const producto: Producto = request.body;
+
+  return _productosService
+    .registrarProducto(producto)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultarProductos(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltrosProductos = request.body;
+
+  return _productosService
+    .consultarProductos(filtro)
+    .then((x: Producto[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export const ProductosController = {
+  consultarProductos
+};
