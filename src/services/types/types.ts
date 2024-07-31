@@ -5,5 +5,7 @@ export const TYPES = {
   ProveedoresService: Symbol('IProveedoresService'),
   ProveedoresRepository: Symbol('IProveedoresRepository'),
   DomicilioService: Symbol('IDomicilioService'),
-  DomicilioRepository: Symbol('IDomicilioRepository')
+  DomicilioRepository: Symbol('IDomicilioRepository'),
+  ProductosService: Symbol('IProductoService'),
+  ProductosRepository: Symbol('IProductoRepository')
 };
