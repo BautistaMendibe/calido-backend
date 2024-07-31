@@ -13,6 +13,30 @@ export const AppRoutes = [
     action: UsersController.validarInicioSesion,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/registrar-usuario',
+    method: 'post',
+    action: UsersController.registrarUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/consultar-usuarios',
+    method: 'post',
+    action: UsersController.consultarEmpleados,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/modificar-usuario',
+    method: 'post',
+    action: UsersController.modificarEmpleado,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-usuario/:id',
+    method: 'get',
+    action: UsersController.eliminarUsuario,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores

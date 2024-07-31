@@ -6,6 +6,7 @@ import { IUsersService } from '../interfaces/IUserService';
 import { IUsersRepository } from '../../repositories/UsersRepository';
 import { SpResult } from '../../models';
 import { Usuario } from '../../models/Usuario';
+import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -22,10 +23,57 @@ export class UsersService implements IUsersService {
     this._usersRepository = repository;
   }
 
+  public async registrarUsuario(usuario: Usuario): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarUsuario(usuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
   public async validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.validarInicioSesion(nombreUsuario, contrasena);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarEmpleados(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarEmpleado(usuario: Usuario): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.modificarEmpleado(usuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarUsuario(idUsuario: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.eliminarUsuario(idUsuario);
         resolve(result);
       } catch (e) {
         logger.error(e);
