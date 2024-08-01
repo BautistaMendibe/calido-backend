@@ -3,6 +3,7 @@ import { UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
+import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 /**
  * Rutas del Backend.
  */
@@ -123,6 +124,27 @@ export const AppRoutes = [
     path: '/promociones/notificar-promocion',
     method: 'post',
     action: PromocionesController.notificarPromocion,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Configuraciones
+  {
+    path: '/configuraciones/consultar-configuraciones',
+    method: 'get',
+    action: ConfiguracionesController.obtenerConfiguraciones,
+    schema: schemaEmpty
+  },
+  {
+    path: '/configuraciones/registrar-configuracion',
+    method: 'post',
+    action: ConfiguracionesController.registrarConfiguracion,
+    schema: schemaEmpty
+  },
+  {
+    path: '/configuraciones/modificar-configuracion',
+    method: 'post',
+    action: ConfiguracionesController.modificarConfiguracion,
     schema: schemaEmpty
   }
   //#endregion

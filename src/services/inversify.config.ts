@@ -15,6 +15,9 @@ import { IProductosRepository, ProductosRepository } from '../repositories/Produ
 import { DomicilioRepository, IDomicilioRepository } from '../repositories/DomicilioRepository';
 import { DomicilioService } from './implementations/DomicilioService';
 import { IDomicilioService } from './interfaces/IDomicilioService';
+import { IConfiguracionesService } from './interfaces/IConfiguracionesService';
+import { ConfiguracionesService } from './implementations/ConfiguracionesService';
+import { ConfiguracionesRepository, IConfiguracionesRepository } from '../repositories/ConfiguracionesRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -32,4 +35,6 @@ container.bind<IPromocionesRepository>(TYPES.PromocionesRepository).to(Promocion
 container.bind<IPromocionesService>(TYPES.PromocionesService).to(PromocionesService);
 container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
 container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
+container.bind<IConfiguracionesService>(TYPES.ConfiguracionesService).to(ConfiguracionesService);
+container.bind<IConfiguracionesRepository>(TYPES.ConfiguracionesRepository).to(ConfiguracionesRepository);
 export default container;
