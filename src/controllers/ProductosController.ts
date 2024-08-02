@@ -6,6 +6,8 @@ import { TYPES } from '../services/types/types';
 import { ProductosService } from '../services/implementations/ProductosService';
 import { Producto } from '../models/Producto';
 import { FiltrosProductos } from '../models/comandos/FiltroProductos';
+import { Marca } from '../models/Marca';
+import { TipoProducto } from '../models/TipoProducto';
 
 const _productosService = container.get<ProductosService>(TYPES.ProductosService);
 
@@ -37,6 +39,19 @@ export async function consultarProductos(request: Request, response: Response): 
     });
 }
 
+export async function consultarTipoProductos(request: Request, response: Response): Promise<Response> {
+  return _productosService
+    .obtenerTipoProductos()
+    .then((x: TipoProducto[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProductosController = {
-  consultarProductos
+  consultarProductos,
+  consultarTipoProductos
 };

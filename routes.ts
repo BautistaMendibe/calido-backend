@@ -2,6 +2,9 @@ import { schemaEmpty } from './middlewares/ValidationSchema';
 import { UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { DomicilioController } from './src/controllers/DomicilioController';
+import { ProductosController } from './src/controllers/ProductosController';
+import { MarcasController } from './src/controllers/MarcaController';
+
 /**
  * Rutas del Backend.
  */
@@ -46,6 +49,13 @@ export const AppRoutes = [
     action: ProveedoresController.buscarTiposProveedores,
     schema: schemaEmpty
   },
+
+  {
+    path: '/proveedores/buscar-todos-proveedores',
+    method: 'post',
+    action: ProveedoresController.buscarTodosProveedores,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Domicilio
@@ -59,6 +69,37 @@ export const AppRoutes = [
     path: '/domicilio/obtener-localidades-por-provincia/:idProvincia',
     method: 'get',
     action: DomicilioController.obtenerLocalidadesPorProvincia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/domicilio/obtener-localidades-por-provincia/:idProvincia',
+    method: 'get',
+    action: DomicilioController.obtenerLocalidadesPorProvincia,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Productos
+  {
+    path: '/productos/consultar-productos',
+    method: 'post',
+    action: ProductosController.consultarProductos,
+    schema: schemaEmpty
+  },
+
+  {
+    path: '/productos/buscar-tipo-productos',
+    method: 'post',
+    action: ProductosController.consultarTipoProductos,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // Region Marcas
+  {
+    path: '/marcas/buscar-marcas',
+    method: 'post',
+    action: MarcasController.obtenerMarcas,
     schema: schemaEmpty
   }
   //#endregion

@@ -12,6 +12,9 @@ import { IProductosRepository, ProductosRepository } from '../repositories/Produ
 import { DomicilioRepository, IDomicilioRepository } from '../repositories/DomicilioRepository';
 import { IDomicilioService } from './interfaces/IDomicilioService';
 import { DomicilioService } from './implementations/DomicilioService';
+import { IMarcaService } from './interfaces/IMarcaService';
+import { MarcaService } from './implementations/MarcaService';
+import { IMarcasRepository, MarcasRepository } from '../repositories/MarcasRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -27,4 +30,6 @@ container.bind<IProductosService>(TYPES.ProductosService).to(ProductosService);
 container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
 container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
 container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
+container.bind<IMarcasRepository>(TYPES.MarcasRepository).to(MarcasRepository);
+container.bind<IMarcaService>(TYPES.MarcasService).to(MarcaService);
 export default container;

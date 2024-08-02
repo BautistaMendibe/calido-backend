@@ -5,6 +5,9 @@ import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
 import { Producto } from '../models/Producto';
 import { FiltrosProductos } from '../models/comandos/FiltroProductos';
+import { Proveedor } from '../models/Proveedor';
+import { TipoProducto } from '../models/TipoProducto';
+import { Marca } from '../models/Marca';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -12,6 +15,7 @@ import { FiltrosProductos } from '../models/comandos/FiltroProductos';
 export interface IProductosRepository {
   registrarProducto(producto: Producto): Promise<SpResult>;
   consultarProductos(filtro: FiltrosProductos): Promise<Producto[]>;
+  obtenerTipoProductos(): Promise<TipoProducto[]>;
 }
 
 /**
@@ -26,7 +30,7 @@ export class ProductosRepository implements IProductosRepository {
    */
   async registrarProducto(producto: Producto): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [producto.nombre, producto.costo, producto.costoIva, producto.idTipoProducto, producto.idProveedor, producto.idMarca];
+    const params = [producto.nombre, producto.costo, producto.costoIva, producto.tipoProducto.id, producto.proveedor.id, producto.marca.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PRODUCTO($1, $2, $3, $4, $5, $6)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
@@ -60,13 +64,59 @@ export class ProductosRepository implements IProductosRepository {
 
     try {
       const res = await client.query<Producto[]>('SELECT * FROM public.buscar_productos($1, $2, $3, $4, $5)', params);
-      const result: Producto[] = plainToClass(Producto, res.rows, {
+
+      const productos = res.rows.map((row: any) => {
+        // Armamos los objetos necesarios para la clase Proveedor
+        const tipoProducto: TipoProducto = plainToClass(
+          TipoProducto,
+          {
+            idtipoproducto: row.idtipoproducto,
+            ntipoproducto: row.ntipoproducto
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const marca: Marca = plainToClass(
+          Marca,
+          {
+            idmarca: row.idmarca,
+            nmarca: row.nmarca
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const proveedor: Proveedor = plainToClass(
+          Proveedor,
+          {
+            idproveedor: row.idproveedor,
+            nproveedor: row.nproveedor
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        return new Producto(row.idproducto, row.nproducto, row.preciocosto, row.preciocostoiva, tipoProducto, marca, proveedor);
+      });
+
+      return productos;
+    } catch (err) {
+      logger.error('Error al consultar Productos: ' + err);
+      throw new Error('Error al consultar Productos.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async obtenerTipoProductos(): Promise<TipoProducto[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<TipoProducto[]>('SELECT * FROM PUBLIC.TIPO_PRODUCTO');
+      const result: TipoProducto[] = plainToClass(TipoProducto, res.rows, {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al consultar Productos: ' + err);
-      throw new Error('Error al consultar Productos.');
+      logger.error('Error al consultar Tipo de Producto: ' + err);
+      throw new Error('Error al consultar Tipo de Producto.');
     } finally {
       client.release();
     }

@@ -10,6 +10,7 @@ import { TipoProveedor } from '../models/TipoProveedor';
 import { Domicilio } from '../models/Domicilio';
 import { Provincia } from '../models/Provincia';
 import { Localidad } from '../models/Localidad';
+import { Marca } from '../models/Marca';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -21,6 +22,7 @@ export interface IProveedoresRepository {
   eliminarProveedor(idProveedor: number): Promise<SpResult>;
   buscarTiposProveedores(): Promise<TipoProveedor[]>;
   buscarTipoProveedor(id: number): Promise<TipoProveedor>;
+  buscarTodosProveedores(): Promise<Proveedor[]>;
 }
 
 /**
@@ -187,6 +189,22 @@ export class ProveedoresRepository implements IProveedoresRepository {
     } catch (err) {
       logger.error('Error al eliminar el proveedor: ' + err);
       throw new Error('Error al eliminar el proveedor.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarTodosProveedores(): Promise<Proveedor[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.PROVEEDOR');
+      const result: Proveedor[] = plainToClass(Proveedor, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Proveedores: ' + err);
+      throw new Error('Error al consultar Proveedores.');
     } finally {
       client.release();
     }

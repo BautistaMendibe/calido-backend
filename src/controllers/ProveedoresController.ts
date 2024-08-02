@@ -7,6 +7,7 @@ import { ProveedoresService } from '../services/implementations/ProveedoresServi
 import { Proveedor } from '../models/Proveedor';
 import { FiltrosProveedores } from '../models/comandos/FiltroProveedores';
 import { TipoProveedor } from '../models/TipoProveedor';
+import { Marca } from '../models/Marca';
 
 const _proveedoresService = container.get<ProveedoresService>(TYPES.ProveedoresService);
 
@@ -78,10 +79,23 @@ export async function buscarTiposProveedores(request: Request, response: Respons
     });
 }
 
+export async function buscarTodosProveedores(request: Request, response: Response): Promise<Response> {
+  return _proveedoresService
+    .buscarTodosProveedores()
+    .then((x: Proveedor[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProveedoresController = {
   registrarProveedor,
   consultarProveedores,
   modificarProveedor,
   eliminarProveedor,
-  buscarTiposProveedores
+  buscarTiposProveedores,
+  buscarTodosProveedores
 };
