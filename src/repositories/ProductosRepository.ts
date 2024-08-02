@@ -30,9 +30,18 @@ export class ProductosRepository implements IProductosRepository {
    */
   async registrarProducto(producto: Producto): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [producto.nombre, producto.costo, producto.costoIva, producto.tipoProducto.id, producto.proveedor.id, producto.marca.id];
+    const params = [
+      producto.nombre,
+      producto.costo,
+      producto.costoIva,
+      producto.tipoProducto.id ? producto.tipoProducto.id : null,
+      producto.tipoProducto.nombre,
+      producto.proveedor.id,
+      producto.marca.id ? producto.marca.id : null,
+      producto.marca.nombre
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PRODUCTO($1, $2, $3, $4, $5, $6)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REG_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

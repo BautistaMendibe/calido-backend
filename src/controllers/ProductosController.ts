@@ -8,22 +8,9 @@ import { Producto } from '../models/Producto';
 import { FiltrosProductos } from '../models/comandos/FiltroProductos';
 import { Marca } from '../models/Marca';
 import { TipoProducto } from '../models/TipoProducto';
+import { Proveedor } from '../models/Proveedor';
 
 const _productosService = container.get<ProductosService>(TYPES.ProductosService);
-
-export async function registrarProducto(request: Request, response: Response): Promise<Response> {
-  const producto: Producto = request.body;
-
-  return _productosService
-    .registrarProducto(producto)
-    .then((x: SpResult) => {
-      return response.status(HttpCodes.OK).json(x);
-    })
-    .catch((error) => {
-      logger.error(error);
-      return response.status(HttpCodes.CONFLICT).json(error.message);
-    });
-}
 
 export async function consultarProductos(request: Request, response: Response): Promise<Response> {
   const filtro: FiltrosProductos = request.body;
@@ -51,7 +38,22 @@ export async function consultarTipoProductos(request: Request, response: Respons
     });
 }
 
+export async function registrarProducto(request: Request, response: Response): Promise<Response> {
+  const producto: Producto = request.body;
+
+  return _productosService
+    .registrarProducto(producto)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProductosController = {
   consultarProductos,
-  consultarTipoProductos
+  consultarTipoProductos,
+  registrarProducto
 };

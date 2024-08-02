@@ -80,6 +80,13 @@ export const AppRoutes = [
   //#endregion
 
   // region Productos
+
+  {
+    path: '/productos/registrar-producto',
+    method: 'post',
+    action: ProductosController.registrarProducto,
+    schema: schemaEmpty
+  },
   {
     path: '/productos/consultar-productos',
     method: 'post',
