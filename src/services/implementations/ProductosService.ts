@@ -9,6 +9,7 @@ import { Producto } from '../../models/Producto';
 import { FiltrosProductos } from '../../models/comandos/FiltroProductos';
 import { Marca } from '../../models/Marca';
 import { TipoProducto } from '../../models/TipoProducto';
+import { Proveedor } from '../../models/Proveedor';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -37,6 +38,18 @@ export class ProductosService implements IProductosService {
     });
   }
 
+  public async modificarProducto(producto: Producto): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.modificarProducto(producto);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async consultarProductos(filtro: FiltrosProductos): Promise<Producto[]> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -55,6 +68,18 @@ export class ProductosService implements IProductosService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._productosRepository.obtenerTipoProductos();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarProducto(idProducto: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.eliminarProducto(idProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);

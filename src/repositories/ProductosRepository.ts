@@ -16,6 +16,8 @@ export interface IProductosRepository {
   registrarProducto(producto: Producto): Promise<SpResult>;
   consultarProductos(filtro: FiltrosProductos): Promise<Producto[]>;
   obtenerTipoProductos(): Promise<TipoProducto[]>;
+  modificarProducto(producto: Producto): Promise<SpResult>;
+  eliminarProducto(idProducto: number): Promise<SpResult>;
 }
 
 /**
@@ -115,6 +117,33 @@ export class ProductosRepository implements IProductosRepository {
     }
   }
 
+  async modificarProducto(producto: Producto): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [
+      producto.id,
+      producto.nombre,
+      producto.costo,
+      producto.costoIva,
+      producto.tipoProducto.id ? producto.tipoProducto.id : null,
+      producto.tipoProducto.nombre,
+      producto.proveedor.id,
+      producto.marca.id ? producto.marca.id : null,
+      producto.marca.nombre
+    ];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar el Producto: ' + err);
+      throw new Error('Error al modificar el Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
   async obtenerTipoProductos(): Promise<TipoProducto[]> {
     const client = await PoolDb.connect();
     try {
@@ -126,6 +155,23 @@ export class ProductosRepository implements IProductosRepository {
     } catch (err) {
       logger.error('Error al consultar Tipo de Producto: ' + err);
       throw new Error('Error al consultar Tipo de Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarProducto(idProducto: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idProducto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_PRODUCTO($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar producto: ' + err);
+      throw new Error('Error al eliminar producto.');
     } finally {
       client.release();
     }

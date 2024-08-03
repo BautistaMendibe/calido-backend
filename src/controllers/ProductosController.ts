@@ -6,9 +6,7 @@ import { TYPES } from '../services/types/types';
 import { ProductosService } from '../services/implementations/ProductosService';
 import { Producto } from '../models/Producto';
 import { FiltrosProductos } from '../models/comandos/FiltroProductos';
-import { Marca } from '../models/Marca';
 import { TipoProducto } from '../models/TipoProducto';
-import { Proveedor } from '../models/Proveedor';
 
 const _productosService = container.get<ProductosService>(TYPES.ProductosService);
 
@@ -52,8 +50,38 @@ export async function registrarProducto(request: Request, response: Response): P
     });
 }
 
+export async function modificarProducto(request: Request, response: Response): Promise<Response> {
+  const producto: Producto = request.body;
+
+  return _productosService
+    .modificarProducto(producto)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarProducto(request: Request, response: Response): Promise<Response> {
+  const idProducto: number = +request.params.id;
+
+  return _productosService
+    .eliminarProducto(idProducto)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProductosController = {
   consultarProductos,
   consultarTipoProductos,
-  registrarProducto
+  registrarProducto,
+  modificarProducto,
+  eliminarProducto
 };

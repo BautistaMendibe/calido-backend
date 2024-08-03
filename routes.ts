@@ -1,5 +1,5 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { UsersController } from './src/controllers/UsersController';
+import { UsersController } from './src/controllers';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ProductosController } from './src/controllers/ProductosController';
@@ -88,6 +88,12 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/productos/modificar-producto',
+    method: 'post',
+    action: ProductosController.modificarProducto,
+    schema: schemaEmpty
+  },
+  {
     path: '/productos/consultar-productos',
     method: 'post',
     action: ProductosController.consultarProductos,
@@ -98,6 +104,13 @@ export const AppRoutes = [
     path: '/productos/buscar-tipo-productos',
     method: 'post',
     action: ProductosController.consultarTipoProductos,
+    schema: schemaEmpty
+  },
+
+  {
+    path: '/productos/eliminar-producto/:id',
+    method: 'get',
+    action: ProductosController.eliminarProducto,
     schema: schemaEmpty
   },
   //#endregion
