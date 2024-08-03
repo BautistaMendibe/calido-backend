@@ -6,6 +6,9 @@ import { IUsersRepository, UsersRepository } from '../repositories/UsersReposito
 import { IProveedoresRepository, ProveedoresRepository } from '../repositories/ProveedoresRepository';
 import { IProveedoresService } from './interfaces/IProveedoresService';
 import { ProveedoresService } from './implementations/ProveedoresService';
+import { IPromocionesRepository, PromocionesRepository } from '../repositories/PromocionesRepository';
+import { IPromocionesService } from './interfaces/IPromocionesService';
+import { PromocionesService } from './implementations/PromocionesService';
 import { IProductosService } from './interfaces/IProductosService';
 import { ProductosService } from './implementations/ProductosService';
 import { IProductosRepository, ProductosRepository } from '../repositories/ProductosRepository';
@@ -28,6 +31,8 @@ container.bind<IProveedoresRepository>(TYPES.ProveedoresRepository).to(Proveedor
 container.bind<IProveedoresService>(TYPES.ProveedoresService).to(ProveedoresService);
 container.bind<IProductosService>(TYPES.ProductosService).to(ProductosService);
 container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
+container.bind<IPromocionesRepository>(TYPES.PromocionesRepository).to(PromocionesRepository);
+container.bind<IPromocionesService>(TYPES.PromocionesService).to(PromocionesService);
 container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
 container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
 container.bind<IMarcasRepository>(TYPES.MarcasRepository).to(MarcasRepository);
