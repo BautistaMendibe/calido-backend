@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { Domicilio } from './Domicilio';
 
 export class Usuario {
   @Expose({ name: 'idusuario' })
@@ -23,11 +24,10 @@ export class Usuario {
   idTipoUsuario: number;
   @Expose({ name: 'idgenero' })
   idGenero: number;
-  @Expose({ name: 'iddomicilio' })
-  idDomicilio: number;
   @Expose({ name: 'activo' })
   activo: number;
 
+  domicilio: Domicilio;
   constructor(
     id?: number,
     nombreUsuario?: string,
@@ -40,7 +40,6 @@ export class Usuario {
     contrasena?: string,
     idTipoUsuario?: number,
     idGenero?: number,
-    idDomicilio?: number,
     activo?: number
   ) {
     this.id = id ? id : null;
@@ -54,7 +53,6 @@ export class Usuario {
     this.contrasena = contrasena ? contrasena : null;
     this.idTipoUsuario = idTipoUsuario ? idTipoUsuario : null;
     this.idGenero = idGenero ? idGenero : null;
-    this.idDomicilio = idDomicilio ? idDomicilio : null;
     this.activo = activo ? activo : null;
   }
 }
