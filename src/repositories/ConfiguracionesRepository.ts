@@ -12,7 +12,9 @@ import { Usuario } from '../models/Usuario';
 export interface IConfiguracionesRepository {
   consultarConfiguraciones(): Promise<Configuracion>;
   modificarConfiguracion(configuracion: Configuracion): Promise<SpResult>;
-  registrarConfiguracion(configuracion: Configuracion): Promise<SpResult>;
+  registrarConfiguracion(): Promise<SpResult>;
+  existeConfiguracion(): Promise<boolean>;
+  obtenerSuperusuario(): Promise<string>;
 }
 
 /**
@@ -85,23 +87,10 @@ export class ConfiguracionesRepository implements IConfiguracionesRepository {
    * @param {Configuracion} configuracion
    * @returns {SpResult}
    */
-  async registrarConfiguracion(configuracion: Configuracion): Promise<SpResult> {
+  async registrarConfiguracion(): Promise<SpResult> {
     const client = await PoolDb.connect();
-    // TODO Editar esto para que quede bien los params
-    const params = [
-      configuracion.id,
-      configuracion.idUsuario,
-      configuracion.razonSocial,
-      configuracion.domicilioComercial,
-      configuracion.cuit,
-      configuracion.fechaInicioActividades,
-      configuracion.condicionIva,
-      configuracion.logo,
-      configuracion.contrasenaInstagram,
-      configuracion.usuarioInstagram
-    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROMOCION_PRODUCTO($1, $2, $3)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_CONFIGURACION()');
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -109,6 +98,44 @@ export class ConfiguracionesRepository implements IConfiguracionesRepository {
     } catch (err) {
       logger.error('Error al registrar Configuracion: ' + err);
       throw new Error('Error al registrar Configuracion.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para determinar si existe o no una fila configuración
+   * @returns Promise<boolean>
+   */
+  async existeConfiguracion(): Promise<boolean> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query('SELECT 1 FROM PUBLIC.CONFIGURACION LIMIT 1');
+      return res.rowCount > 0;
+    } catch (err) {
+      logger.error('Error al verificar la existencia de configuración: ' + err);
+      throw new Error('Error al verificar la existencia de configuración.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para determinar el id del superusuario
+   * @returns Promise<string>
+   */
+  async obtenerSuperusuario(): Promise<string> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query('SELECT idusuario FROM PUBLIC.CONFIGURACION LIMIT 1');
+      if (res.rowCount > 0) {
+        return res.rows[0].idusuario.toString();
+      } else {
+        throw new Error('No se encontró ninguna configuración.');
+      }
+    } catch (err) {
+      logger.error('Error al obtener el ID del superusuario: ' + err);
+      throw new Error('Error al obtener el ID del superusuario.');
     } finally {
       client.release();
     }

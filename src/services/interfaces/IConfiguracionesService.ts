@@ -3,6 +3,8 @@ import { SpResult } from '../../models';
 
 export interface IConfiguracionesService {
   obtenerConfiguraciones(): Promise<Configuracion>;
-  registrarConfiguracion(configuracion: Configuracion): Promise<SpResult>;
+  registrarConfiguracion(): Promise<SpResult>;
   modificarConfiguracion(configuracion: Configuracion): Promise<SpResult>;
+  existeConfiguracion(): Promise<boolean>;
+  obtenerSuperusuario(): Promise<string>;
 }

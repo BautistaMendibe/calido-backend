@@ -38,6 +38,20 @@ export async function registrarUsuario(request: Request, response: Response): Pr
     });
 }
 
+export async function registrarSuperusuario(request: Request, response: Response): Promise<Response> {
+  const usuario: Usuario = request.body;
+
+  return _usersService
+    .registrarSuperusuario(usuario)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function consultarEmpleados(request: Request, response: Response): Promise<Response> {
   const filtro: FiltroEmpleados = request.body;
 
@@ -85,5 +99,6 @@ export const UsersController = {
   registrarUsuario,
   consultarEmpleados,
   modificarEmpleado,
-  eliminarUsuario
+  eliminarUsuario,
+  registrarSuperusuario
 };

@@ -39,6 +39,12 @@ export const AppRoutes = [
     action: UsersController.eliminarUsuario,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/registrar-superusuario',
+    method: 'post',
+    action: UsersController.registrarSuperusuario,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores
@@ -137,7 +143,7 @@ export const AppRoutes = [
   },
   {
     path: '/configuraciones/registrar-configuracion',
-    method: 'post',
+    method: 'get',
     action: ConfiguracionesController.registrarConfiguracion,
     schema: schemaEmpty
   },
@@ -145,6 +151,12 @@ export const AppRoutes = [
     path: '/configuraciones/modificar-configuracion',
     method: 'post',
     action: ConfiguracionesController.modificarConfiguracion,
+    schema: schemaEmpty
+  },
+  {
+    path: '/configuraciones/existe-configuracion',
+    method: 'get',
+    action: ConfiguracionesController.existeConfiguracion,
     schema: schemaEmpty
   }
   //#endregion

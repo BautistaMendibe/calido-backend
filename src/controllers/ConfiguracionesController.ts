@@ -21,10 +21,8 @@ export async function obtenerConfiguraciones(request: Request, response: Respons
 }
 
 export async function registrarConfiguracion(request: Request, response: Response): Promise<Response> {
-  const configuracion: Configuracion = request.body;
-
   return _configuracionesService
-    .registrarConfiguracion(configuracion)
+    .registrarConfiguracion()
     .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -48,8 +46,34 @@ export async function modificarConfiguracion(request: Request, response: Respons
     });
 }
 
+export async function existeConfiguracion(request: Request, response: Response): Promise<Response> {
+  return _configuracionesService
+    .existeConfiguracion()
+    .then((x: boolean) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function obtenerSuperusuario(request: Request, response: Response): Promise<Response> {
+  return _configuracionesService
+    .obtenerSuperusuario()
+    .then((x: string) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ConfiguracionesController = {
   obtenerConfiguraciones,
   registrarConfiguracion,
-  modificarConfiguracion
+  modificarConfiguracion,
+  existeConfiguracion,
+  obtenerSuperusuario
 };

@@ -6,6 +6,7 @@ import { IConfiguracionesService } from '../interfaces/IConfiguracionesService';
 import { Configuracion } from '../../models/Configuracion';
 import { IConfiguracionesRepository } from '../../repositories/ConfiguracionesRepository';
 import { SpResult } from '../../models';
+import { obtenerSuperusuario } from '../../controllers/ConfiguracionesController';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -43,10 +44,34 @@ export class ConfiguracionesService implements IConfiguracionesService {
     });
   }
 
-  public async registrarConfiguracion(configuracion: Configuracion): Promise<SpResult> {
+  public async registrarConfiguracion(): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._configuracionesRepository.registrarConfiguracion(configuracion);
+        const result = await this._configuracionesRepository.registrarConfiguracion();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async existeConfiguracion(): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._configuracionesRepository.existeConfiguracion();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerSuperusuario(): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._configuracionesRepository.obtenerSuperusuario();
         resolve(result);
       } catch (e) {
         logger.error(e);
