@@ -107,12 +107,14 @@ export class UsersRepository implements IUsersRepository {
       usuario.dni,
       usuario.cuil,
       contrasenaHashed, // envía la contraseña hasheada directamente.
-      1, // fuerza tipo 1, empleado. // usuario.idTipoUsuario, la funcion pide number y estos tiran string, adaptar y hacerlo bien.
+      1, // fuerza tipo 1, empleado.
       usuario.idGenero,
-      1 // usuario.idDomicilio
+      usuario.domicilio.localidad.id,
+      usuario.domicilio.calle,
+      usuario.domicilio.numero
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
