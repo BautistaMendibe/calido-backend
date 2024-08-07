@@ -24,7 +24,12 @@ app.use(cors());
 const authenticateToken = (req: Request, res: Response, next: Function) => {
   const token = req.headers['authorization']?.split(' ')[1]; // Obtener el token del header
   const secret = 'secret'; // Asegúrate de usar el mismo secret que para firmar el token
-  const rutasPermitidas = ['/usuarios/validar-inicio-sesion', '/configuraciones/existe-configuracion'];
+  const rutasPermitidas = [
+    '/usuarios/validar-inicio-sesion',
+    '/configuraciones/existe-configuracion',
+    '/usuarios/registrar-superusuario',
+    '/configuraciones/registrar-configuracion'
+  ];
 
   if (rutasPermitidas.includes(req.path)) return next();
 
