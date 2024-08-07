@@ -19,7 +19,7 @@ const secretKey = 'secret';
  * @property {number} parallelism El paralelismo a utilizar.
  * @property {number} hashLength La longitud del hash a generar.
  */
-const argonConfig = {
+export const argonConfig = {
   type: argon2.argon2id,
   memoryCost: 2 ** 16,
   timeCost: 3,
