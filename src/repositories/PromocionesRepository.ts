@@ -167,21 +167,41 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @returns {Promise<string>}
    */
   async notificarPromocion(nombreImagen: string, comentario: string): Promise<string> {
-    const { config } = await import('dotenv');
-    config({ path: '.env.calido' });
+    const client = await PoolDb.connect();
 
-    const ig = new IgApiClient();
-    const readFileAsync = promisify(readFile);
-    ig.state.generateDevice(process.env.IG_USERNAME);
-    await ig.account.login(process.env.IG_USERNAME, process.env.IG_PASSWORD);
+    try {
+      // Consultar la configuración para obtener las credenciales de Instagram
+      const res = await client.query('SELECT usuario_ig, contrasena_ig FROM public.configuracion LIMIT 1');
+      const configuracion = res.rows[0];
 
-    const pathImage = path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram', nombreImagen);
+      if (!configuracion || !configuracion.usuario_ig || !configuracion.contrasena_ig) {
+        logger.error('No existe contraseña o usuario en la configuración.');
+        throw new Error('Usuario o configuración no existe en la configuración.');
+      }
 
-    const publishResult = await ig.publish.photo({
-      file: await readFileAsync(pathImage),
-      caption: comentario
-    });
+      const usuario_ig = configuracion['usuario_ig'];
+      const contrasena_ig = configuracion['contrasena_ig'];
 
-    return publishResult.status.toUpperCase();
+      // Autenticarse en Instagram
+      const ig = new IgApiClient();
+      ig.state.generateDevice(usuario_ig);
+      await ig.account.login(usuario_ig, contrasena_ig);
+
+      // Publicar la imagen en Instagram
+      const readFileAsync = promisify(readFile);
+      const pathImage = path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram', nombreImagen);
+
+      const publishResult = await ig.publish.photo({
+        file: await readFileAsync(pathImage),
+        caption: comentario
+      });
+
+      return publishResult.status.toUpperCase();
+    } catch (err) {
+      logger.error('Error al consultar usuario y contraseña de base de datos: ' + err);
+      throw new Error('Error al consultar usuario y contraseña de base de datos.');
+    } finally {
+      client.release();
+    }
   }
 }

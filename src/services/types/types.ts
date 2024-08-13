@@ -11,5 +11,7 @@ export const TYPES = {
   ProductosService: Symbol('IProductoService'),
   ProductosRepository: Symbol('IProductoRepository'),
   MarcasService: Symbol('IMarcaService'),
-  MarcasRepository: Symbol('IMarcaRepository')
+  MarcasRepository: Symbol('IMarcaRepository'),
+  ConfiguracionesService: Symbol('IConfiguracionesService'),
+  ConfiguracionesRepository: Symbol('IConfiguracionesRepository')
 };

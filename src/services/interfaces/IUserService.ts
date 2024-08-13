@@ -8,4 +8,5 @@ export interface IUsersService {
   consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
+  registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
 }
