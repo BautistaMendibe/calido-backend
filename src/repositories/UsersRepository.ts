@@ -159,8 +159,8 @@ export class UsersRepository implements IUsersRepository {
 
       return usuarios;
     } catch (err) {
-      logger.error('Error al consultar Usuarios: ' + err);
-      throw new Error('Error al consultar Usuarios.');
+      logger.error('Error al consultar empleados: ' + err);
+      throw new Error('Error al consultar empleados.');
     } finally {
       client.release();
     }
@@ -177,6 +177,7 @@ export class UsersRepository implements IUsersRepository {
     }
 
     const params = [
+      usuario.id,
       usuario.nombreUsuario,
       usuario.nombre,
       usuario.apellido,
@@ -185,19 +186,21 @@ export class UsersRepository implements IUsersRepository {
       usuario.dni,
       usuario.cuil,
       contrasenaHashed, // La nueva contraseña tendrá que hashearse de nuevo.
-      1, // siempre empleado
+      1, // siempre empleado, forzado.
       usuario.idGenero,
-      1
-    ]; // usuario.idDomicilio
+      usuario.domicilio.localidad.id,
+      usuario.domicilio.calle,
+      usuario.domicilio.numero
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al modificar el usuario: ' + err);
-      throw new Error('Error al modificar el usuario.');
+      logger.error('Error al modificar el empleado: ' + err);
+      throw new Error('Error al modificar el empleado.');
     } finally {
       client.release();
     }
