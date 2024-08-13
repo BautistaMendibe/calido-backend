@@ -6,9 +6,9 @@ import * as bodyParser from 'body-parser';
 import { AppRoutes } from './routes';
 import { checkSchema, validationResult } from 'express-validator';
 import { logger } from './src/logger/CustomLogger';
-import cookieParser from 'cookie-parser';
 import { connectDatabase } from './config/database.config';
 import cors from 'cors';
+import { authenticateToken } from './middlewares/AuthValidator';
 
 // create express app
 export const app = express();
@@ -19,6 +19,9 @@ app.use(
   })
 );
 app.use(cors());
+
+// Middleware para autenticar el token
+app.use(authenticateToken);
 
 // register all application routes
 AppRoutes.forEach((route) => {
