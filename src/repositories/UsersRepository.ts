@@ -19,7 +19,7 @@ const secretKey = 'secret';
  * @property {number} parallelism El paralelismo a utilizar.
  * @property {number} hashLength La longitud del hash a generar.
  */
-const argonConfig = {
+export const argonConfig = {
   type: argon2.argon2id,
   memoryCost: 2 ** 16,
   timeCost: 3,
@@ -36,6 +36,7 @@ export interface IUsersRepository {
   consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]>;
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
+  registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
 }
 
 /**
@@ -194,6 +195,34 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al eliminar el usuario: ' + err);
       throw new Error('Error al eliminar el usuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para registrar un superusuario
+   * Es una versión simplificada del método registrarUsuario dado a que
+   * no se necesitan todos los datos para el superusuario.
+   * @param usuario
+   * @returns {SpResult}
+   */
+  async registrarSuperusuario(usuario: Usuario): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    // Hashear la contraseña antes de enviarla a la base de datos
+    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+
+    const params = [usuario.nombreUsuario, usuario.nombre, usuario.apellido, contrasenaHashed];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_SUPERUSUARIO($1, $2, $3, $4)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Supersuario: ' + err);
+      throw new Error('Error al registrar Supersuario.');
     } finally {
       client.release();
     }
