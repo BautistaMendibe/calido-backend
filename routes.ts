@@ -4,6 +4,9 @@ import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
+import { ProductosController } from './src/controllers/ProductosController';
+import { MarcasController } from './src/controllers/MarcaController';
+
 /**
  * Rutas del Backend.
  */
@@ -78,6 +81,13 @@ export const AppRoutes = [
     action: ProveedoresController.buscarTiposProveedores,
     schema: schemaEmpty
   },
+
+  {
+    path: '/proveedores/buscar-todos-proveedores',
+    method: 'post',
+    action: ProveedoresController.buscarTodosProveedores,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Domicilio
@@ -130,6 +140,57 @@ export const AppRoutes = [
     path: '/promociones/notificar-promocion',
     method: 'post',
     action: PromocionesController.notificarPromocion,
+    schema: schemaEmpty
+  },
+  {
+    path: '/domicilio/obtener-localidades-por-provincia/:idProvincia',
+    method: 'get',
+    action: DomicilioController.obtenerLocalidadesPorProvincia,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Productos
+
+  {
+    path: '/productos/registrar-producto',
+    method: 'post',
+    action: ProductosController.registrarProducto,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/modificar-producto',
+    method: 'post',
+    action: ProductosController.modificarProducto,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/consultar-productos',
+    method: 'post',
+    action: ProductosController.consultarProductos,
+    schema: schemaEmpty
+  },
+
+  {
+    path: '/productos/buscar-tipo-productos',
+    method: 'post',
+    action: ProductosController.consultarTipoProductos,
+    schema: schemaEmpty
+  },
+
+  {
+    path: '/productos/eliminar-producto/:id',
+    method: 'get',
+    action: ProductosController.eliminarProducto,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // Region Marcas
+  {
+    path: '/marcas/buscar-marcas',
+    method: 'post',
+    action: MarcasController.obtenerMarcas,
     schema: schemaEmpty
   },
   //#endregion

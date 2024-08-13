@@ -7,6 +7,9 @@ import { IProductosRepository } from '../../repositories/ProductosRepository';
 import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
 import { FiltrosProductos } from '../../models/comandos/FiltroProductos';
+import { Marca } from '../../models/Marca';
+import { TipoProducto } from '../../models/TipoProducto';
+import { Proveedor } from '../../models/Proveedor';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -35,12 +38,48 @@ export class ProductosService implements IProductosService {
     });
   }
 
+  public async modificarProducto(producto: Producto): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.modificarProducto(producto);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async consultarProductos(filtro: FiltrosProductos): Promise<Producto[]> {
     return new Promise(async (resolve, reject) => {
       try {
         logger.info('Consultando productos con filtro:', filtro);
         const result = await this._productosRepository.consultarProductos(filtro);
         logger.info('Resultado de la consulta:', result);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerTipoProductos(): Promise<TipoProducto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.obtenerTipoProductos();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarProducto(idProducto: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.eliminarProducto(idProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);

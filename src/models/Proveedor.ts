@@ -5,12 +5,16 @@ import { Domicilio } from './Domicilio';
 export class Proveedor {
   @Expose({ name: 'idproveedor' })
   id: number;
+
   @Expose({ name: 'nproveedor' })
   nombre: string;
+
   @Expose({ name: 'telefono' })
   telefono: string;
+
   @Expose({ name: 'email' })
   email: string;
+
   @Expose({ name: 'cuit' })
   cuit: string;
 

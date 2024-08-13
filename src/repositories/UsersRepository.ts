@@ -7,9 +7,9 @@ import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
-import {Provincia} from "../models/Provincia";
-import {Localidad} from "../models/Localidad";
-import {Domicilio} from "../models/Domicilio";
+import { Provincia } from '../models/Provincia';
+import { Localidad } from '../models/Localidad';
+import { Domicilio } from '../models/Domicilio';
 
 const secretKey = 'secret';
 

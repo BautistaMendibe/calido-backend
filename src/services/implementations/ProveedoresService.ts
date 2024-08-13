@@ -10,6 +10,7 @@ import { FiltrosProveedores } from '../../models/comandos/FiltroProveedores';
 import { consultarProveedores, modificarProveedor } from '../../controllers/ProveedoresController';
 import { TipoProveedor } from '../../models/TipoProveedor';
 import { IDomicilioRepository } from '../../repositories/DomicilioRepository';
+import { Marca } from '../../models/Marca';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -94,6 +95,18 @@ export class ProveedoresService implements IProveedoresService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._proveedoresRepository.buscarTipoProveedor(id);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarTodosProveedores(): Promise<Proveedor[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._proveedoresRepository.buscarTodosProveedores();
         resolve(result);
       } catch (e) {
         logger.error(e);
