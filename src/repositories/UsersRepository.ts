@@ -7,6 +7,9 @@ import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
+import {Provincia} from "../models/Provincia";
+import {Localidad} from "../models/Localidad";
+import {Domicilio} from "../models/Domicilio";
 
 const secretKey = 'secret';
 
@@ -108,12 +111,14 @@ export class UsersRepository implements IUsersRepository {
       usuario.dni,
       usuario.cuil,
       contrasenaHashed, // envía la contraseña hasheada directamente.
-      1, // fuerza tipo 1, empleado. // usuario.idTipoUsuario, la funcion pide number y estos tiran string, adaptar y hacerlo bien.
+      1, // fuerza tipo 1, empleado.
       usuario.idGenero,
-      1 // usuario.idDomicilio
+      usuario.domicilio.localidad.id,
+      usuario.domicilio.calle,
+      usuario.domicilio.numero
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -137,14 +142,26 @@ export class UsersRepository implements IUsersRepository {
     const nombre = filtro.nombre;
     const params = [nombre];
     try {
-      const res = await client.query<Usuario[]>('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1)', params);
-      const result: Usuario[] = plainToClass(Usuario, res.rows, {
-        excludeExtraneousValues: true
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1)', params);
+
+      const usuarios = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
+        const localidad: Localidad = plainToClass(Localidad, row, { excludeExtraneousValues: true });
+        const domicilio: Domicilio = plainToClass(Domicilio, row, { excludeExtraneousValues: true });
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+
+        domicilio.localidad = localidad;
+        localidad.provincia = provincia;
+        usuario.domicilio = domicilio;
+
+        return usuario;
       });
-      return result;
+
+      return usuarios;
     } catch (err) {
-      logger.error('Error al consultar Empleados: ' + err);
-      throw new Error('Error al consultar Empleados. ');
+      logger.error('Error al consultar empleados: ' + err);
+      throw new Error('Error al consultar empleados.');
     } finally {
       client.release();
     }
@@ -153,10 +170,15 @@ export class UsersRepository implements IUsersRepository {
   async modificarEmpleado(usuario: Usuario): Promise<SpResult> {
     const client = await PoolDb.connect();
 
-    // Hashear la nueva contraseña antes de enviarla a la base de datos
-    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    // Asigna la contraseña a la variable, si es distinta a '********' la hashea, sino la deja en '********' para que no se modifique (por funcion en BD)
+    let contrasenaHashed = usuario.contrasena;
+    // Hashear la nueva contraseña antes de enviarla a la base de datos si es distinta a '********'
+    if (usuario.contrasena != '********') {
+      contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    }
 
     const params = [
+      usuario.id,
       usuario.nombreUsuario,
       usuario.nombre,
       usuario.apellido,
@@ -165,19 +187,21 @@ export class UsersRepository implements IUsersRepository {
       usuario.dni,
       usuario.cuil,
       contrasenaHashed, // La nueva contraseña tendrá que hashearse de nuevo.
-      1, // siempre empleado
+      1, // siempre empleado, forzado.
       usuario.idGenero,
-      1
-    ]; // usuario.idDomicilio
+      usuario.domicilio.localidad.id,
+      usuario.domicilio.calle,
+      usuario.domicilio.numero
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al modificar el usuario: ' + err);
-      throw new Error('Error al modificar el usuario.');
+      logger.error('Error al modificar el empleado: ' + err);
+      throw new Error('Error al modificar el empleado.');
     } finally {
       client.release();
     }
