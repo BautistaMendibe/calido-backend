@@ -35,15 +35,19 @@ export class ProductosRepository implements IProductosRepository {
     const params = [
       producto.nombre,
       producto.costo,
-      producto.costoIva,
+      producto.costoImpuesto,
       producto.tipoProducto.id ? producto.tipoProducto.id : null,
       producto.tipoProducto.nombre,
       producto.proveedor.id,
       producto.marca.id ? producto.marca.id : null,
-      producto.marca.nombre
+      producto.marca.nombre,
+      producto.codigoBarra,
+      producto.descripcion,
+      producto.imgProducto
     ];
+    console.log(params);
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REG_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REG_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -105,7 +109,19 @@ export class ProductosRepository implements IProductosRepository {
           { excludeExtraneousValues: true }
         );
 
-        return new Producto(row.idproducto, row.nproducto, row.preciocosto, row.preciocostoiva, tipoProducto, marca, proveedor);
+        const producto = new Producto(
+          row.idproducto,
+          row.nproducto,
+          row.preciocosto,
+          row.preciocostoimpuesto,
+          row.imgproducto,
+          row.codigobarra,
+          row.descripcion,
+          tipoProducto,
+          marca,
+          proveedor
+        );
+        return producto;
       });
 
       return productos;
@@ -123,15 +139,18 @@ export class ProductosRepository implements IProductosRepository {
       producto.id,
       producto.nombre,
       producto.costo,
-      producto.costoIva,
+      producto.costoImpuesto,
       producto.tipoProducto.id ? producto.tipoProducto.id : null,
       producto.tipoProducto.nombre,
       producto.proveedor.id,
       producto.marca.id ? producto.marca.id : null,
-      producto.marca.nombre
+      producto.marca.nombre,
+      producto.codigoBarra,
+      producto.descripcion,
+      producto.imgProducto
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
