@@ -1,17 +1,22 @@
 // Archivo de configuración para inversify sin repositorios
 export const TYPES = {
+  // Services
   UsersService: Symbol('IUsersService'),
-  UsersRepository: Symbol('IUsersRepository'),
   ProveedoresService: Symbol('IProveedoresService'),
-  ProveedoresRepository: Symbol('IProveedoresRepository'),
   PromocionesService: Symbol('IPromocionesService'),
-  PromocionesRepository: Symbol('IPromocionesRepository'),
   DomicilioService: Symbol('IDomicilioService'),
-  DomicilioRepository: Symbol('IDomicilioRepository'),
   ProductosService: Symbol('IProductoService'),
-  ProductosRepository: Symbol('IProductoRepository'),
   MarcasService: Symbol('IMarcaService'),
-  MarcasRepository: Symbol('IMarcaRepository'),
   ConfiguracionesService: Symbol('IConfiguracionesService'),
-  ConfiguracionesRepository: Symbol('IConfiguracionesRepository')
+  VentasService: Symbol('IVentasService'),
+
+  // Repositorys
+  UsersRepository: Symbol('IUsersRepository'),
+  ProveedoresRepository: Symbol('IProveedoresRepository'),
+  PromocionesRepository: Symbol('IPromocionesRepository'),
+  DomicilioRepository: Symbol('IDomicilioRepository'),
+  ProductosRepository: Symbol('IProductoRepository'),
+  MarcasRepository: Symbol('IMarcaRepository'),
+  ConfiguracionesRepository: Symbol('IConfiguracionesRepository'),
+  VentasRepository: Symbol('IVentasRepository')
 };
