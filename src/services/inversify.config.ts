@@ -21,6 +21,9 @@ import { ConfiguracionesRepository, IConfiguracionesRepository } from '../reposi
 import { IMarcaService } from './interfaces/IMarcaService';
 import { MarcaService } from './implementations/MarcaService';
 import { IMarcasRepository, MarcasRepository } from '../repositories/MarcasRepository';
+import { VentasService } from './implementations/VentasService';
+import { IVentasService } from './interfaces/IVentasService';
+import { IVentasRepository, VentasRepository } from '../repositories/VentasRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -28,18 +31,25 @@ import { IMarcasRepository, MarcasRepository } from '../repositories/MarcasRepos
  */
 
 const container = new Container();
-container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
+
+// Services
 container.bind<IUsersService>(TYPES.UsersService).to(UsersService);
-container.bind<IProveedoresRepository>(TYPES.ProveedoresRepository).to(ProveedoresRepository);
 container.bind<IProveedoresService>(TYPES.ProveedoresService).to(ProveedoresService);
 container.bind<IProductosService>(TYPES.ProductosService).to(ProductosService);
-container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
-container.bind<IPromocionesRepository>(TYPES.PromocionesRepository).to(PromocionesRepository);
 container.bind<IPromocionesService>(TYPES.PromocionesService).to(PromocionesService);
-container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
 container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
-container.bind<IMarcasRepository>(TYPES.MarcasRepository).to(MarcasRepository);
 container.bind<IMarcaService>(TYPES.MarcasService).to(MarcaService);
 container.bind<IConfiguracionesService>(TYPES.ConfiguracionesService).to(ConfiguracionesService);
+container.bind<IVentasService>(TYPES.VentasService).to(VentasService);
+
+// Repositorys
+container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
+container.bind<IProveedoresRepository>(TYPES.ProveedoresRepository).to(ProveedoresRepository);
+container.bind<IProductosRepository>(TYPES.ProductosRepository).to(ProductosRepository);
+container.bind<IPromocionesRepository>(TYPES.PromocionesRepository).to(PromocionesRepository);
+container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepository);
+container.bind<IMarcasRepository>(TYPES.MarcasRepository).to(MarcasRepository);
 container.bind<IConfiguracionesRepository>(TYPES.ConfiguracionesRepository).to(ConfiguracionesRepository);
+container.bind<IVentasRepository>(TYPES.VentasRepository).to(VentasRepository);
+
 export default container;
