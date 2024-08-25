@@ -31,6 +31,24 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/usuarios/consultar-asistencias',
+    method: 'get',
+    action: UsersController.consultarAsistencias,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/registrar-asistencia',
+    method: 'post',
+    action: UsersController.registrarAsistencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/modificar-asistencia',
+    method: 'post',
+    action: UsersController.modificarAsistencia,
+    schema: schemaEmpty
+  },
+  {
     path: '/usuarios/modificar-usuario',
     method: 'post',
     action: UsersController.modificarEmpleado,

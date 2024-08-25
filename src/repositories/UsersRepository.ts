@@ -10,6 +10,7 @@ import * as jwt from 'jsonwebtoken';
 import { Provincia } from '../models/Provincia';
 import { Localidad } from '../models/Localidad';
 import { Domicilio } from '../models/Domicilio';
+import { Asistencia } from '../models/Asistencia';
 
 const secretKey = 'secret';
 
@@ -40,6 +41,9 @@ export interface IUsersRepository {
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
   registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
+  consultarAsistencias(): Promise<Asistencia[]>;
+  registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
+  modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
 }
 
 /**
@@ -126,6 +130,24 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al registrar Usuario: ' + err);
       throw new Error('Error al registrar Usuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    const params = [asistencia.idUsuario, asistencia.fecha, asistencia.horaEntrada, asistencia.horaSalida, asistencia.comentario];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ASISTENCIA($1, $2, $3, $4, $5)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Asistencia: ' + err);
+      throw new Error('Error al registrar Asistencia.');
     } finally {
       client.release();
     }
@@ -247,6 +269,52 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al registrar Supersuario: ' + err);
       throw new Error('Error al registrar Supersuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar asistencias
+   * @returns {Asistencia []} arreglo de asistencias
+   */
+  async consultarAsistencias(): Promise<Asistencia[]> {
+    const client = await PoolDb.connect();
+
+    try {
+      const res = await client.query<Asistencia>('SELECT a.* FROM PUBLIC.ASISTENCIA a');
+
+      const asistencias = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const asistencia: Asistencia = plainToClass(Asistencia, row, { excludeExtraneousValues: true });
+        asistencia.usuario = usuario;
+
+        return asistencia;
+      });
+
+      return asistencias;
+    } catch (err) {
+      logger.error('Error al consultar asistencias: ' + err);
+      throw new Error('Error al consultar asistencias.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    const params = [asistencia.id, asistencia.idUsuario, asistencia.fecha, asistencia.horaEntrada, asistencia.horaSalida, asistencia.comentario];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ASISTENCIA($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar la asistencia: ' + err);
+      throw new Error('Error al modificar la asistencia.');
     } finally {
       client.release();
     }

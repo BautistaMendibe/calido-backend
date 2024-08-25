@@ -7,6 +7,7 @@ import { IUsersRepository } from '../../repositories/UsersRepository';
 import { SpResult } from '../../models';
 import { Usuario } from '../../models/Usuario';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
+import { Asistencia } from '../../models/Asistencia';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -86,6 +87,42 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.registrarSuperusuario(usuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarAsistencias(): Promise<Asistencia[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarAsistencias();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarAsistencia(asistencia);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.modificarAsistencia(asistencia);
         resolve(result);
       } catch (e) {
         logger.error(e);
