@@ -5,6 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { SpResult } from '../models';
 import { Venta } from '../models/Venta';
 import { Producto } from '../models/Producto';
+import { Usuario } from '../models/Usuario';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -12,6 +13,7 @@ import { Producto } from '../models/Producto';
 export interface IVentasRepository {
   registarVenta(venta: Venta): Promise<SpResult>;
   registarDetalleVenta(producto: Producto, idVenta: number): Promise<SpResult>;
+  buscarUsuariosClientes(): Promise<Usuario[]>;
 }
 
 /**
@@ -59,6 +61,26 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al registrar el detalle de la venta: ' + err);
       throw new Error('Error al registrar el detalle de la venta.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar los usuarios registrados como clientes
+   * @returns {Usuario[]}
+   */
+  async buscarUsuariosClientes(): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.USUARIO WHERE idtipousuario = 2');
+      const result: Usuario[] = plainToClass(Usuario, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar los usuarios clientes: ' + err);
+      throw new Error('Error al buscar los usuarios clientes.');
     } finally {
       client.release();
     }

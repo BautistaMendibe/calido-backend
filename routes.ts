@@ -229,6 +229,12 @@ export const AppRoutes = [
     method: 'post',
     action: VentasController.registrarVenta,
     schema: schemaEmpty
+  },
+  {
+    path: '/ventas/buscar-usuarios-clientes',
+    method: 'get',
+    action: VentasController.registrarVenta,
+    schema: schemaEmpty
   }
   //#endregion
 ];

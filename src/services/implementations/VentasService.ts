@@ -7,6 +7,8 @@ import { IVentasRepository } from '../../repositories/VentasRepository';
 import { Venta } from '../../models/Venta';
 import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
+import { buscarUsuariosClientes } from '../../controllers/VentasController';
+import { Usuario } from '../../models/Usuario';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -36,6 +38,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.registarDetalleVenta(producto, idVenta);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarUsuariosClientes(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarUsuariosClientes();
         resolve(result);
       } catch (e) {
         logger.error(e);
