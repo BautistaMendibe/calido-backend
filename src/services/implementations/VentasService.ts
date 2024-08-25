@@ -9,6 +9,7 @@ import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
 import { buscarUsuariosClientes } from '../../controllers/VentasController';
 import { Usuario } from '../../models/Usuario';
+import { FormaDePago } from '../../models/FormaDePago';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -50,6 +51,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.buscarUsuariosClientes();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarFormasDePago(): Promise<FormaDePago[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarFormasDePago();
         resolve(result);
       } catch (e) {
         logger.error(e);

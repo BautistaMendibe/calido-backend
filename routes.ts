@@ -6,7 +6,7 @@ import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
-import { VentasController } from './src/controllers/VentasController';
+import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
 
 /**
  * Rutas del Backend.
@@ -233,7 +233,13 @@ export const AppRoutes = [
   {
     path: '/ventas/buscar-usuarios-clientes',
     method: 'get',
-    action: VentasController.registrarVenta,
+    action: VentasController.buscarUsuariosClientes,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/buscar-formas-de-pago',
+    method: 'get',
+    action: VentasController.buscarFormasDePago,
     schema: schemaEmpty
   }
   //#endregion

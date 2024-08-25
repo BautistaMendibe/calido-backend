@@ -6,6 +6,7 @@ import { TYPES } from '../services/types/types';
 import { VentasService } from '../services/implementations/VentasService';
 import { Venta } from '../models/Venta';
 import { Usuario } from '../models/Usuario';
+import { FormaDePago } from '../models/FormaDePago';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -35,7 +36,20 @@ export async function buscarUsuariosClientes(request: Request, response: Respons
     });
 }
 
+export async function buscarFormasDePago(request: Request, response: Response): Promise<Response> {
+  return _ventasService
+    .buscarFormasDePago()
+    .then((x: FormaDePago[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVenta,
-  buscarUsuariosClientes
+  buscarUsuariosClientes,
+  buscarFormasDePago
 };
