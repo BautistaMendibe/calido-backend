@@ -1,0 +1,33 @@
+import { inject, injectable } from 'inversify';
+import 'reflect-metadata';
+import { logger } from '../../logger/CustomLogger';
+import { TYPES } from '../types/types';
+import { IVentasService } from '../interfaces/IVentasService';
+import { IVentasRepository } from '../../repositories/VentasRepository';
+import { Venta } from '../../models/Venta';
+import { SpResult } from '../../models';
+
+/**
+ * Servicio que tiene como responsabilidad
+ * lo vinculado a la configuración
+ */
+@injectable()
+export class VentasService implements IVentasService {
+  private readonly _ventasRepository: IVentasRepository;
+
+  constructor(@inject(TYPES.VentasRepository) repository: IVentasRepository) {
+    this._ventasRepository = repository;
+  }
+
+  public async registrarVenta(venta: Venta): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.registarVenta(venta);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+}

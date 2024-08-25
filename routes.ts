@@ -6,6 +6,7 @@ import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
+import { VentasController } from './src/controllers/VentasController';
 
 /**
  * Rutas del Backend.
@@ -218,6 +219,15 @@ export const AppRoutes = [
     path: '/configuraciones/existe-configuracion',
     method: 'get',
     action: ConfiguracionesController.existeConfiguracion,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Ventas
+  {
+    path: '/ventas/registrar-venta',
+    method: 'post',
+    action: VentasController.registrarVenta,
     schema: schemaEmpty
   }
   //#endregion
