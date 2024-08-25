@@ -3,8 +3,6 @@ import { logger } from '../logger/CustomLogger';
 import { HttpCodes, SpResult } from '../models';
 import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
-import { UsersService } from '../services/implementations/UsersService';
-import { Usuario } from '../models/Usuario';
 import { VentasService } from '../services/implementations/VentasService';
 import { Venta } from '../models/Venta';
 

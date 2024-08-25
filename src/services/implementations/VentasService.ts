@@ -1,4 +1,4 @@
-import { id, inject, injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { logger } from '../../logger/CustomLogger';
 import { TYPES } from '../types/types';
