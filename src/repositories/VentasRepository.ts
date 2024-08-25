@@ -30,9 +30,9 @@ export class VentasRepository implements IVentasRepository {
    */
   async registarVenta(venta: Venta): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = ['hola'];
+    const params = [venta.usuario?.id, venta.formaDePago.id, venta.montoTotal];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -53,9 +53,9 @@ export class VentasRepository implements IVentasRepository {
    */
   async registarDetalleVenta(producto: Producto, idVenta: number): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = ['hola'];
+    const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.costo, idVenta, producto.id];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PRODUCTO($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
