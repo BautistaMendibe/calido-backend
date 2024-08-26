@@ -10,6 +10,8 @@ import { Producto } from '../../models/Producto';
 import { buscarUsuariosClientes } from '../../controllers/VentasController';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
+import PoolDb from '../../data/db';
+import { PoolClient } from 'pg';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -23,10 +25,40 @@ export class VentasService implements IVentasService {
     this._ventasRepository = repository;
   }
 
-  public async registrarVenta(venta: Venta): Promise<SpResult> {
+  public async registrarVentaConDetalles(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect(); // Conectamos al cliente de la base de datos
+    try {
+      await client.query('BEGIN'); // Iniciamos la transacción
+
+      // Registrar la venta y obtener el ID de la venta registrada
+      const ventaResult: SpResult = await this.registrarVenta(venta, client);
+      const ventaId: number = ventaResult.id;
+
+      // Registrar detalles de venta para cada producto
+      for (const producto of venta.productos) {
+        const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
+
+        // Si el detalleResult es OK y lanzar un error
+        if (detalleResult.mensaje != 'OK') {
+          throw new Error('Error al registrar el detalle de la venta.');
+        }
+      }
+
+      await client.query('COMMIT'); // Confirmamos la transacción si salio bien
+      return ventaResult;
+    } catch (e) {
+      await client.query('ROLLBACK'); // Revertimos la transacción en caso de error
+      logger.error('Transacción fallida: ' + e);
+      throw new Error('Error al registrar la venta y sus detalles.');
+    } finally {
+      client.release(); // Liberamos el cliente de la base de datos
+    }
+  }
+
+  public async registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.registarVenta(venta);
+        const result = await this._ventasRepository.registarVenta(venta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);
@@ -35,10 +67,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async registrarDetalleVenta(producto: Producto, idVenta: number): Promise<SpResult> {
+  public async registrarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.registarDetalleVenta(producto, idVenta);
+        const result = await this._ventasRepository.registarDetalleVenta(producto, idVenta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);

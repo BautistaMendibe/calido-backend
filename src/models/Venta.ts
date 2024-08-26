@@ -2,6 +2,7 @@ import { Expose } from 'class-transformer';
 import { Usuario } from './Usuario';
 import { FormaDePago } from './FormaDePago';
 import { DetalleVenta } from './DetalleVenta';
+import { Producto } from './Producto';
 
 export class Venta {
   @Expose({ name: 'idventa' })
@@ -13,14 +14,14 @@ export class Venta {
   @Expose({ name: 'idusuario' })
   usuario: Usuario;
   formaDePago: FormaDePago;
-  detalleVenta: DetalleVenta[];
+  productos: Producto[];
 
-  constructor(id?: number, montoTotal?: number, fecha?: Date, usuario?: Usuario, formaDePago?: FormaDePago, detalleVenta?: DetalleVenta[]) {
+  constructor(id?: number, montoTotal?: number, fecha?: Date, usuario?: Usuario, formaDePago?: FormaDePago, detalleVenta?: DetalleVenta[], productos?: Producto[]) {
     this.id = id!;
     this.montoTotal = montoTotal!;
     this.fecha = fecha!;
     this.usuario = usuario!;
     this.formaDePago = formaDePago!;
-    this.detalleVenta = detalleVenta!;
+    this.productos = productos!;
   }
 }

@@ -7,13 +7,14 @@ import { Venta } from '../models/Venta';
 import { Producto } from '../models/Producto';
 import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
+import { PoolClient } from 'pg';
 
 /**
  * Interfaz del repositorio de Ventas
  */
 export interface IVentasRepository {
-  registarVenta(venta: Venta): Promise<SpResult>;
-  registarDetalleVenta(producto: Producto, idVenta: number): Promise<SpResult>;
+  registarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
+  registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
 }
@@ -28,9 +29,9 @@ export class VentasRepository implements IVentasRepository {
    * @param {Venta}
    * @returns {SpResult}
    */
-  async registarVenta(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    const params = [venta.usuario?.id, venta.formaDePago.id, venta.montoTotal];
+  async registarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
+    //const params = [venta.usuario ? venta.usuario.id : null, venta.formaDePago, venta.montoTotal];
+    const params = [1, venta.formaDePago, venta.montoTotal];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
@@ -51,8 +52,7 @@ export class VentasRepository implements IVentasRepository {
    * @param {idVenta}
    * @returns {SpResult}
    */
-  async registarDetalleVenta(producto: Producto, idVenta: number): Promise<SpResult> {
-    const client = await PoolDb.connect();
+  async registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.costo, idVenta, producto.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PRODUCTO($1, $2, $3, $4)', params);

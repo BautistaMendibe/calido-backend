@@ -227,7 +227,7 @@ export const AppRoutes = [
   {
     path: '/ventas/registrar-venta',
     method: 'post',
-    action: VentasController.registrarVenta,
+    action: VentasController.registrarVentaConDetalles,
     schema: schemaEmpty
   },
   {

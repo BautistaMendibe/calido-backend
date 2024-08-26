@@ -10,11 +10,11 @@ import { FormaDePago } from '../models/FormaDePago';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
-export async function registrarVenta(request: Request, response: Response): Promise<Response> {
+export async function registrarVentaConDetalles(request: Request, response: Response): Promise<Response> {
   const venta: Venta = request.body;
 
   return _ventasService
-    .registrarVenta(venta)
+    .registrarVentaConDetalles(venta)
     .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -49,7 +49,7 @@ export async function buscarFormasDePago(request: Request, response: Response): 
 }
 
 export const VentasController = {
-  registrarVenta,
+  registrarVentaConDetalles,
   buscarUsuariosClientes,
   buscarFormasDePago
 };
