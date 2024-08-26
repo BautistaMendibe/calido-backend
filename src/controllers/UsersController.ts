@@ -7,6 +7,7 @@ import { UsersService } from '../services/implementations/UsersService';
 import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../models/Asistencia';
+import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -68,8 +69,10 @@ export async function consultarEmpleados(request: Request, response: Response): 
 }
 
 export async function consultarAsistencias(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltroAsistencias = request.body;
+
   return _usersService
-    .consultarAsistencias()
+    .consultarAsistencias(filtro)
     .then((x: Asistencia[]) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -135,6 +138,20 @@ export async function eliminarUsuario(request: Request, response: Response): Pro
     });
 }
 
+export async function eliminarAsistencia(request: Request, response: Response): Promise<Response> {
+  const idAsistencia: number = +request.params.id;
+
+  return _usersService
+    .eliminarAsistencia(idAsistencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -144,5 +161,6 @@ export const UsersController = {
   registrarSuperusuario,
   consultarAsistencias,
   registrarAsistencia,
-  modificarAsistencia
+  modificarAsistencia,
+  eliminarAsistencia
 };

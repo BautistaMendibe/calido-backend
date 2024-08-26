@@ -32,7 +32,7 @@ export const AppRoutes = [
   },
   {
     path: '/usuarios/consultar-asistencias',
-    method: 'get',
+    method: 'post',
     action: UsersController.consultarAsistencias,
     schema: schemaEmpty
   },
@@ -58,6 +58,12 @@ export const AppRoutes = [
     path: '/usuarios/eliminar-usuario/:id',
     method: 'get',
     action: UsersController.eliminarUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-asistencia/:id',
+    method: 'get',
+    action: UsersController.eliminarAsistencia,
     schema: schemaEmpty
   },
   {
