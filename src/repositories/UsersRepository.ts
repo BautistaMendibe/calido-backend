@@ -10,6 +10,8 @@ import * as jwt from 'jsonwebtoken';
 import { Provincia } from '../models/Provincia';
 import { Localidad } from '../models/Localidad';
 import { Domicilio } from '../models/Domicilio';
+import { Asistencia } from '../models/Asistencia';
+import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 
 const secretKey = 'secret';
 
@@ -40,6 +42,10 @@ export interface IUsersRepository {
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
   registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
+  consultarAsistencias(filtro: FiltroAsistencias): Promise<Asistencia[]>;
+  registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
+  modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
+  eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
 }
 
 /**
@@ -126,6 +132,27 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al registrar Usuario: ' + err);
       throw new Error('Error al registrar Usuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    const fecha = new Date(asistencia.fecha).toISOString().split('T')[0];
+
+    const params = [asistencia.idUsuario, fecha, asistencia.horaEntrada, asistencia.horaSalida, asistencia.comentario];
+
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ASISTENCIA($1, $2, $3, $4, $5)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Asistencia: ' + err);
+      throw new Error('Error al registrar Asistencia.');
     } finally {
       client.release();
     }
@@ -247,6 +274,73 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al registrar Supersuario: ' + err);
       throw new Error('Error al registrar Supersuario.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar asistencias
+   * @returns {Asistencia []} arreglo de asistencias
+   */
+  async consultarAsistencias(filtro: FiltroAsistencias): Promise<Asistencia[]> {
+    const client = await PoolDb.connect();
+    const params = [filtro.idUsuario, filtro.fecha];
+
+    try {
+      const res = await client.query<Asistencia>('SELECT * FROM PUBLIC.BUSCAR_ASISTENCIAS($1, $2)', params);
+
+      const asistencias = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const asistencia: Asistencia = plainToClass(Asistencia, row, { excludeExtraneousValues: true });
+        asistencia.usuario = usuario;
+
+        return asistencia;
+      });
+
+      return asistencias;
+    } catch (err) {
+      logger.error('Error al consultar asistencias: ' + err);
+      throw new Error('Error al consultar asistencias.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarAsistencia(asistencia: Asistencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    const fecha = new Date(asistencia.fecha).toISOString().split('T')[0];
+
+    const params = [asistencia.id, asistencia.idUsuario, fecha, asistencia.horaEntrada, asistencia.horaSalida, asistencia.comentario];
+
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ASISTENCIA($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar la asistencia: ' + err);
+      throw new Error('Error al modificar la asistencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarAsistencia(idAsistencia: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idAsistencia];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_ASISTENCIA($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar la asistencia: ' + err);
+      throw new Error('Error al eliminar la asistencia.');
     } finally {
       client.release();
     }

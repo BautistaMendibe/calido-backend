@@ -6,6 +6,8 @@ import { TYPES } from '../services/types/types';
 import { UsersService } from '../services/implementations/UsersService';
 import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
+import { Asistencia } from '../models/Asistencia';
+import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -66,11 +68,53 @@ export async function consultarEmpleados(request: Request, response: Response): 
     });
 }
 
+export async function consultarAsistencias(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltroAsistencias = request.body;
+
+  return _usersService
+    .consultarAsistencias(filtro)
+    .then((x: Asistencia[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function registrarAsistencia(request: Request, response: Response): Promise<Response> {
+  const asistencia: Asistencia = request.body;
+
+  return _usersService
+    .registrarAsistencia(asistencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function modificarEmpleado(request: Request, response: Response): Promise<Response> {
   const usuario: Usuario = request.body;
 
   return _usersService
     .modificarEmpleado(usuario)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function modificarAsistencia(request: Request, response: Response): Promise<Response> {
+  const asistencia: Asistencia = request.body;
+
+  return _usersService
+    .modificarAsistencia(asistencia)
     .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -94,11 +138,29 @@ export async function eliminarUsuario(request: Request, response: Response): Pro
     });
 }
 
+export async function eliminarAsistencia(request: Request, response: Response): Promise<Response> {
+  const idAsistencia: number = +request.params.id;
+
+  return _usersService
+    .eliminarAsistencia(idAsistencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
   consultarEmpleados,
   modificarEmpleado,
   eliminarUsuario,
-  registrarSuperusuario
+  registrarSuperusuario,
+  consultarAsistencias,
+  registrarAsistencia,
+  modificarAsistencia,
+  eliminarAsistencia
 };
