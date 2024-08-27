@@ -160,7 +160,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
   async buscarTiposProveedores(): Promise<TipoProveedor[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<TipoProveedor[]>('SELECT * FROM PUBLIC.TIPO_PROVEEDOR');
+      const res = await client.query<TipoProveedor[]>('SELECT * FROM PUBLIC.TIPO_PROVEEDOR t WHERE t.activo = 1');
       const result: TipoProveedor[] = plainToClass(TipoProveedor, res.rows, {
         excludeExtraneousValues: true
       });
@@ -181,7 +181,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
   async buscarTipoProveedor(id: number): Promise<TipoProveedor> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<TipoProveedor>(`SELECT * FROM PUBLIC.TIPO_PROVEEDOR WHERE idtipoproveedor = ${id}`);
+      const res = await client.query<TipoProveedor>(`SELECT * FROM PUBLIC.TIPO_PROVEEDOR WHERE idtipoproveedor = ${id} AND activo = 1`);
       const result: TipoProveedor = plainToClass(TipoProveedor, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -197,7 +197,7 @@ export class ProveedoresRepository implements IProveedoresRepository {
   async buscarTodosProveedores(): Promise<Proveedor[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.PROVEEDOR');
+      const res = await client.query<Proveedor[]>('SELECT * FROM PUBLIC.PROVEEDOR WHERE activo = 1');
       const result: Proveedor[] = plainToClass(Proveedor, res.rows, {
         excludeExtraneousValues: true
       });
