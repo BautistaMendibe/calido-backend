@@ -32,7 +32,7 @@ export class DomicilioRepository implements IDomicilioRepository {
   async obtenerProvincias(): Promise<Provincia[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Provincia[]>('SELECT * FROM PUBLIC.PROVINCIA');
+      const res = await client.query<Provincia[]>('SELECT * FROM PUBLIC.PROVINCIA p AND p.activo = 1');
       const result: Provincia[] = plainToClass(Provincia, res.rows, {
         excludeExtraneousValues: true
       });
@@ -53,7 +53,7 @@ export class DomicilioRepository implements IDomicilioRepository {
   async obtenerLocalidadesPorProvincia(idProvincia: number): Promise<Localidad[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Localidad[]>(`SELECT * FROM PUBLIC.LOCALIDAD WHERE idprovincia = ${idProvincia}`);
+      const res = await client.query<Localidad[]>(`SELECT * FROM PUBLIC.LOCALIDAD l WHERE idprovincia = ${idProvincia} AND l.activo = 1`);
       const result: Localidad[] = plainToClass(Localidad, res.rows, {
         excludeExtraneousValues: true
       });

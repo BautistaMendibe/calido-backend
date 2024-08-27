@@ -165,7 +165,7 @@ export class ProductosRepository implements IProductosRepository {
   async obtenerTipoProductos(): Promise<TipoProducto[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<TipoProducto[]>('SELECT * FROM PUBLIC.TIPO_PRODUCTO');
+      const res = await client.query<TipoProducto[]>('SELECT * FROM PUBLIC.TIPO_PRODUCTO t AND t.activo = 1');
       const result: TipoProducto[] = plainToClass(TipoProducto, res.rows, {
         excludeExtraneousValues: true
       });

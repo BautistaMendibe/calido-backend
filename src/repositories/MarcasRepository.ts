@@ -24,7 +24,7 @@ export class MarcasRepository implements IMarcasRepository {
   async obtenerMarcas(): Promise<Marca[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Marca[]>('SELECT * FROM PUBLIC.MARCA');
+      const res = await client.query<Marca[]>('SELECT * FROM PUBLIC.MARCA m AND m.activo = 1');
       const result: Marca[] = plainToClass(Marca, res.rows, {
         excludeExtraneousValues: true
       });
