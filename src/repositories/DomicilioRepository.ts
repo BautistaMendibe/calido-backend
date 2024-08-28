@@ -3,13 +3,9 @@ import { logger } from '../logger/CustomLogger';
 import { SpResult } from '../models';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
-import { Usuario } from '../models/Usuario';
 import { Provincia } from '../models/Provincia';
 import { Proveedor } from '../models/Proveedor';
 import { Localidad } from '../models/Localidad';
-import { Domicilio } from '../models/Domicilio';
-const jwt = require('jsonwebtoken');
-const secretKey = 'secret';
 
 /**
  * Interfaz del repositorio de usuarios
@@ -32,7 +28,7 @@ export class DomicilioRepository implements IDomicilioRepository {
   async obtenerProvincias(): Promise<Provincia[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Provincia[]>('SELECT * FROM PUBLIC.PROVINCIA p AND p.activo = 1');
+      const res = await client.query<Provincia[]>('SELECT * FROM PUBLIC.PROVINCIA p WHERE p.activo = 1');
       const result: Provincia[] = plainToClass(Provincia, res.rows, {
         excludeExtraneousValues: true
       });
