@@ -73,6 +73,18 @@ export const AppRoutes = [
     action: UsersController.registrarSuperusuario,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/obtener-roles-usuario/:id',
+    method: 'get',
+    action: UsersController.obtenerRolesUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/obtener-roles',
+    method: 'get',
+    action: UsersController.obtenerRoles,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores
