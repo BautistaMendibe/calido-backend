@@ -24,6 +24,12 @@ import { IMarcasRepository, MarcasRepository } from '../repositories/MarcasRepos
 import { VentasService } from './implementations/VentasService';
 import { IVentasService } from './interfaces/IVentasService';
 import { IVentasRepository, VentasRepository } from '../repositories/VentasRepository';
+import { ITransportesService } from './interfaces/ITransportesService';
+import { ITransportesRepository, TransportesRepository } from '../repositories/TransportesRepository';
+import { TransportesService } from './implementations/TransportesService';
+import { IPedidosService } from './interfaces/IPedidosService';
+import { PedidosService } from './implementations/PedidosService';
+import { IPedidosRepository, PedidosRepository } from '../repositories/PedidosRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -41,6 +47,8 @@ container.bind<IDomicilioService>(TYPES.DomicilioService).to(DomicilioService);
 container.bind<IMarcaService>(TYPES.MarcasService).to(MarcaService);
 container.bind<IConfiguracionesService>(TYPES.ConfiguracionesService).to(ConfiguracionesService);
 container.bind<IVentasService>(TYPES.VentasService).to(VentasService);
+container.bind<ITransportesService>(TYPES.TransportesService).to(TransportesService);
+container.bind<IPedidosService>(TYPES.PedidosService).to(PedidosService);
 
 // Repositorys
 container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
@@ -51,5 +59,7 @@ container.bind<IDomicilioRepository>(TYPES.DomicilioRepository).to(DomicilioRepo
 container.bind<IMarcasRepository>(TYPES.MarcasRepository).to(MarcasRepository);
 container.bind<IConfiguracionesRepository>(TYPES.ConfiguracionesRepository).to(ConfiguracionesRepository);
 container.bind<IVentasRepository>(TYPES.VentasRepository).to(VentasRepository);
+container.bind<ITransportesRepository>(TYPES.TransportesRepository).to(TransportesRepository);
+container.bind<IPedidosRepository>(TYPES.PedidosRepository).to(PedidosRepository);
 
 export default container;

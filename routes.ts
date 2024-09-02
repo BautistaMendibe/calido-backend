@@ -7,6 +7,8 @@ import { ConfiguracionesController } from './src/controllers/ConfiguracionesCont
 import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
+import { TransportesController } from './src/controllers/TransportesController';
+import { PedidosController } from './src/controllers/PedidosController';
 
 /**
  * Rutas del Backend.
@@ -277,6 +279,23 @@ export const AppRoutes = [
     method: 'get',
     action: VentasController.buscarFormasDePago,
     schema: schemaEmpty
-  }
+  },
   //#endregion
+
+  // region Transportes
+  {
+    path: '/transportes/buscar-transportes',
+    method: 'get',
+    action: TransportesController.obtenerTransportes,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Pedidos
+  {
+    path: '/pedidos/registrar-pedido',
+    method: 'post',
+    action: PedidosController.registrarPedido,
+    schema: schemaEmpty
+  }
 ];
