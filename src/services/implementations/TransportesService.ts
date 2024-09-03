@@ -7,7 +7,7 @@ import { Transporte } from '../../models/Transporte';
 
 /**
  * Servicio que tiene como responsabilidad
- * lo vinculado a los usuarios
+ * lo vinculado a los transportes
  */
 @injectable()
 export class TransportesService implements ITransportesService {

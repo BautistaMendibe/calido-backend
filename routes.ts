@@ -6,7 +6,7 @@ import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
-import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
+import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
 import { PedidosController } from './src/controllers/PedidosController';
 
@@ -296,6 +296,30 @@ export const AppRoutes = [
     path: '/pedidos/registrar-pedido',
     method: 'post',
     action: PedidosController.registrarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/consultar-pedidos',
+    method: 'post',
+    action: PedidosController.consultarPedidos,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/eliminar-pedido/:id',
+    method: 'get',
+    action: PedidosController.eliminarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/buscar-estados-pedido',
+    method: 'get',
+    action: PedidosController.obtenerEstadosPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/modificar-pedido',
+    method: 'post',
+    action: PedidosController.modificarPedido,
     schema: schemaEmpty
   }
 ];
