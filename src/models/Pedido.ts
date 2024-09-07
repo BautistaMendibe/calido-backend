@@ -10,7 +10,7 @@ export class Pedido {
   @Expose({ name: 'montoenvio' })
   montoEnvio: number;
   @Expose({ name: 'fechapedido' })
-  fechaPedido: Date;
+  fechaEmision: Date;
   @Expose({ name: 'fechaentrega' })
   fechaEntrega: Date;
   @Expose({ name: 'idestadopedido' })
@@ -36,7 +36,7 @@ export class Pedido {
   constructor(
     id?: number,
     montoEnvio?: number,
-    fechaPedido?: Date,
+    fechaEmision?: Date,
     fechaEntrega?: Date,
     idEstadoPedido?: number,
     idTransporte?: number,
@@ -52,7 +52,7 @@ export class Pedido {
   ) {
     this.id = id ? id : null;
     this.montoEnvio = montoEnvio ? montoEnvio : null;
-    this.fechaPedido = fechaPedido ? fechaPedido : null;
+    this.fechaEmision = fechaEmision ? fechaEmision : null;
     this.fechaEntrega = fechaEntrega ? fechaEntrega : null;
     this.idEstadoPedido = idEstadoPedido ? idEstadoPedido : null;
     this.idTransporte = idTransporte ? idTransporte : null;

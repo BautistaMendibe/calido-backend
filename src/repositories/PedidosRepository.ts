@@ -42,7 +42,7 @@ export class PedidosRepository implements IPedidosRepository {
 
     const params = [
       pedido.montoEnvio,
-      pedido.fechaPedido,
+      pedido.fechaEmision,
       pedido.fechaEntrega,
       pedido.idEstadoPedido,
       pedido.idTransporte,
@@ -79,12 +79,13 @@ export class PedidosRepository implements IPedidosRepository {
 
     const nombrePedido = filtro.pedido || null;
     const proveedor = filtro.proveedor || null;
-    const fechaEmision = filtro.fechaEmision || null;
+    const fechaEmisionDesde = filtro.fechaEmisionDesde || null;
+    const fechaEmisionHasta = filtro.fechaEmisionHasta || null;
 
-    const params = [nombrePedido, proveedor, fechaEmision];
+    const params = [nombrePedido, proveedor, fechaEmisionDesde, fechaEmisionHasta];
 
     try {
-      const res = await client.query<Pedido[]>('SELECT * FROM public.buscar_pedidos($1, $2, $3)', params);
+      const res = await client.query<Pedido[]>('SELECT * FROM public.buscar_pedidos($1, $2, $3, $4)', params);
 
       const pedidos = res.rows.map((row: any) => {
         // Mapeamos el proveedor y sus relaciones
@@ -166,12 +167,10 @@ export class PedidosRepository implements IPedidosRepository {
 
     const detallePedidoJsonb = JSON.stringify(pedido.detallePedido);
 
-    console.log(pedido);
-
     const params = [
       pedido.id,
       pedido.montoEnvio,
-      pedido.fechaPedido,
+      pedido.fechaEmision,
       pedido.fechaEntrega,
       pedido.idEstadoPedido,
       pedido.idTransporte,
