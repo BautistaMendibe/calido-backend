@@ -3,11 +3,13 @@ import { logger } from '../logger/CustomLogger';
 import { HttpCodes, SpResult } from '../models';
 import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
-import { UsersService } from '../services/implementations/UsersService';
+import { UsersService } from '../services/implementations';
 import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../models/Asistencia';
 import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
+import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
+import { CuentaCorriente } from '../models/CuentaCorriente';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -152,6 +154,19 @@ export async function eliminarAsistencia(request: Request, response: Response): 
     });
 }
 
+export async function consultarCuentasCorrientesxUsuario(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltroCuentasCorrientes = request.body;
+
+  return _usersService
+    .consultarCuentasCorrientesxUsuario(filtro)
+    .then((x: CuentaCorriente[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -162,5 +177,6 @@ export const UsersController = {
   consultarAsistencias,
   registrarAsistencia,
   modificarAsistencia,
-  eliminarAsistencia
+  eliminarAsistencia,
+  consultarCuentasCorrientesxUsuario
 };

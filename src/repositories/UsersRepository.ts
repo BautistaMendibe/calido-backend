@@ -12,6 +12,8 @@ import { Localidad } from '../models/Localidad';
 import { Domicilio } from '../models/Domicilio';
 import { Asistencia } from '../models/Asistencia';
 import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
+import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
+import { CuentaCorriente } from '../models/CuentaCorriente';
 
 const secretKey = 'secret';
 
@@ -46,6 +48,7 @@ export interface IUsersRepository {
   registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
+  consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]>;
 }
 
 /**
@@ -341,6 +344,30 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al eliminar la asistencia: ' + err);
       throw new Error('Error al eliminar la asistencia.');
+    } finally {
+      client.release();
+    }
+  }
+  async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
+    const client = await PoolDb.connect();
+
+    // Asigna null a filtro.desdeMonto si es falsy
+    filtro.desdeMonto = filtro.desdeMonto || null;
+
+    const params = [filtro.cliente, filtro.desdeMonto];
+    try {
+      const res = await client.query<CuentaCorriente>('SELECT * FROM PUBLIC.BUSCAR_CUENTAS_CORRIENTESS($1, $2)', params);
+      const cuentas = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const cuentaCorriente: CuentaCorriente = plainToClass(CuentaCorriente, row, { excludeExtraneousValues: true });
+        cuentaCorriente.usuario = usuario;
+        return cuentaCorriente;
+      });
+      return cuentas;
+    } catch (err) {
+      logger.error('Error al consultar Cuentas Corrientes: ' + err);
+      throw new Error('Error al consultar Cuentas Corrientes.');
     } finally {
       client.release();
     }

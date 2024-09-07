@@ -73,6 +73,12 @@ export const AppRoutes = [
     action: UsersController.registrarSuperusuario,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/consultar-usuarios-cuenta-corriente',
+    method: 'post',
+    action: UsersController.consultarCuentasCorrientesxUsuario,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores

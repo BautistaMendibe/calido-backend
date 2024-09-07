@@ -26,7 +26,6 @@ export class Usuario {
   idGenero: number;
   @Expose({ name: 'activo' })
   activo: number;
-
   domicilio: Domicilio;
   constructor(
     id?: number,
