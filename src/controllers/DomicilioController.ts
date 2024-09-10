@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
 import { logger } from '../logger/CustomLogger';
-import { HttpCodes, SpResult } from '../models';
+import { HttpCodes } from '../models';
 import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
-import { UsersService } from '../services/implementations/UsersService';
-import { Usuario } from '../models/Usuario';
 import { DomicilioService } from '../services/implementations/DomicilioService';
 import { Provincia } from '../models/Provincia';
 import { Localidad } from '../models/Localidad';

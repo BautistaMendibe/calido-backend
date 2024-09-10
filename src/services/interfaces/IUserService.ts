@@ -3,6 +3,7 @@ import { Usuario } from '../../models/Usuario';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
+import { Rol } from '../../models/Rol';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -15,4 +16,6 @@ export interface IUsersService {
   registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
+  obtenerRoles(): Promise<Rol[]>;
+  obtenerRolesUsuario(idUsuario: number): Promise<Rol[]>;
 }

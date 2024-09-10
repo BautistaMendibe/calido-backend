@@ -9,6 +9,7 @@ import { logger } from './src/logger/CustomLogger';
 import { connectDatabase } from './config/database.config';
 import cors from 'cors';
 import { authenticateToken } from './middlewares/AuthValidator';
+import { requireAdminRole } from './middlewares/RolValidator';
 
 // create express app
 export const app = express();
@@ -22,6 +23,9 @@ app.use(cors());
 
 // Middleware para autenticar el token
 app.use(authenticateToken);
+
+// Middleware para verificar roles de administrador
+app.use(requireAdminRole);
 
 // register all application routes
 AppRoutes.forEach((route) => {
