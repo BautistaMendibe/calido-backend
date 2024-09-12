@@ -26,10 +26,13 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ message: 'Token not provided' });
   }
 
-  jwt.verify(token, secret, (err: any) => {
+  jwt.verify(token, secret, (err: any, decoded: any) => {
     if (err) {
       return res.status(401).json({ message: 'Token is invalid or expired' });
     }
+
+    (req as any).decodedUser = decoded;
+
     next();
   });
 };

@@ -9,6 +9,7 @@ import { Usuario } from '../../models/Usuario';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
+import { Rol } from '../../models/Rol';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -136,6 +137,30 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.modificarAsistencia(asistencia);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerRoles(): Promise<Rol[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerRoles();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerRolesUsuario(idUsuario: number): Promise<Rol[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerRolesUsuario(idUsuario);
         resolve(result);
       } catch (e) {
         logger.error(e);

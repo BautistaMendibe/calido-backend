@@ -10,8 +10,8 @@ export class Producto {
   nombre: string;
   @Expose({ name: 'preciocosto' })
   costo: number;
-  @Expose({ name: 'preciocostoimpuesto' })
-  costoImpuesto: number;
+  @Expose({ name: 'preciosiniva' })
+  precioSinIVA: number;
   @Expose({ name: 'imgproducto' })
   imgProducto: string;
   @Expose({ name: 'codigobarra' })
@@ -30,7 +30,7 @@ export class Producto {
     id?: number,
     nombre?: string,
     costo?: number,
-    costoImpuesto?: number,
+    precioSinIVA?: number,
     imgProducto?: string,
     codigoBarra?: string,
     descripcion?: string,
@@ -43,7 +43,7 @@ export class Producto {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.costo = costo ? costo : null;
-    this.costoImpuesto = costoImpuesto ? costoImpuesto : null;
+    this.precioSinIVA = precioSinIVA ? precioSinIVA : null;
     this.tipoProducto = tipoProducto ? tipoProducto : null;
     this.marca = marca ? marca : null;
     this.proveedor = proveedor ? proveedor : null;
