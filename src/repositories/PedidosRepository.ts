@@ -81,11 +81,12 @@ export class PedidosRepository implements IPedidosRepository {
     const proveedor = filtro.proveedor || null;
     const fechaEmisionDesde = filtro.fechaEmisionDesde || null;
     const fechaEmisionHasta = filtro.fechaEmisionHasta || null;
+    const estadoPedido = filtro.estado || null;
 
-    const params = [nombrePedido, proveedor, fechaEmisionDesde, fechaEmisionHasta];
+    const params = [nombrePedido, proveedor, fechaEmisionDesde, fechaEmisionHasta, estadoPedido];
 
     try {
-      const res = await client.query<Pedido[]>('SELECT * FROM public.buscar_pedidos($1, $2, $3, $4)', params);
+      const res = await client.query<Pedido[]>('SELECT * FROM public.buscar_pedidos($1, $2, $3, $4, $5)', params);
 
       const pedidos = res.rows.map((row: any) => {
         // Mapeamos el proveedor y sus relaciones
