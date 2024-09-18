@@ -7,7 +7,6 @@ import { SpResult } from '../../models';
 import { Pedido } from '../../models/Pedido';
 import { FiltroPedidos } from '../../models/comandos/FiltroPedidos';
 import { EstadoPedido } from '../../models/EstadoPedido';
-import { Usuario } from '../../models/Usuario';
 
 /**
  * Servicio que tiene como responsabilidad

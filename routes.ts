@@ -9,6 +9,7 @@ import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
 import { PedidosController } from './src/controllers/PedidosController';
+import { ComprobantesController } from './src/controllers/ComprobantesController';
 
 /**
  * Rutas del Backend.
@@ -320,6 +321,38 @@ export const AppRoutes = [
     path: '/pedidos/modificar-pedido',
     method: 'post',
     action: PedidosController.modificarPedido,
+    schema: schemaEmpty
+  },
+
+  // region Comprobantes
+  {
+    path: '/comprobantes/registrar-comprobante',
+    method: 'post',
+    action: ComprobantesController.registrarComprobante,
+    schema: schemaEmpty
+  },
+  {
+    path: '/comprobantes/consultar-comprobantes',
+    method: 'post',
+    action: ComprobantesController.consultarComprobantes,
+    schema: schemaEmpty
+  },
+  {
+    path: '/comprobantes/eliminar-comprobante/:id',
+    method: 'get',
+    action: ComprobantesController.eliminarComprobante,
+    schema: schemaEmpty
+  },
+  {
+    path: '/comprobantes/buscar-tipos-comprobantes',
+    method: 'get',
+    action: ComprobantesController.obtenerTiposComprobantes,
+    schema: schemaEmpty
+  },
+  {
+    path: '/comprobantes/modificar-comprobante',
+    method: 'post',
+    action: ComprobantesController.modificarComprobante,
     schema: schemaEmpty
   }
 ];

@@ -30,6 +30,9 @@ import { TransportesService } from './implementations/TransportesService';
 import { IPedidosService } from './interfaces/IPedidosService';
 import { PedidosService } from './implementations/PedidosService';
 import { IPedidosRepository, PedidosRepository } from '../repositories/PedidosRepository';
+import { ComprobantesRepository, IComprobantesRepository } from '../repositories/ComprobantesRepository';
+import { ComprobantesService } from './implementations/ComprobantesService';
+import { IComprobantesService } from './interfaces/IComprobantesService';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -49,6 +52,7 @@ container.bind<IConfiguracionesService>(TYPES.ConfiguracionesService).to(Configu
 container.bind<IVentasService>(TYPES.VentasService).to(VentasService);
 container.bind<ITransportesService>(TYPES.TransportesService).to(TransportesService);
 container.bind<IPedidosService>(TYPES.PedidosService).to(PedidosService);
+container.bind<IComprobantesService>(TYPES.ComprobantesService).to(ComprobantesService);
 
 // Repositorys
 container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
@@ -61,5 +65,6 @@ container.bind<IConfiguracionesRepository>(TYPES.ConfiguracionesRepository).to(C
 container.bind<IVentasRepository>(TYPES.VentasRepository).to(VentasRepository);
 container.bind<ITransportesRepository>(TYPES.TransportesRepository).to(TransportesRepository);
 container.bind<IPedidosRepository>(TYPES.PedidosRepository).to(PedidosRepository);
+container.bind<IComprobantesRepository>(TYPES.ComprobantesRepository).to(ComprobantesRepository);
 
 export default container;
