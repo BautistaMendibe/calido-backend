@@ -40,6 +40,7 @@ export interface IUsersRepository {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
   registrarUsuario(usuario: Usuario): Promise<SpResult>;
   consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]>;
+  consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]>;
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
   registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
@@ -205,6 +206,44 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar empleados: ' + err);
       throw new Error('Error al consultar empleados.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar clientes
+   * @param {FiltrosEmpleados} filtros de busqueda
+   * @returns {Usuario []} arreglo de usuarios
+   */
+  async consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+
+    const nombre = filtro.nombre;
+    const apellido = filtro.apellido;
+    const mail = filtro.mail;
+    const params = [nombre, apellido, mail];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3)', params);
+
+      const usuarios = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
+        const localidad: Localidad = plainToClass(Localidad, row, { excludeExtraneousValues: true });
+        const domicilio: Domicilio = plainToClass(Domicilio, row, { excludeExtraneousValues: true });
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+
+        domicilio.localidad = localidad;
+        localidad.provincia = provincia;
+        usuario.domicilio = domicilio;
+
+        return usuario;
+      });
+
+      return usuarios;
+    } catch (err) {
+      logger.error('Error al consultar clientes: ' + err);
+      throw new Error('Error al consultar clientes.');
     } finally {
       client.release();
     }

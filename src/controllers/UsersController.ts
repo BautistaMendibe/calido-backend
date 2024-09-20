@@ -69,6 +69,20 @@ export async function consultarEmpleados(request: Request, response: Response): 
     });
 }
 
+export async function consultarClientes(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltroEmpleados = request.body;
+
+  return _usersService
+    .consultarClientes(filtro)
+    .then((x: Usuario[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function consultarAsistencias(request: Request, response: Response): Promise<Response> {
   const filtro: FiltroAsistencias = request.body;
 
@@ -183,6 +197,7 @@ export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
   consultarEmpleados,
+  consultarClientes,
   modificarEmpleado,
   eliminarUsuario,
   registrarSuperusuario,

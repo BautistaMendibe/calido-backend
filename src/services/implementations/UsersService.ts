@@ -61,6 +61,18 @@ export class UsersService implements IUsersService {
     });
   }
 
+  public async consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarClientes(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async modificarEmpleado(usuario: Usuario): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
