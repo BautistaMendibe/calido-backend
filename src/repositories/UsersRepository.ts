@@ -104,29 +104,33 @@ export class UsersRepository implements IUsersRepository {
 
   async registrarUsuario(usuario: Usuario): Promise<SpResult> {
     const client = await PoolDb.connect();
+    let contrasenaHashed = null;
 
-    // Hashear la contraseña antes de enviarla a la base de datos
-    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    if (usuario.tipoUsuario.id == 1) {
+      // Hashear la contraseña antes de enviarla a la base de datos
+      contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    }
 
     const params = [
-      usuario.nombreUsuario,
-      usuario.nombre,
-      usuario.apellido,
-      usuario.fechaNacimiento,
-      usuario.codigoPostal,
-      usuario.dni,
-      usuario.cuil,
-      contrasenaHashed, // envía la contraseña hasheada directamente.
-      1, // fuerza tipo 1, empleado.
-      usuario.idGenero,
-      usuario.domicilio.localidad.id,
-      usuario.domicilio.calle,
-      usuario.domicilio.numero,
-      usuario.roles
+      usuario.nombreUsuario ? usuario.nombreUsuario : null,
+      usuario.nombre ? usuario.nombre : null,
+      usuario.apellido ? usuario.apellido : null,
+      usuario.fechaNacimiento ? usuario.fechaNacimiento : null,
+      usuario.codigoPostal ? usuario.codigoPostal : null,
+      usuario.dni ? usuario.dni : null,
+      usuario.cuil ? usuario.cuil : null,
+      contrasenaHashed,
+      usuario.tipoUsuario.id ? usuario.tipoUsuario.id : null,
+      usuario.idGenero ? usuario.idGenero : null,
+      usuario.domicilio.localidad.id ? usuario.domicilio.localidad.id : null,
+      usuario.domicilio.calle ? usuario.domicilio.calle : null,
+      usuario.domicilio.numero ? usuario.domicilio.numero : null,
+      usuario.roles ? usuario.roles : null,
+      usuario.mail ? usuario.mail : null
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
