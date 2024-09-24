@@ -3,6 +3,10 @@ import { Usuario } from '../../models/Usuario';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
+import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
+import { CuentaCorriente } from '../../models/CuentaCorriente';
+import { Request, Response } from 'express';
+import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
 
 export interface IUsersService {
@@ -19,4 +23,9 @@ export interface IUsersService {
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
   obtenerRoles(): Promise<Rol[]>;
   obtenerRolesUsuario(idUsuario: number): Promise<Rol[]>;
+  consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]>;
+  registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
+  modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
+  consultarAllUsuarios(): Promise<TipoProducto[]>;
+  eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
 }

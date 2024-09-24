@@ -6,9 +6,7 @@ import { logger } from '../logger/CustomLogger';
 import { PedidosService } from '../services/implementations/PedidosService';
 import { Pedido } from '../models/Pedido';
 import { FiltroPedidos } from '../models/comandos/FiltroPedidos';
-import { Marca } from '../models/Marca';
 import { EstadoPedido } from '../models/EstadoPedido';
-import { Usuario } from '../models/Usuario';
 
 const _pedidosService = container.get<PedidosService>(TYPES.PedidosService);
 

@@ -1,10 +1,10 @@
 import { Proveedor } from '../Proveedor';
-import { EstadoPedido } from '../EstadoPedido';
+import { Usuario } from '../Usuario';
 
-export class FiltroPedidos {
-  pedido?: number;
+export class FiltrosComprobantes {
+  comprobante?: number;
   proveedor?: Proveedor;
   fechaEmisionDesde?: Date;
   fechaEmisionHasta?: Date;
-  estado?: EstadoPedido;
+  responsable?: Usuario;
 }

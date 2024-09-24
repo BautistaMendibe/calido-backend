@@ -3,12 +3,14 @@ import { logger } from '../logger/CustomLogger';
 import { HttpCodes, SpResult } from '../models';
 import container from '../services/inversify.config';
 import { TYPES } from '../services/types/types';
-import { UsersService } from '../services/implementations/UsersService';
+import { UsersService } from '../services/implementations';
 import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../models/Asistencia';
 import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 import { Rol } from '../models/Rol';
+import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
+import { CuentaCorriente } from '../models/CuentaCorriente';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -167,6 +169,74 @@ export async function eliminarAsistencia(request: Request, response: Response): 
     });
 }
 
+export async function consultarCuentasCorrientesxUsuario(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltroCuentasCorrientes = request.body;
+
+  return _usersService
+    .consultarCuentasCorrientesxUsuario(filtro)
+    .then((x: CuentaCorriente[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultarAllUsuarios(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .consultarAllUsuarios()
+    .then((x: Usuario[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function registrarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const cuentaCorriente: CuentaCorriente = request.body;
+
+  return _usersService
+    .registrarCuentaCorriente(cuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function modificarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const cuentaCorriente: CuentaCorriente = request.body;
+
+  return _usersService
+    .modificarCuentaCorriente(cuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const idCuentaCorriente: number = +request.params.id;
+
+  return _usersService
+    .eliminarCuentaCorriente(idCuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function obtenerRolesUsuario(request: Request, response: Response): Promise<Response> {
   const idUsuario: number = +request.params.id;
 
@@ -205,6 +275,11 @@ export const UsersController = {
   registrarAsistencia,
   modificarAsistencia,
   eliminarAsistencia,
+  consultarCuentasCorrientesxUsuario,
+  registrarCuentaCorriente,
+  consultarAllUsuarios,
+  eliminarCuentaCorriente,
+  modificarCuentaCorriente,
   obtenerRolesUsuario,
   obtenerRoles
 };
