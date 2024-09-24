@@ -14,6 +14,7 @@ import { Asistencia } from '../models/Asistencia';
 import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../models/CuentaCorriente';
+import { Rol } from '../models/Rol';
 
 const secretKey = 'secret';
 
@@ -48,6 +49,8 @@ export interface IUsersRepository {
   registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
+  obtenerRolesUsuario(idUsuario: number): Promise<Rol[]>;
+  obtenerRoles(): Promise<Rol[]>;
   consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]>;
   registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
   modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
@@ -70,22 +73,19 @@ export class UsersRepository implements IUsersRepository {
     const client = await PoolDb.connect();
 
     try {
-      // Consultar la base de datos para obtener el hash del usuario enviado como parámetro
       const res = await client.query<{ contrasena: string }>('SELECT * FROM PUBLIC.OBTENER_HASH_CONTRASENA($1)', [nombreUsuario]);
       if (res.rows.length === 0) {
         return 'ERROR';
       }
 
       const hashContrasena: string = res.rows[0].contrasena;
-
-      // Validar la contraseña hasheada con la que se encuentra en la base de datos
       const verificacionValida = await argon2.verify(hashContrasena, contrasena);
 
       if (verificacionValida) {
-        // Obtener el ID, nombre y apellido del empleado para crear el payload del JWT
-        const idResult = await client.query<{ idusuario: number; nombre: string; apellido: string }>('SELECT * FROM public.OBTENER_PAYLOAD_EMPLEADO($1)', [nombreUsuario]);
+        const idResult = await client.query<{ idusuario: number; nombre: string; apellido: string; roles: string[] }>('SELECT * FROM public.OBTENER_PAYLOAD_EMPLEADO($1)', [
+          nombreUsuario
+        ]);
 
-        // Verificar si se obtuvo un resultado de ID
         if (idResult.rows.length === 0) {
           return 'ERROR';
         }
@@ -93,10 +93,10 @@ export class UsersRepository implements IUsersRepository {
         const payload = {
           idusuario: idResult.rows[0].idusuario,
           nombre: idResult.rows[0].nombre,
-          apellido: idResult.rows[0].apellido
+          apellido: idResult.rows[0].apellido,
+          roles: idResult.rows[0].roles
         };
 
-        // Generar y devolver el token JWT con el ID del usuario
         return jwt.sign(payload, secretKey, { expiresIn: '6h' });
       } else {
         return 'ERROR';
@@ -128,10 +128,12 @@ export class UsersRepository implements IUsersRepository {
       usuario.idGenero,
       usuario.domicilio.localidad.id,
       usuario.domicilio.calle,
-      usuario.domicilio.numero
+      usuario.domicilio.numero,
+      usuario.roles
     ];
+
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -189,6 +191,16 @@ export class UsersRepository implements IUsersRepository {
         localidad.provincia = provincia;
         usuario.domicilio = domicilio;
 
+        // Mapeamos los roles
+        const roles: Rol[] = row.idroles.map((idrol: number, index: number) => {
+          return plainToClass(Rol, {
+            idrol: idrol,
+            nrol: row.nroles[index]
+          });
+        });
+
+        usuario.roles = roles;
+
         return usuario;
       });
 
@@ -225,10 +237,12 @@ export class UsersRepository implements IUsersRepository {
       usuario.idGenero,
       usuario.domicilio.localidad.id,
       usuario.domicilio.calle,
-      usuario.domicilio.numero
+      usuario.domicilio.numero,
+      usuario.roles
     ];
+
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -352,7 +366,7 @@ export class UsersRepository implements IUsersRepository {
       client.release();
     }
   }
-  //CUENTA CORRIENTE
+
   async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
     const client = await PoolDb.connect();
 
@@ -439,6 +453,55 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al eliminar Cuenta Corriente: ' + err);
       throw new Error('Error al eliminar Cuenta Corriente.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener los roles de un usuario determinado
+   * @returns {Rol[]} - devuelve un array de strings de roles
+   */
+  async obtenerRolesUsuario(idUsuario: number): Promise<Rol[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<{ nrol: string; idrol: number }>(
+        `SELECT r.nrol, r.idrol
+             FROM PUBLIC.ROLES_POR_USUARIO rpu 
+             JOIN PUBLIC.ROL r ON rpu.idrol = r.idrol 
+             WHERE rpu.idusuario = $1 AND rpu.activo = 1`,
+        [idUsuario]
+      );
+
+      const result: Rol[] = plainToClass(Rol, res.rows, {
+        excludeExtraneousValues: true
+      });
+
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Roles: ' + err);
+      throw new Error('Error al consultar Roles.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener todos los roles
+   * @returns {Rol[]} - devuelve un array de strings de roles
+   */
+  async obtenerRoles(): Promise<Rol[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<{ nrol: string; idrol: number }>(`SELECT r.nrol, r.idrol FROM PUBLIC.ROL r WHERE r.activo = 1`);
+      const result: Rol[] = plainToClass(Rol, res.rows, {
+        excludeExtraneousValues: true
+      });
+
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Roles: ' + err);
+      throw new Error('Error al consultar Roles.');
     } finally {
       client.release();
     }

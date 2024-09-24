@@ -60,23 +60,27 @@ export class ConfiguracionesRepository implements IConfiguracionesRepository {
       configuracion.id,
       configuracion.idUsuario,
       configuracion.razonSocial,
-      configuracion.domicilioComercial,
       configuracion.cuit,
       configuracion.fechaInicioActividades,
       configuracion.condicionIva,
       configuracion.logo,
       configuracion.contrasenaInstagram,
-      configuracion.usuarioInstagram
+      configuracion.usuarioInstagram,
+      configuracion.calle,
+      configuracion.numero,
+      configuracion.ciudad,
+      configuracion.provincia,
+      configuracion.codigoPostal
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al modificar la promoción: ' + err);
-      throw new Error('Error al modificar la promoción.');
+      logger.error('Error al modificar la configuración: ' + err);
+      throw new Error('Error al modificar la configuración.');
     } finally {
       client.release();
     }

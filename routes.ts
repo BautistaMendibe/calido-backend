@@ -5,8 +5,11 @@ import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
-import { MarcasController } from './src/controllers/marcaController';
 import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
+import { MarcasController } from './src/controllers/MarcaController';
+import { VentasController } from './src/controllers/VentasController';
+import { TransportesController } from './src/controllers/TransportesController';
+import { PedidosController } from './src/controllers/PedidosController';
 
 /**
  * Rutas del Backend.
@@ -101,6 +104,18 @@ export const AppRoutes = [
     path: '/usuarios/consultar-all-usuarios',
     method: 'get',
     action: UsersController.consultarAllUsuarios,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/obtener-roles-usuario/:id',
+    method: 'get',
+    action: UsersController.obtenerRolesUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/obtener-roles',
+    method: 'get',
+    action: UsersController.obtenerRoles,
     schema: schemaEmpty
   },
   //#endregion
@@ -295,6 +310,47 @@ export const AppRoutes = [
     method: 'get',
     action: VentasController.buscarFormasDePago,
     schema: schemaEmpty
-  }
+  },
   //#endregion
+
+  // region Transportes
+  {
+    path: '/transportes/buscar-transportes',
+    method: 'get',
+    action: TransportesController.obtenerTransportes,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Pedidos
+  {
+    path: '/pedidos/registrar-pedido',
+    method: 'post',
+    action: PedidosController.registrarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/consultar-pedidos',
+    method: 'post',
+    action: PedidosController.consultarPedidos,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/eliminar-pedido/:id',
+    method: 'get',
+    action: PedidosController.eliminarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/buscar-estados-pedido',
+    method: 'get',
+    action: PedidosController.obtenerEstadosPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/modificar-pedido',
+    method: 'post',
+    action: PedidosController.modificarPedido,
+    schema: schemaEmpty
+  }
 ];

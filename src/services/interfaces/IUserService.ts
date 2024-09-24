@@ -7,6 +7,7 @@ import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorr
 import { CuentaCorriente } from '../../models/CuentaCorriente';
 import { Request, Response } from 'express';
 import { TipoProducto } from '../../models/TipoProducto';
+import { Rol } from '../../models/Rol';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -19,7 +20,8 @@ export interface IUsersService {
   registrarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
-  //cuenta corriente
+  obtenerRoles(): Promise<Rol[]>;
+  obtenerRolesUsuario(idUsuario: number): Promise<Rol[]>;
   consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]>;
   registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
   modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;

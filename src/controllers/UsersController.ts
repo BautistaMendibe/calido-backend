@@ -8,12 +8,12 @@ import { Usuario } from '../models/Usuario';
 import { FiltroEmpleados } from '../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../models/Asistencia';
 import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
+import { Rol } from '../models/Rol';
 import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../models/CuentaCorriente';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
-//SECCION USUARIOS
 export async function validarInicioSesion(request: Request, response: Response): Promise<Response> {
   const nombreUsuario: string = request.body.usuario;
   const contrasena: string = request.body.contrasena;
@@ -155,7 +155,6 @@ export async function eliminarAsistencia(request: Request, response: Response): 
     });
 }
 
-// SECCION CUENTAS CORRIENTES
 export async function consultarCuentasCorrientesxUsuario(request: Request, response: Response): Promise<Response> {
   const filtro: FiltroCuentasCorrientes = request.body;
 
@@ -224,6 +223,32 @@ export async function eliminarCuentaCorriente(request: Request, response: Respon
     });
 }
 
+export async function obtenerRolesUsuario(request: Request, response: Response): Promise<Response> {
+  const idUsuario: number = +request.params.id;
+
+  return _usersService
+    .obtenerRolesUsuario(idUsuario)
+    .then((x: Rol[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function obtenerRoles(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .obtenerRoles()
+    .then((x: Rol[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -239,5 +264,7 @@ export const UsersController = {
   registrarCuentaCorriente,
   consultarAllUsuarios,
   eliminarCuentaCorriente,
-  ModificarCuentaCorriente
+  ModificarCuentaCorriente,
+  obtenerRolesUsuario,
+  obtenerRoles
 };

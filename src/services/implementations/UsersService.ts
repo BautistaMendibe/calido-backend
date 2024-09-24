@@ -12,6 +12,7 @@ import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../../models/CuentaCorriente';
 import { TipoProducto } from '../../models/TipoProducto';
+import { Rol } from '../../models/Rol';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -147,7 +148,30 @@ export class UsersService implements IUsersService {
     });
   }
 
-  //SECCION CUENTAS CORRIENTES
+  public async obtenerRoles(): Promise<Rol[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerRoles();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerRolesUsuario(idUsuario: number): Promise<Rol[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerRolesUsuario(idUsuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -159,6 +183,7 @@ export class UsersService implements IUsersService {
       }
     });
   }
+
   public async consultarAllUsuarios(): Promise<Usuario[]> {
     return new Promise(async (resolve, reject) => {
       try {
