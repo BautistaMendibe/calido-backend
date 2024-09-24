@@ -5,7 +5,6 @@ import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
-import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
@@ -91,7 +90,7 @@ export const AppRoutes = [
   {
     path: '/usuarios/modificar-cuenta-corriente',
     method: 'post',
-    action: UsersController.ModificarCuentaCorriente,
+    action: UsersController.modificarCuentaCorriente,
     schema: schemaEmpty
   },
   {

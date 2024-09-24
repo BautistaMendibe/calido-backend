@@ -195,7 +195,7 @@ export async function registrarCuentaCorriente(request: Request, response: Respo
     });
 }
 
-export async function ModificarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+export async function modificarCuentaCorriente(request: Request, response: Response): Promise<Response> {
   const cuentaCorriente: CuentaCorriente = request.body;
 
   return _usersService
@@ -264,7 +264,7 @@ export const UsersController = {
   registrarCuentaCorriente,
   consultarAllUsuarios,
   eliminarCuentaCorriente,
-  ModificarCuentaCorriente,
+  modificarCuentaCorriente,
   obtenerRolesUsuario,
   obtenerRoles
 };
