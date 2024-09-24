@@ -42,6 +42,7 @@ export interface IUsersRepository {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
   registrarUsuario(usuario: Usuario): Promise<SpResult>;
   consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]>;
+  consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]>;
   modificarEmpleado(usuario: Usuario): Promise<SpResult>;
   eliminarUsuario(idUsuario: number): Promise<SpResult>;
   registrarSuperusuario(usuario: Usuario): Promise<SpResult>;
@@ -111,29 +112,33 @@ export class UsersRepository implements IUsersRepository {
 
   async registrarUsuario(usuario: Usuario): Promise<SpResult> {
     const client = await PoolDb.connect();
+    let contrasenaHashed = null;
 
-    // Hashear la contraseña antes de enviarla a la base de datos
-    const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    if (usuario.tipoUsuario.id == 1) {
+      // Hashear la contraseña antes de enviarla a la base de datos
+      contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
+    }
 
     const params = [
-      usuario.nombreUsuario,
-      usuario.nombre,
-      usuario.apellido,
-      usuario.fechaNacimiento,
-      usuario.codigoPostal,
-      usuario.dni,
-      usuario.cuil,
-      contrasenaHashed, // envía la contraseña hasheada directamente.
-      1, // fuerza tipo 1, empleado.
-      usuario.idGenero,
-      usuario.domicilio.localidad.id,
-      usuario.domicilio.calle,
-      usuario.domicilio.numero,
-      usuario.roles
+      usuario.nombreUsuario ? usuario.nombreUsuario : null,
+      usuario.nombre ? usuario.nombre : null,
+      usuario.apellido ? usuario.apellido : null,
+      usuario.fechaNacimiento ? usuario.fechaNacimiento : null,
+      usuario.codigoPostal ? usuario.codigoPostal : null,
+      usuario.dni ? usuario.dni : null,
+      usuario.cuil ? usuario.cuil : null,
+      contrasenaHashed,
+      usuario.tipoUsuario.id ? usuario.tipoUsuario.id : null,
+      usuario.idGenero ? usuario.idGenero : null,
+      usuario.domicilio.localidad.id ? usuario.domicilio.localidad.id : null,
+      usuario.domicilio.calle ? usuario.domicilio.calle : null,
+      usuario.domicilio.numero ? usuario.domicilio.numero : null,
+      usuario.roles ? usuario.roles : null,
+      usuario.mail ? usuario.mail : null
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -208,6 +213,44 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar empleados: ' + err);
       throw new Error('Error al consultar empleados.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar clientes
+   * @param {FiltrosEmpleados} filtros de busqueda
+   * @returns {Usuario []} arreglo de usuarios
+   */
+  async consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+
+    const nombre = filtro.nombre;
+    const apellido = filtro.apellido;
+    const mail = filtro.mail;
+    const params = [nombre, apellido, mail];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3)', params);
+
+      const usuarios = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Usuario
+        const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
+        const localidad: Localidad = plainToClass(Localidad, row, { excludeExtraneousValues: true });
+        const domicilio: Domicilio = plainToClass(Domicilio, row, { excludeExtraneousValues: true });
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+
+        domicilio.localidad = localidad;
+        localidad.provincia = provincia;
+        usuario.domicilio = domicilio;
+
+        return usuario;
+      });
+
+      return usuarios;
+    } catch (err) {
+      logger.error('Error al consultar clientes: ' + err);
+      throw new Error('Error al consultar clientes.');
     } finally {
       client.release();
     }

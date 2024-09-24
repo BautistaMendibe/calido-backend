@@ -53,9 +53,7 @@ export class ProductosService implements IProductosService {
   public async consultarProductos(filtro: FiltrosProductos): Promise<Producto[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info('Consultando productos con filtro:', filtro);
         const result = await this._productosRepository.consultarProductos(filtro);
-        logger.info('Resultado de la consulta:', result);
         resolve(result);
       } catch (e) {
         logger.error(e);

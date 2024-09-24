@@ -41,8 +41,6 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al registrar la venta: ' + err);
       throw new Error('Error al registrar la venta.');
-    } finally {
-      client.release();
     }
   }
 
@@ -55,7 +53,7 @@ export class VentasRepository implements IVentasRepository {
   async registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.costo, idVenta, producto.id];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PRODUCTO($1, $2, $3, $4)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_VENTA($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -63,8 +61,6 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al registrar el detalle de la venta: ' + err);
       throw new Error('Error al registrar el detalle de la venta.');
-    } finally {
-      client.release();
     }
   }
 

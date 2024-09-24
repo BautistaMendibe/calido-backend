@@ -29,9 +29,15 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
-    path: '/usuarios/consultar-usuarios',
+    path: '/usuarios/consultar-empleados',
     method: 'post',
     action: UsersController.consultarEmpleados,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/consultar-clientes',
+    method: 'post',
+    action: UsersController.consultarClientes,
     schema: schemaEmpty
   },
   {

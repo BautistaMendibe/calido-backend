@@ -27,6 +27,7 @@ export class VentasService implements IVentasService {
 
   public async registrarVentaConDetalles(venta: Venta): Promise<SpResult> {
     const client = await PoolDb.connect(); // Conectamos al cliente de la base de datos
+
     try {
       await client.query('BEGIN'); // Iniciamos la transacción
 
@@ -38,17 +39,17 @@ export class VentasService implements IVentasService {
       for (const producto of venta.productos) {
         const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
 
-        // Si el detalleResult es OK y lanzar un error
-        if (detalleResult.mensaje != 'OK') {
+        // Si el detalleResult no es OK, lanzar un error
+        if (detalleResult.mensaje !== 'OK') {
           throw new Error('Error al registrar el detalle de la venta.');
         }
       }
 
-      await client.query('COMMIT'); // Confirmamos la transacción si salio bien
+      await client.query('COMMIT'); // Confirmamos la transacción si salió bien
       return ventaResult;
     } catch (e) {
       await client.query('ROLLBACK'); // Revertimos la transacción en caso de error
-      logger.error('Transacción fallida: ' + e);
+      logger.error('Transacción fallida: ' + e.message);
       throw new Error('Error al registrar la venta y sus detalles.');
     } finally {
       client.release(); // Liberamos el cliente de la base de datos
