@@ -5,6 +5,9 @@ export class CuentaCorriente {
   @Expose({ name: 'idcuentacorriente' })
   id: number;
 
+  @Expose({ name: 'idusuario' })
+  idUsuario: number;
+
   @Expose({ name: 'nombre' })
   nombre: string;
 
@@ -22,7 +25,7 @@ export class CuentaCorriente {
 
   usuario: Usuario;
 
-  constructor(id?: number, nombre?: string, apellido?: string, fechaDesde?: Date, fechaHasta?: Date, balanceTotal?: number) {
+  constructor(id?: number, idUsuario?: number, nombre?: string, apellido?: string, fechaDesde?: Date, fechaHasta?: Date, balanceTotal?: number) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.apellido = apellido ? apellido : null;

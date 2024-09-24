@@ -11,6 +11,7 @@ import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../../models/CuentaCorriente';
+import { TipoProducto } from '../../models/TipoProducto';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -146,10 +147,58 @@ export class UsersService implements IUsersService {
     });
   }
 
+  //SECCION CUENTAS CORRIENTES
   public async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.consultarCuentasCorrientesxUsuario(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+  public async consultarAllUsuarios(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarAllUsuarios();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarCuentaCorriente(cuentaCorriente);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.modificarCuentaCorriente(cuentaCorriente);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.eliminarCuentaCorriente(idCuentaCorriente);
         resolve(result);
       } catch (e) {
         logger.error(e);

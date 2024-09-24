@@ -49,6 +49,10 @@ export interface IUsersRepository {
   modificarAsistencia(asistencia: Asistencia): Promise<SpResult>;
   eliminarAsistencia(idAsistencia: number): Promise<SpResult>;
   consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]>;
+  registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
+  modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
+  consultarAllUsuarios(): Promise<Usuario[]>;
+  eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
 }
 
 /**
@@ -348,6 +352,7 @@ export class UsersRepository implements IUsersRepository {
       client.release();
     }
   }
+  //CUENTA CORRIENTE
   async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
     const client = await PoolDb.connect();
 
@@ -356,7 +361,7 @@ export class UsersRepository implements IUsersRepository {
 
     const params = [filtro.cliente, filtro.desdeMonto];
     try {
-      const res = await client.query<CuentaCorriente>('SELECT * FROM PUBLIC.BUSCAR_CUENTAS_CORRIENTESS($1, $2)', params);
+      const res = await client.query<CuentaCorriente>('SELECT * FROM PUBLIC.BUSCAR_CUENTAS_CORRIENTESSS($1, $2)', params);
       const cuentas = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Usuario
         const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
@@ -368,6 +373,72 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar Cuentas Corrientes: ' + err);
       throw new Error('Error al consultar Cuentas Corrientes.');
+    } finally {
+      client.release();
+    }
+  }
+  async consultarAllUsuarios(): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Usuario[]>('SELECT * FROM PUBLIC.USUARIO t WHERE t.activo = 1');
+      const result: Usuario[] = plainToClass(Usuario, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar todos los usuarios: ' + err);
+      throw new Error('Error al consultar todos los usuarios.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [cuentaCorriente.usuario.id, cuentaCorriente.balanceTotal];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_CUENTA_CORRIENTE($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Cuenta Corriente: ' + err);
+      throw new Error('Error al registrar Cuenta Corriente.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarCuentaCorriente(cuenta: CuentaCorriente): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [cuenta.id, cuenta.balanceTotal];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CUENTA_CORRIENTE($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar la Cuenta Corriente: ' + err);
+      throw new Error('Error al modificar la Cuenta Corriente.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idCuentaCorriente];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_CUENTA_CORRIENTE($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar Cuenta Corriente: ' + err);
+      throw new Error('Error al eliminar Cuenta Corriente.');
     } finally {
       client.release();
     }

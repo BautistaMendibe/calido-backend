@@ -5,7 +5,7 @@ import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
 import { ProductosController } from './src/controllers/ProductosController';
-import { MarcasController } from './src/controllers/MarcaController';
+import { MarcasController } from './src/controllers/marcaController';
 import { buscarFormasDePago, buscarUsuariosClientes, VentasController } from './src/controllers/VentasController';
 
 /**
@@ -77,6 +77,30 @@ export const AppRoutes = [
     path: '/usuarios/consultar-usuarios-cuenta-corriente',
     method: 'post',
     action: UsersController.consultarCuentasCorrientesxUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/registrar-cuenta-corriente',
+    method: 'post',
+    action: UsersController.registrarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/modificar-cuenta-corriente',
+    method: 'post',
+    action: UsersController.ModificarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-cuenta-corriente/:id',
+    method: 'get',
+    action: UsersController.eliminarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/consultar-all-usuarios',
+    method: 'get',
+    action: UsersController.consultarAllUsuarios,
     schema: schemaEmpty
   },
   //#endregion

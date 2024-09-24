@@ -13,6 +13,7 @@ import { CuentaCorriente } from '../models/CuentaCorriente';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
+//SECCION USUARIOS
 export async function validarInicioSesion(request: Request, response: Response): Promise<Response> {
   const nombreUsuario: string = request.body.usuario;
   const contrasena: string = request.body.contrasena;
@@ -154,6 +155,7 @@ export async function eliminarAsistencia(request: Request, response: Response): 
     });
 }
 
+// SECCION CUENTAS CORRIENTES
 export async function consultarCuentasCorrientesxUsuario(request: Request, response: Response): Promise<Response> {
   const filtro: FiltroCuentasCorrientes = request.body;
 
@@ -167,6 +169,61 @@ export async function consultarCuentasCorrientesxUsuario(request: Request, respo
       return response.status(HttpCodes.CONFLICT).json(error.message);
     });
 }
+
+export async function consultarAllUsuarios(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .consultarAllUsuarios()
+    .then((x: Usuario[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function registrarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const cuentaCorriente: CuentaCorriente = request.body;
+
+  return _usersService
+    .registrarCuentaCorriente(cuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function ModificarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const cuentaCorriente: CuentaCorriente = request.body;
+
+  return _usersService
+    .modificarCuentaCorriente(cuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const idCuentaCorriente: number = +request.params.id;
+
+  return _usersService
+    .eliminarCuentaCorriente(idCuentaCorriente)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -178,5 +235,9 @@ export const UsersController = {
   registrarAsistencia,
   modificarAsistencia,
   eliminarAsistencia,
-  consultarCuentasCorrientesxUsuario
+  consultarCuentasCorrientesxUsuario,
+  registrarCuentaCorriente,
+  consultarAllUsuarios,
+  eliminarCuentaCorriente,
+  ModificarCuentaCorriente
 };
