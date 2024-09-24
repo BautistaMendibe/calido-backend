@@ -76,6 +76,36 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/usuarios/consultar-usuarios-cuenta-corriente',
+    method: 'post',
+    action: UsersController.consultarCuentasCorrientesxUsuario,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/registrar-cuenta-corriente',
+    method: 'post',
+    action: UsersController.registrarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/modificar-cuenta-corriente',
+    method: 'post',
+    action: UsersController.modificarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-cuenta-corriente/:id',
+    method: 'get',
+    action: UsersController.eliminarCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/consultar-all-usuarios',
+    method: 'get',
+    action: UsersController.consultarAllUsuarios,
+    schema: schemaEmpty
+  },
+  {
     path: '/usuarios/obtener-roles-usuario/:id',
     method: 'get',
     action: UsersController.obtenerRolesUsuario,

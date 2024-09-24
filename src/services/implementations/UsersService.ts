@@ -2,13 +2,16 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { logger } from '../../logger/CustomLogger';
 import { TYPES } from '../types/types';
-import { IUsersService } from '../interfaces/IUserService';
-import { IUsersRepository } from '../../repositories/UsersRepository';
+import { IUsersService } from '../interfaces';
+import { IUsersRepository } from '../../repositories';
 import { SpResult } from '../../models';
 import { Usuario } from '../../models/Usuario';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
+import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
+import { CuentaCorriente } from '../../models/CuentaCorriente';
+import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
 
 /**
@@ -161,6 +164,66 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.obtenerRolesUsuario(idUsuario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarCuentasCorrientesxUsuario(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarAllUsuarios(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarAllUsuarios();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarCuentaCorriente(cuentaCorriente);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.modificarCuentaCorriente(cuentaCorriente);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.eliminarCuentaCorriente(idCuentaCorriente);
         resolve(result);
       } catch (e) {
         logger.error(e);
