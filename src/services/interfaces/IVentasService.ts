@@ -5,6 +5,7 @@ import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
+import { TipoFactura } from '../../models/TipoFactura';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -12,4 +13,5 @@ export interface IVentasService {
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
+  obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura>;
 }

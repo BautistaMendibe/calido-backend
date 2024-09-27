@@ -323,6 +323,12 @@ export const AppRoutes = [
     action: VentasController.obtenerCondicionesIva,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-tipos-facturacion/:idCondicionIva',
+    method: 'get',
+    action: VentasController.obtenerTipoFacturacion,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

@@ -7,6 +7,8 @@ import { VentasService } from '../services/implementations/VentasService';
 import { Venta } from '../models/Venta';
 import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
+import { TipoFactura } from '../models/TipoFactura';
+import { CondicionIva } from '../models/CondicionIva';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -51,7 +53,21 @@ export async function buscarFormasDePago(request: Request, response: Response): 
 export async function obtenerCondicionesIva(request: Request, response: Response): Promise<Response> {
   return _ventasService
     .obtenerCondicionesIva()
-    .then((x: FormaDePago[]) => {
+    .then((x: CondicionIva[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function obtenerTipoFacturacion(request: Request, response: Response): Promise<Response> {
+  const idCondicionIva = +request.params.idCondicionIva;
+
+  return _ventasService
+    .obtenerTipoFacturacion(idCondicionIva)
+    .then((x: TipoFactura) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {
@@ -64,5 +80,6 @@ export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
   buscarFormasDePago,
-  obtenerCondicionesIva
+  obtenerCondicionesIva,
+  obtenerTipoFacturacion
 };

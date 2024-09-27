@@ -7,12 +7,12 @@ import { IVentasRepository } from '../../repositories/VentasRepository';
 import { Venta } from '../../models/Venta';
 import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
-import { buscarUsuariosClientes } from '../../controllers/VentasController';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
 import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
+import { TipoFactura } from '../../models/TipoFactura';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -109,6 +109,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.obtenerCondicionesIva();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.obtenerTipoFacturacion(idCondicionIva);
         resolve(result);
       } catch (e) {
         logger.error(e);

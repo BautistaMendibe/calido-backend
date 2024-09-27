@@ -9,6 +9,7 @@ import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
 import { PoolClient } from 'pg';
 import { CondicionIva } from '../models/CondicionIva';
+import { TipoFactura } from '../models/TipoFactura';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -19,6 +20,7 @@ export interface IVentasRepository {
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
+  obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura>;
 }
 
 /**
@@ -114,13 +116,35 @@ export class VentasRepository implements IVentasRepository {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CONDICION_IVA');
-      const result: FormaDePago[] = plainToClass(FormaDePago, res.rows, {
+      const result: CondicionIva[] = plainToClass(CondicionIva, res.rows, {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al buscar los medios de pago: ' + err);
-      throw new Error('Error al buscar los medios de pago.');
+      logger.error('Error al buscar las categorias: ' + err);
+      throw new Error('Error al buscar las categorias.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar los tipos de facturas existente segun la categoria del cliente
+   * @param {idCategoria}
+   * @returns {CondicionIva[]}
+   */
+  async obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura> {
+    const client = await PoolDb.connect();
+    const params = [idCondicionIva];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.OBTENER_TIPO_FACTURACION($1)', params);
+      const result: TipoFactura = plainToClass(TipoFactura, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar los tipos de facturacion: ' + err);
+      throw new Error('Error al buscar los tipos de facturacion.');
     } finally {
       client.release();
     }
