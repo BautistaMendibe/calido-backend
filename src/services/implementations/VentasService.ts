@@ -12,6 +12,7 @@ import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
 import { PoolClient } from 'pg';
+import { CondicionIva } from '../../models/CondicionIva';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -96,6 +97,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.buscarFormasDePago();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerCondicionesIva(): Promise<CondicionIva[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.obtenerCondicionesIva();
         resolve(result);
       } catch (e) {
         logger.error(e);

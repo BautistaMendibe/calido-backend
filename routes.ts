@@ -317,6 +317,12 @@ export const AppRoutes = [
     action: VentasController.buscarFormasDePago,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-condiciones-iva',
+    method: 'get',
+    action: VentasController.obtenerCondicionesIva,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

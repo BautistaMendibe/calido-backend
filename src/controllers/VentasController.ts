@@ -48,8 +48,21 @@ export async function buscarFormasDePago(request: Request, response: Response): 
     });
 }
 
+export async function obtenerCondicionesIva(request: Request, response: Response): Promise<Response> {
+  return _ventasService
+    .obtenerCondicionesIva()
+    .then((x: FormaDePago[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
-  buscarFormasDePago
+  buscarFormasDePago,
+  obtenerCondicionesIva
 };

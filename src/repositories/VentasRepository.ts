@@ -8,6 +8,7 @@ import { Producto } from '../models/Producto';
 import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
 import { PoolClient } from 'pg';
+import { CondicionIva } from '../models/CondicionIva';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -17,6 +18,7 @@ export interface IVentasRepository {
   registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
+  obtenerCondicionesIva(): Promise<CondicionIva[]>;
 }
 
 /**
@@ -92,6 +94,26 @@ export class VentasRepository implements IVentasRepository {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.FORMA_DE_PAGO WHERE activo = 1');
+      const result: FormaDePago[] = plainToClass(FormaDePago, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar los medios de pago: ' + err);
+      throw new Error('Error al buscar los medios de pago.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las condiciones iva existente
+   * @returns {CondicionIva[]}
+   */
+  async obtenerCondicionesIva(): Promise<CondicionIva[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CONDICION_IVA');
       const result: FormaDePago[] = plainToClass(FormaDePago, res.rows, {
         excludeExtraneousValues: true
       });
