@@ -2,12 +2,14 @@ import { Usuario } from './Usuario';
 import { Expose } from 'class-transformer';
 import { TipoComprobante } from './TipoComprobante';
 import { DetalleComprobante } from './DetalleComprobante';
+import { Pedido } from './Pedido';
+import { Proveedor } from './Proveedor';
 
 export class Comprobante {
   @Expose({ name: 'idcomprobante' })
   id: number;
   @Expose({ name: 'numerocomprobante' })
-  numerocomprobante: number;
+  numeroComprobante: number;
   @Expose({ name: 'fechaemision' })
   fechaEmision: Date;
   @Expose({ name: 'idproveedor' })
@@ -22,15 +24,19 @@ export class Comprobante {
   idReceptor: number;
   @Expose({ name: 'idtipocomprobante' })
   idTipoComprobante: number;
+  @Expose({ name: 'idpedido' })
+  idPedido: number;
 
   detalleComprobante: DetalleComprobante[];
   responsable: Usuario;
   receptor: Usuario;
   tipoComprobante: TipoComprobante;
+  pedido: Pedido;
+  proveedor: Proveedor;
 
   constructor(
     id?: number,
-    numerocomprobante?: number,
+    numeroComprobante?: number,
     fechaEmision?: Date,
     idProveedor?: number,
     observaciones?: string,
@@ -41,10 +47,13 @@ export class Comprobante {
     responsable?: Usuario,
     receptor?: Usuario,
     idTipoComprobante?: number,
-    tipoComprobante?: TipoComprobante
+    tipoComprobante?: TipoComprobante,
+    idPedido?: number,
+    pedido?: Pedido,
+    proveedor?: Proveedor
   ) {
     this.id = id!;
-    this.numerocomprobante = numerocomprobante!;
+    this.numeroComprobante = numeroComprobante!;
     this.fechaEmision = fechaEmision!;
     this.idProveedor = idProveedor!;
     this.observaciones = observaciones!;
@@ -56,5 +65,8 @@ export class Comprobante {
     this.receptor = receptor!;
     this.idTipoComprobante = idTipoComprobante!;
     this.tipoComprobante = tipoComprobante!;
+    this.idPedido = idPedido!;
+    this.pedido = pedido!;
+    this.proveedor = proveedor!;
   }
 }
