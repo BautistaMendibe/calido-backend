@@ -13,5 +13,5 @@ export interface IVentasService {
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
-  obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura>;
+  obtenerTipoFacturacion(): Promise<TipoFactura>;
 }

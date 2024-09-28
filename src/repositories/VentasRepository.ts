@@ -20,7 +20,7 @@ export interface IVentasRepository {
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
-  obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura>;
+  obtenerTipoFacturacion(): Promise<TipoFactura>;
 }
 
 /**
@@ -133,11 +133,10 @@ export class VentasRepository implements IVentasRepository {
    * @param {idCategoria}
    * @returns {CondicionIva[]}
    */
-  async obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura> {
+  async obtenerTipoFacturacion(): Promise<TipoFactura> {
     const client = await PoolDb.connect();
-    const params = [idCondicionIva];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.OBTENER_TIPO_FACTURACION($1)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.');
       const result: TipoFactura = plainToClass(TipoFactura, res.rows[0], {
         excludeExtraneousValues: true
       });

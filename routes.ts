@@ -324,7 +324,7 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
-    path: '/ventas/obtener-tipos-facturacion/:idCondicionIva',
+    path: '/ventas/obtener-tipos-facturacion',
     method: 'get',
     action: VentasController.obtenerTipoFacturacion,
     schema: schemaEmpty

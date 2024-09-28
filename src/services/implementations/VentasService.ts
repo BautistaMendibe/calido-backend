@@ -117,10 +117,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async obtenerTipoFacturacion(idCondicionIva: number): Promise<TipoFactura> {
+  public async obtenerTipoFacturacion(): Promise<TipoFactura> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.obtenerTipoFacturacion(idCondicionIva);
+        const result = await this._ventasRepository.obtenerTipoFacturacion();
         resolve(result);
       } catch (e) {
         logger.error(e);

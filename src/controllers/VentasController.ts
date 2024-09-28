@@ -63,10 +63,10 @@ export async function obtenerCondicionesIva(request: Request, response: Response
 }
 
 export async function obtenerTipoFacturacion(request: Request, response: Response): Promise<Response> {
-  const idCondicionIva = +request.params.idCondicionIva;
+  //const idCondicionIva = +request.params.idCondicionIva;
 
   return _ventasService
-    .obtenerTipoFacturacion(idCondicionIva)
+    .obtenerTipoFacturacion()
     .then((x: TipoFactura) => {
       return response.status(HttpCodes.OK).json(x);
     })
