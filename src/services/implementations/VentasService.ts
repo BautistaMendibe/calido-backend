@@ -117,7 +117,7 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async obtenerTipoFacturacion(): Promise<TipoFactura> {
+  public async obtenerTipoFacturacion(): Promise<TipoFactura[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.obtenerTipoFacturacion();

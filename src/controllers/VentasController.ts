@@ -67,7 +67,7 @@ export async function obtenerTipoFacturacion(request: Request, response: Respons
 
   return _ventasService
     .obtenerTipoFacturacion()
-    .then((x: TipoFactura) => {
+    .then((x: TipoFactura[]) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {
