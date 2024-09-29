@@ -8,6 +8,8 @@ import { FiltrosProductos } from '../models/comandos/FiltroProductos';
 import { Proveedor } from '../models/Proveedor';
 import { TipoProducto } from '../models/TipoProducto';
 import { Marca } from '../models/Marca';
+import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProductos';
+import { DetalleProducto } from '../models/DetalleProducto';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -18,6 +20,10 @@ export interface IProductosRepository {
   obtenerTipoProductos(): Promise<TipoProducto[]>;
   modificarProducto(producto: Producto): Promise<SpResult>;
   eliminarProducto(idProducto: number): Promise<SpResult>;
+  consultarDetallesProductos(filtro: FiltrosDetallesProductos): Promise<DetalleProducto[]>;
+  registrarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
+  eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
+  modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
 }
 
 /**
@@ -190,6 +196,91 @@ export class ProductosRepository implements IProductosRepository {
     } catch (err) {
       logger.error('Error al eliminar producto: ' + err);
       throw new Error('Error al eliminar producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarDetallesProductos(filtro: FiltrosDetallesProductos): Promise<DetalleProducto[]> {
+    const client = await PoolDb.connect();
+
+    const producto = filtro.producto || null;
+    const proveedor = filtro.proveedor || null;
+
+    const params = [producto, proveedor];
+
+    try {
+      const res = await client.query<DetalleProducto[]>('SELECT * FROM public.BUSCAR_DETALLES_PRODUCTOS($1, $2)', params);
+
+      const detallesProductos: DetalleProducto[] = res.rows.map((row: any) => {
+        const producto: Producto = plainToClass(Producto, row, { excludeExtraneousValues: true });
+        const proveedor: Proveedor = plainToClass(Proveedor, row, { excludeExtraneousValues: true });
+
+        // Mapeamos el detalleProductos
+        const detalleProducto: DetalleProducto = plainToClass(DetalleProducto, row, { excludeExtraneousValues: true });
+
+        // Establecemos las relaciones del detalle producto
+        detalleProducto.producto = producto;
+        detalleProducto.proveedor = proveedor;
+
+        return detalleProducto;
+      });
+
+      return detallesProductos;
+    } catch (err) {
+      logger.error('Error al consultar Detalles Productos: ' + err);
+      throw new Error('Error al consultar Detalles Productos.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarDetalleProducto(detalle: DetalleProducto): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [detalle.cantEnInventario, detalle.idProducto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PRODUCTO($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Detalle Producto: ' + err);
+      throw new Error('Error al registrar Detalle Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idDetalleProducto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_DETALLE_PRODUCTO($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar detalle producto: ' + err);
+      throw new Error('Error al eliminar detalle producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [detalle.id, detalle.cantEnInventario, detalle.idProducto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_DETALLE_PRODUCTO($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar el Detalle Producto: ' + err);
+      throw new Error('Error al modificar el Detalle Producto.');
     } finally {
       client.release();
     }
