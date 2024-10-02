@@ -329,6 +329,12 @@ export const AppRoutes = [
     action: VentasController.obtenerTipoFacturacion,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/facturar-venta',
+    method: 'post',
+    action: VentasController.facturarVentaConAfip,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

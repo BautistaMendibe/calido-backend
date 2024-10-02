@@ -9,6 +9,7 @@ import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
 import { TipoFactura } from '../models/TipoFactura';
 import { CondicionIva } from '../models/CondicionIva';
+import { ComprobanteResponse } from '../models/ComprobanteResponse';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -76,10 +77,25 @@ export async function obtenerTipoFacturacion(request: Request, response: Respons
     });
 }
 
+export async function facturarVentaConAfip(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .facturarVentaConAfip(venta)
+    .then((x: ComprobanteResponse) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
   buscarFormasDePago,
   obtenerCondicionesIva,
-  obtenerTipoFacturacion
+  obtenerTipoFacturacion,
+  facturarVentaConAfip
 };
