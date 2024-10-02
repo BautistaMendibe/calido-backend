@@ -77,11 +77,12 @@ export class ComprobantesRepository implements IComprobantesRepository {
     const fechaEmisionDesde = filtro.fechaEmisionDesde || null;
     const fechaEmisionHasta = filtro.fechaEmisionHasta || null;
     const responsable = filtro.responsable || null;
+    const tipoComprobante = filtro.tipoComprobante || null;
 
-    const params = [numeroComprobante, proveedor, fechaEmisionDesde, fechaEmisionHasta, responsable];
+    const params = [numeroComprobante, proveedor, fechaEmisionDesde, fechaEmisionHasta, responsable, tipoComprobante];
 
     try {
-      const res = await client.query<Comprobante[]>('SELECT * FROM public.BUSCAR_COMPROBANTES($1, $2, $3, $4, $5)', params);
+      const res = await client.query<Comprobante[]>('SELECT * FROM public.BUSCAR_COMPROBANTES($1, $2, $3, $4, $5, $6)', params);
 
       const comprobantes = res.rows.map((row: any) => {
         // Mapeamos usuarios, tipos de comprobantes y sus relaciones
