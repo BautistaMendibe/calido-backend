@@ -16,6 +16,8 @@ import { TipoFactura } from '../../models/TipoFactura';
 import axios from 'axios';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
 import { error } from 'winston';
+import { IUsersRepository } from '../../repositories';
+import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -24,9 +26,14 @@ import { error } from 'winston';
 @injectable()
 export class VentasService implements IVentasService {
   private readonly _ventasRepository: IVentasRepository;
+  private readonly _usuariosRepository: IUsersRepository;
 
-  constructor(@inject(TYPES.VentasRepository) repository: IVentasRepository) {
+  constructor(
+    @inject(TYPES.VentasRepository) repository: IVentasRepository,
+    @inject(TYPES.UsersRepository) userRepository: IUsersRepository
+  ) {
     this._ventasRepository = repository;
+    this._usuariosRepository = userRepository;
   }
 
   public async registrarVentaConDetalles(venta: Venta): Promise<SpResult> {
@@ -135,8 +142,20 @@ export class VentasService implements IVentasService {
   public async facturarVentaConAfip(venta: Venta): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.llamarApiFacturacion(venta);
-        resolve(result);
+        if (venta.usuario?.id) {
+          // buscar info del usuario vinculado a la venta
+          const filtroCliente = new FiltroEmpleados();
+          filtroCliente.id = venta.usuario.id;
+          // Obtener el usuario actualizado sin reasignar directamente a venta.usuario
+          const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
+          // Asignar el usuario actualizado
+          venta.usuario = usuarios[0];
+        } else {
+          venta.usuario = new Usuario();
+        }
+
+        //const result = await this.llamarApiFacturacion(venta);
+        //resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -158,14 +177,14 @@ export class VentasService implements IVentasService {
         documento_nro: '111132333',
         razon_social: 'Juan Pedro KJL',
         provincia: '2',
-        email: 'email@dominio.com',
-        envia_por_mail: 'N',
+        email: 'bautistamendibe10@gmail.com',
+        envia_por_mail: 'S',
         rg5329: 'N'
       },
       comprobante: {
         rubro: 'Servicio web',
         tipo: 'FACTURA B',
-        numero: 2136,
+        numero: 2138,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: 1,
