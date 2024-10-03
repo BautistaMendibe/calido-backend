@@ -227,13 +227,13 @@ export class UsersRepository implements IUsersRepository {
    */
   async consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]> {
     const client = await PoolDb.connect();
-
+    const id = filtro.id;
     const nombre = filtro.nombre;
     const apellido = filtro.apellido;
     const mail = filtro.mail;
-    const params = [nombre, apellido, mail];
+    const params = [id, nombre, apellido, mail];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3, $4)', params);
 
       const usuarios = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Usuario
