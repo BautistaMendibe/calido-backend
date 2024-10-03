@@ -7,9 +7,9 @@ import { IProductosRepository } from '../../repositories/ProductosRepository';
 import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
 import { FiltrosProductos } from '../../models/comandos/FiltroProductos';
-import { Marca } from '../../models/Marca';
 import { TipoProducto } from '../../models/TipoProducto';
-import { Proveedor } from '../../models/Proveedor';
+import { DetalleProducto } from '../../models/DetalleProducto';
+import { FiltrosDetallesProductos } from '../../models/comandos/FiltroDetallesProductos';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -78,6 +78,54 @@ export class ProductosService implements IProductosService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._productosRepository.eliminarProducto(idProducto);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarDetalleProducto(detalle: DetalleProducto): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.registrarDetalleProducto(detalle);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.modificarDetalleProducto(detalle);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarDetallesProductos(filtro: FiltrosDetallesProductos): Promise<DetalleProducto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.consultarDetallesProductos(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.eliminarDetalleProducto(idDetalleProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);

@@ -260,6 +260,31 @@ export const AppRoutes = [
     action: ProductosController.eliminarProducto,
     schema: schemaEmpty
   },
+
+  {
+    path: '/productos/registrar-detalle-producto',
+    method: 'post',
+    action: ProductosController.registrarDetalleProducto,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/modificar-detalle-producto',
+    method: 'post',
+    action: ProductosController.modificarDetalleProducto,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/consultar-detalles-productos',
+    method: 'post',
+    action: ProductosController.consultarDetalleProductos,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/eliminar-detalle-producto/:id',
+    method: 'get',
+    action: ProductosController.eliminarDetalleProducto,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // Region Marcas

@@ -8,6 +8,8 @@ import { FiltrosComprobantes } from '../models/comandos/FiltroComprobantes';
 import { TipoComprobante } from '../models/TipoComprobante';
 import { Usuario } from '../models/Usuario';
 import { DetalleComprobante } from '../models/DetalleComprobante';
+import { Pedido } from '../models/Pedido';
+import { Proveedor } from '../models/Proveedor';
 
 /**
  * Interfaz del repositorio de Comprobantes
@@ -36,7 +38,7 @@ export class ComprobantesRepository implements IComprobantesRepository {
     const detalleComprobanteJsonb = JSON.stringify(comprobante.detalleComprobante);
 
     const params = [
-      comprobante.numerocomprobante,
+      comprobante.numeroComprobante,
       comprobante.fechaEmision,
       comprobante.idProveedor,
       comprobante.observaciones,
@@ -44,11 +46,12 @@ export class ComprobantesRepository implements IComprobantesRepository {
       comprobante.idResponsable,
       comprobante.idReceptor,
       detalleComprobanteJsonb,
-      comprobante.idTipoComprobante
+      comprobante.idTipoComprobante,
+      comprobante.idPedido
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -74,17 +77,39 @@ export class ComprobantesRepository implements IComprobantesRepository {
     const fechaEmisionDesde = filtro.fechaEmisionDesde || null;
     const fechaEmisionHasta = filtro.fechaEmisionHasta || null;
     const responsable = filtro.responsable || null;
+    const tipoComprobante = filtro.tipoComprobante || null;
 
-    const params = [numeroComprobante, proveedor, fechaEmisionDesde, fechaEmisionHasta, responsable];
+    const params = [numeroComprobante, proveedor, fechaEmisionDesde, fechaEmisionHasta, responsable, tipoComprobante];
 
     try {
-      const res = await client.query<Comprobante[]>('SELECT * FROM public.buscar_pedidos($1, $2, $3, $4, $5)', params);
+      const res = await client.query<Comprobante[]>('SELECT * FROM public.BUSCAR_COMPROBANTES($1, $2, $3, $4, $5, $6)', params);
 
       const comprobantes = res.rows.map((row: any) => {
         // Mapeamos usuarios, tipos de comprobantes y sus relaciones
-        const usuarioResponsable: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
-        const usuarioReceptor: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const usuarioResponsable: Usuario = plainToClass(
+          Usuario,
+          {
+            id: row.responsable_idusuario,
+            nombreUsuario: row.responsable_nusuario,
+            nombre: row.responsable_nombre,
+            apellido: row.responsable_apellido
+          },
+          { excludeExtraneousValues: true }
+        );
+        const usuarioReceptor: Usuario = plainToClass(
+          Usuario,
+          {
+            id: row.receptor_idusuario,
+            nombreUsuario: row.receptor_nusuario,
+            nombre: row.receptor_nombre,
+            apellido: row.receptor_apellido
+          },
+          { excludeExtraneousValues: true }
+        );
+
         const tipoComprobante: TipoComprobante = plainToClass(TipoComprobante, row, { excludeExtraneousValues: true });
+        const pedido: Pedido = plainToClass(Pedido, row, { excludeExtraneousValues: true });
+        const proveedor: Proveedor = plainToClass(Proveedor, row, { excludeExtraneousValues: true });
 
         // Mapeamos los detalles del comprobante
         const detalleComprobante: DetalleComprobante[] = (row.detalles_comprobante || []).map((detalle: any) =>
@@ -99,6 +124,8 @@ export class ComprobantesRepository implements IComprobantesRepository {
         comprobante.receptor = usuarioReceptor;
         comprobante.tipoComprobante = tipoComprobante;
         comprobante.detalleComprobante = detalleComprobante;
+        comprobante.pedido = pedido;
+        comprobante.proveedor = proveedor;
 
         return comprobante;
       });
@@ -152,7 +179,7 @@ export class ComprobantesRepository implements IComprobantesRepository {
 
     const params = [
       comprobante.id,
-      comprobante.numerocomprobante,
+      comprobante.numeroComprobante,
       comprobante.fechaEmision,
       comprobante.idProveedor,
       comprobante.observaciones,
@@ -160,11 +187,12 @@ export class ComprobantesRepository implements IComprobantesRepository {
       comprobante.idResponsable,
       comprobante.idReceptor,
       detalleComprobanteJsonb,
-      comprobante.idTipoComprobante
+      comprobante.idTipoComprobante,
+      comprobante.idPedido
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

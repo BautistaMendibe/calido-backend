@@ -39,11 +39,12 @@ export class PedidosRepository implements IPedidosRepository {
     const client = await PoolDb.connect();
 
     const detallePedidoJsonb = JSON.stringify(pedido.detallePedido);
+    const fechaEntrega = pedido.fechaEntrega ? pedido.fechaEntrega : null;
 
     const params = [
       pedido.montoEnvio,
       pedido.fechaEmision,
-      pedido.fechaEntrega,
+      fechaEntrega,
       pedido.idEstadoPedido,
       pedido.idTransporte,
       pedido.idProveedor,
