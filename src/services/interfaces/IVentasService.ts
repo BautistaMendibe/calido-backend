@@ -15,5 +15,5 @@ export interface IVentasService {
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
-  facturarVentaConAfip(venta: Venta): Promise<ComprobanteResponse>;
+  facturarVentaConAfip(venta: Venta): Promise<SpResult>;
 }

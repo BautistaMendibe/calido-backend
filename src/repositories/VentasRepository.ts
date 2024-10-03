@@ -10,6 +10,7 @@ import { FormaDePago } from '../models/FormaDePago';
 import { PoolClient } from 'pg';
 import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
+import { ComprobanteResponse } from '../models/ComprobanteResponse';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -21,6 +22,7 @@ export interface IVentasRepository {
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
+  guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
 }
 
 /**
@@ -144,6 +146,37 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar los tipos de facturacion: ' + err);
       throw new Error('Error al buscar los tipos de facturacion.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para guardar el comprobante generado y vincularlo a la venta
+   * @param {idCategoria}
+   * @returns {CondicionIva[]}
+   */
+  async guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [
+      venta.id,
+      comprobanteResponse.comprobante_nro,
+      comprobanteResponse.afip_qr,
+      comprobanteResponse.cae,
+      comprobanteResponse.comprobante_tipo,
+      comprobanteResponse.comprobante_pdf_url,
+      comprobanteResponse.comprobante_ticket_url,
+      comprobanteResponse.vencimiento_pago
+    ];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al guardar el comprobante de venta: ' + err);
+      throw new Error('Error al guardar el comprobante de venta.');
     } finally {
       client.release();
     }

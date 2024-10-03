@@ -82,7 +82,7 @@ export async function facturarVentaConAfip(request: Request, response: Response)
 
   return _ventasService
     .facturarVentaConAfip(venta)
-    .then((x: ComprobanteResponse) => {
+    .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {

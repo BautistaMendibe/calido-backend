@@ -15,6 +15,7 @@ import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import axios from 'axios';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
+import { error } from 'winston';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -131,12 +132,11 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async facturarVentaConAfip(venta: Venta): Promise<ComprobanteResponse> {
+  public async facturarVentaConAfip(venta: Venta): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        await this.llamarApiFacturacion(venta);
-        //const result = await this._ventasRepository.obtenerTipoFacturacion();
-        //resolve(result);
+        const result = await this.llamarApiFacturacion(venta);
+        resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -145,7 +145,7 @@ export class VentasService implements IVentasService {
   }
 
   // Funcion para hacer la llamada a la API de facturación
-  private async llamarApiFacturacion(venta: Venta): Promise<ComprobanteResponse> {
+  private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
@@ -165,9 +165,9 @@ export class VentasService implements IVentasService {
       comprobante: {
         rubro: 'Servicio web',
         tipo: 'FACTURA B',
-        numero: 2134,
+        numero: 2136,
         operacion: 'V',
-        detalle: venta.productos.map(producto => ({
+        detalle: venta.productos.map((producto) => ({
           cantidad: 1,
           afecta_stock: 'S',
           actualiza_precio: 'S',
@@ -199,7 +199,8 @@ export class VentasService implements IVentasService {
 
       if (response.data.error === 'N') {
         console.log('Comprobante guardado correctamente:', response.data.rta);
-        return new ComprobanteResponse(response.data);
+        const comprobante = new ComprobanteResponse(response.data);
+        return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
       } else {
         console.error('Error en la facturación:', response.data.errores);
         throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));
