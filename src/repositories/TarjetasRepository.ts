@@ -72,7 +72,9 @@ export class TarjetasRepository implements ITarjetasRepository {
         const tarjeta: Tarjeta = plainToClass(Tarjeta, row, { excludeExtraneousValues: true });
 
         // Mapeamos las cuotas por tarjeta
-        const cuotasPorTarjeta: CuotaPorTarjeta[] = (row.cuotas_por_tarjeta || []).map((cuotas: any) => plainToClass(CuotaPorTarjeta, cuotas, { excludeExtraneousValues: true }));
+        const cuotasPorTarjeta: CuotaPorTarjeta[] = (row.cuotas_por_tarjeta || []).map((cuota_por_tarjeta: any) =>
+          plainToClass(CuotaPorTarjeta, cuota_por_tarjeta, { excludeExtraneousValues: true })
+        );
 
         // Mapeamos la tarjeta
         tarjeta.tipoTarjeta = tipoTarjeta;
