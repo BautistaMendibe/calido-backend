@@ -33,6 +33,9 @@ import { IPedidosRepository, PedidosRepository } from '../repositories/PedidosRe
 import { ComprobantesRepository, IComprobantesRepository } from '../repositories/ComprobantesRepository';
 import { ComprobantesService } from './implementations/ComprobantesService';
 import { IComprobantesService } from './interfaces/IComprobantesService';
+import { ITarjetasService } from './interfaces/ITarjetasService';
+import { TarjetasService } from './implementations/TarjetasService';
+import { ITarjetasRepository, TarjetasRepository } from '../repositories/TarjetasRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -53,6 +56,7 @@ container.bind<IVentasService>(TYPES.VentasService).to(VentasService);
 container.bind<ITransportesService>(TYPES.TransportesService).to(TransportesService);
 container.bind<IPedidosService>(TYPES.PedidosService).to(PedidosService);
 container.bind<IComprobantesService>(TYPES.ComprobantesService).to(ComprobantesService);
+container.bind<ITarjetasService>(TYPES.TarjetasService).to(TarjetasService);
 
 // Repositorys
 container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
@@ -66,5 +70,6 @@ container.bind<IVentasRepository>(TYPES.VentasRepository).to(VentasRepository);
 container.bind<ITransportesRepository>(TYPES.TransportesRepository).to(TransportesRepository);
 container.bind<IPedidosRepository>(TYPES.PedidosRepository).to(PedidosRepository);
 container.bind<IComprobantesRepository>(TYPES.ComprobantesRepository).to(ComprobantesRepository);
+container.bind<ITarjetasRepository>(TYPES.TarjetasRepository).to(TarjetasRepository);
 
 export default container;
