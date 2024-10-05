@@ -7,6 +7,7 @@ import { Tarjeta } from '../models/Tarjeta';
 import { FiltrosTarjetas } from '../models/comandos/FiltroTarjetas';
 import { TipoTarjeta } from '../models/TipoTarjeta';
 import { CuotaPorTarjeta } from '../models/CuotaPorTarjeta';
+import { Cuota } from '../models/Cuota';
 
 /**
  * Interfaz del repositorio de Tarjetas
@@ -17,6 +18,7 @@ export interface ITarjetasRepository {
   eliminarTarjeta(idTarjeta: number): Promise<SpResult>;
   buscarTiposTarjetas(): Promise<TipoTarjeta[]>;
   modificarTarjeta(tarjeta: Tarjeta): Promise<SpResult>;
+  consultarCuotas(): Promise<Cuota[]>;
 }
 
 /**
@@ -120,6 +122,22 @@ export class TarjetasRepository implements ITarjetasRepository {
     } catch (err) {
       logger.error('Error al consultar Tipos Tarjetas: ' + err);
       throw new Error('Error al consultar Tipos Tarjetas.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarCuotas(): Promise<Cuota[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Cuota[]>('SELECT * FROM PUBLIC.CUOTA c WHERE c.activo = 1');
+      const result: Cuota[] = plainToClass(Cuota, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Cuotas: ' + err);
+      throw new Error('Error al consultar Cuotas.');
     } finally {
       client.release();
     }

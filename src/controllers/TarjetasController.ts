@@ -7,6 +7,7 @@ import { TarjetasService } from '../services/implementations/TarjetasService';
 import { Tarjeta } from '../models/Tarjeta';
 import { FiltrosTarjetas } from '../models/comandos/FiltroTarjetas';
 import { TipoTarjeta } from '../models/TipoTarjeta';
+import { Cuota } from '../models/Cuota';
 
 const _tarjetasService = container.get<TarjetasService>(TYPES.TarjetasService);
 
@@ -64,6 +65,18 @@ export async function buscarTiposTarjetas(request: Request, response: Response):
     });
 }
 
+export async function consultarCuotas(request: Request, response: Response): Promise<Response> {
+  return _tarjetasService
+    .consultarCuotas()
+    .then((x: Cuota[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function modificarTarjeta(request: Request, response: Response): Promise<Response> {
   const tarjeta: Tarjeta = request.body;
 
@@ -83,5 +96,6 @@ export const TarjetasController = {
   consultarTarjetas,
   eliminarTarjeta,
   buscarTiposTarjetas,
-  modificarTarjeta
+  modificarTarjeta,
+  consultarCuotas
 };

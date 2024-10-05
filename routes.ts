@@ -449,6 +449,12 @@ export const AppRoutes = [
     method: 'post',
     action: TarjetasController.modificarTarjeta,
     schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/buscar-cuotas',
+    method: 'get',
+    action: TarjetasController.consultarCuotas,
+    schema: schemaEmpty
   }
   //#endregion
 ];

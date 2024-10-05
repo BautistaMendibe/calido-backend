@@ -7,6 +7,7 @@ import { Tarjeta } from '../../models/Tarjeta';
 import { FiltrosTarjetas } from '../../models/comandos/FiltroTarjetas';
 import { TipoTarjeta } from '../../models/TipoTarjeta';
 import { ITarjetasService } from '../interfaces/ITarjetasService';
+import { Cuota } from '../../models/Cuota';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -63,6 +64,18 @@ export class TarjetasService implements ITarjetasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._tarjetasRepository.buscarTiposTarjetas();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarCuotas(): Promise<Cuota[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._tarjetasRepository.consultarCuotas();
         resolve(result);
       } catch (e) {
         logger.error(e);
