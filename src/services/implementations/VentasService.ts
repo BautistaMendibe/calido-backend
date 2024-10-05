@@ -28,10 +28,7 @@ export class VentasService implements IVentasService {
   private readonly _ventasRepository: IVentasRepository;
   private readonly _usuariosRepository: IUsersRepository;
 
-  constructor(
-    @inject(TYPES.VentasRepository) repository: IVentasRepository,
-    @inject(TYPES.UsersRepository) userRepository: IUsersRepository
-  ) {
+  constructor(@inject(TYPES.VentasRepository) repository: IVentasRepository, @inject(TYPES.UsersRepository) userRepository: IUsersRepository) {
     this._ventasRepository = repository;
     this._usuariosRepository = userRepository;
   }
@@ -146,7 +143,6 @@ export class VentasService implements IVentasService {
           // buscar info del usuario vinculado a la venta
           const filtroCliente = new FiltroEmpleados();
           filtroCliente.id = venta.usuario.id;
-          // Obtener el usuario actualizado sin reasignar directamente a venta.usuario
           const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
           // Asignar el usuario actualizado
           venta.usuario = usuarios[0];
@@ -154,8 +150,14 @@ export class VentasService implements IVentasService {
           venta.usuario = new Usuario();
         }
 
-        //const result = await this.llamarApiFacturacion(venta);
-        //resolve(result);
+        venta.fechaString = new Date(venta.fecha).toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+
+        const result = await this.llamarApiFacturacion(venta);
+        resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -171,20 +173,20 @@ export class VentasService implements IVentasService {
       usertoken: process.env['USER_TOKEN'],
       cliente: {
         documento_tipo: 'DNI',
-        condicion_iva: 'CF',
+        condicion_iva: venta.usuario?.condicionIva?.abreviatura ? venta.usuario?.condicionIva.abreviatura : 'CF',
         domicilio: 'Av Sta Fe 23132',
         condicion_pago: '201',
-        documento_nro: '111132333',
-        razon_social: 'Juan Pedro KJL',
+        documento_nro: venta.usuario.dni ? venta.usuario.dni : '11111111',
+        razon_social: venta.usuario.nombre + venta.usuario.apellido,
         provincia: '2',
-        email: 'bautistamendibe10@gmail.com',
-        envia_por_mail: 'S',
+        email: venta.usuario.mail ? venta.usuario.mail : '',
+        envia_por_mail: venta.usuario.mail ? 'S' : 'N',
         rg5329: 'N'
       },
       comprobante: {
-        rubro: 'Servicio web',
-        tipo: 'FACTURA B',
-        numero: 2138,
+        rubro: 'Tienda de indumentaria',
+        tipo: venta.facturacion.nombre,
+        numero: venta.id,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: 1,
@@ -192,20 +194,20 @@ export class VentasService implements IVentasService {
           actualiza_precio: 'S',
           bonificacion_porcentaje: 0,
           producto: {
-            descripcion: 'Hosting pagina web',
-            codigo: 37,
+            descripcion: producto.nombre,
+            codigo: producto.id,
             lista_precios: 'standard',
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: 145,
+            precio_unitario_sin_iva: producto.costo,
             rg5329: 'N'
           }
         })),
-        fecha: '02/10/2024',
-        vencimiento: '02/11/2024',
-        rubro_grupo_contable: 'Sevicios',
-        total: 175.45,
+        fecha: venta.fechaString,
+        vencimiento: '12/12/2025',
+        rubro_grupo_contable: 'Productos',
+        total: venta.montoTotal,
         cotizacion: 1,
         moneda: 'PES',
         punto_venta: 679,
@@ -217,7 +219,6 @@ export class VentasService implements IVentasService {
       const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
 
       if (response.data.error === 'N') {
-        console.log('Comprobante guardado correctamente:', response.data.rta);
         const comprobante = new ComprobanteResponse(response.data);
         return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
       } else {
