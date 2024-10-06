@@ -18,6 +18,7 @@ import { ComprobanteResponse } from '../../models/ComprobanteResponse';
 import { error } from 'winston';
 import { IUsersRepository } from '../../repositories';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
+import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -229,5 +230,17 @@ export class VentasService implements IVentasService {
       console.error('Error en la llamada a la API de facturación:', error.message);
       throw new Error('Error al llamar a la API de facturación.');
     }
+  }
+
+  public async buscarVentas(filtros: FiltrosVentas): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentas(filtros);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
   }
 }

@@ -7,6 +7,7 @@ import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
+import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -16,4 +17,5 @@ export interface IVentasService {
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   facturarVentaConAfip(venta: Venta): Promise<SpResult>;
+  buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
 }

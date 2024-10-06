@@ -360,6 +360,12 @@ export const AppRoutes = [
     action: VentasController.facturarVentaConAfip,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/buscar-ventas',
+    method: 'post',
+    action: VentasController.buscarVentas,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

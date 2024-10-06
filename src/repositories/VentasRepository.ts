@@ -11,6 +11,7 @@ import { PoolClient } from 'pg';
 import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
+import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -23,6 +24,7 @@ export interface IVentasRepository {
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
+  buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
 }
 
 /**
@@ -179,6 +181,33 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al guardar el comprobante de venta: ' + err);
       throw new Error('Error al guardar el comprobante de venta.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas generadas.
+   * @returns {Venta[]}
+   */
+  async buscarVentas(filtros: FiltrosVentas): Promise<Venta[]> {
+    const client = await PoolDb.connect();
+    const params = [
+      filtros.numero ? filtros.numero : null,
+      filtros.fechaDesde ? filtros.fechaDesde : null,
+      filtros.fechaHasta ? filtros.fechaHasta : null,
+      filtros.formaDePago ? filtros.formaDePago : null,
+      filtros.tipoFacturacion ? filtros.tipoFacturacion : null
+    ];
+    try {
+      const res = await client.query<Venta[]>('SELECT * FROM PUBLIC.BUSCAR_VENTAS($1, $2, $3, $4, $5)', params);
+      const result: Venta[] = plainToClass(Venta, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar las ventas: ' + err);
+      throw new Error('Error al buscar las ventas.');
     } finally {
       client.release();
     }
