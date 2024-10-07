@@ -18,6 +18,8 @@ export class Producto {
   codigoBarra: string;
   @Expose({ name: 'descripcion' })
   descripcion: string;
+  @Expose({ name: 'margenganancia' })
+  margenGanancia: number;
 
   @Expose({ name: 'subtotalventa' })
   subTotalVenta: number;
@@ -43,6 +45,7 @@ export class Producto {
     proveedor?: Proveedor,
     cantidadEnStock?: number,
     cantidadSeleccionada?: number,
+    margenGanancia?: number,
     subTotalVenta?: number
   ) {
     this.id = id ? id : null;
@@ -58,5 +61,6 @@ export class Producto {
     this.cantidadEnStock = cantidadEnStock ? cantidadEnStock : null;
     this.cantidadSeleccionada = cantidadSeleccionada ? cantidadSeleccionada : null;
     this.subTotalVenta = subTotalVenta ? subTotalVenta : null;
+    this.margenGanancia = margenGanancia ? margenGanancia : null;
   }
 }
