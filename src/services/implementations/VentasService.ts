@@ -190,7 +190,7 @@ export class VentasService implements IVentasService {
         numero: venta.id,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
-          cantidad: 1,
+          cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
           bonificacion_porcentaje: 0,
