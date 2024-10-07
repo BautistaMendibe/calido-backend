@@ -236,6 +236,26 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.buscarVentas(filtros);
+
+        const ventas: Venta[] = await Promise.all(
+          result.map(async (venta) => {
+            venta.productos = await this.buscarProductosPorVenta(venta.id);
+            return venta;
+          })
+        );
+
+        resolve(ventas);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarProductosPorVenta(idVenta: number): Promise<Producto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarProductosPorVenta(idVenta);
         resolve(result);
       } catch (e) {
         logger.error(e);

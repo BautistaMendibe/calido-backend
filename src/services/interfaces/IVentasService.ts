@@ -18,4 +18,5 @@ export interface IVentasService {
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   facturarVentaConAfip(venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
+  buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
 }

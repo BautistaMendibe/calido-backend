@@ -26,6 +26,7 @@ export interface IVentasRepository {
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
+  buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
 }
 
 /**
@@ -218,6 +219,27 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas: ' + err);
       throw new Error('Error al buscar las ventas.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar los productos vendidos en una determinada venta
+   * @param {IdVenta}
+   * @returns {Producto[]}
+   */
+  async buscarProductosPorVenta(idVenta: number): Promise<Producto[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Producto[]>('SELECT * FROM PUBLIC.BUSCAR_PRODUCTOS_POR_VENTA($1)', [idVenta]);
+      const result: Producto[] = plainToClass(Producto, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar productos por venta: ' + err);
+      throw new Error('Error al buscar productos por venta.');
     } finally {
       client.release();
     }
