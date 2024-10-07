@@ -18,6 +18,8 @@ export class Producto {
   codigoBarra: string;
   @Expose({ name: 'descripcion' })
   descripcion: string;
+  @Expose({ name: 'margenganancia' })
+  margenGanancia: number;
 
   tipoProducto: TipoProducto;
   marca: Marca;
@@ -38,7 +40,8 @@ export class Producto {
     marca?: Marca,
     proveedor?: Proveedor,
     cantidadEnStock?: number,
-    cantidadSeleccionada?: number
+    cantidadSeleccionada?: number,
+    margenGanancia?: number
   ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
@@ -52,5 +55,6 @@ export class Producto {
     this.imgProducto = imgProducto ? imgProducto : null;
     this.cantidadEnStock = cantidadEnStock ? cantidadEnStock : null;
     this.cantidadSeleccionada = cantidadSeleccionada ? cantidadSeleccionada : null;
+    this.margenGanancia = margenGanancia ? margenGanancia : null;
   }
 }
