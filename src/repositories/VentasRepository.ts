@@ -12,6 +12,7 @@ import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
+import { TipoProveedor } from '../models/TipoProveedor';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -200,11 +201,20 @@ export class VentasRepository implements IVentasRepository {
       filtros.tipoFacturacion ? filtros.tipoFacturacion : null
     ];
     try {
-      const res = await client.query<Venta[]>('SELECT * FROM PUBLIC.BUSCAR_VENTAS($1, $2, $3, $4, $5)', params);
-      const result: Venta[] = plainToClass(Venta, res.rows, {
-        excludeExtraneousValues: true
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS($1, $2, $3, $4, $5)', params);
+
+      const ventas: Venta[] = res.rows.map((row) => {
+        const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+
+        venta.formaDePago = formaDePago;
+        venta.comprobanteAfip = comprobante;
+
+        return venta;
       });
-      return result;
+
+      return ventas;
     } catch (err) {
       logger.error('Error al buscar las ventas: ' + err);
       throw new Error('Error al buscar las ventas.');

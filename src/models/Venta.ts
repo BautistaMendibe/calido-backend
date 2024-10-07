@@ -4,6 +4,7 @@ import { FormaDePago } from './FormaDePago';
 import { DetalleVenta } from './DetalleVenta';
 import { Producto } from './Producto';
 import { TipoFactura } from './TipoFactura';
+import { ComprobanteResponse } from './ComprobanteResponse';
 
 export class Venta {
   @Expose({ name: 'idventa' })
@@ -19,6 +20,7 @@ export class Venta {
   formaDePago: FormaDePago;
   productos: Producto[];
   facturacion: TipoFactura;
+  comprobanteAfip: ComprobanteResponse;
 
   constructor(
     id?: number,
@@ -29,7 +31,8 @@ export class Venta {
     fechaVencimiento?: Date,
     productos?: Producto[],
     facturacion?: TipoFactura,
-    fechaString?: string
+    fechaString?: string,
+    comprobanteAfip?: ComprobanteResponse
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -40,5 +43,6 @@ export class Venta {
     this.facturacion = facturacion!;
     this.fechaVencimiento = fechaVencimiento!;
     this.fechaString = fechaString!;
+    this.comprobanteAfip = comprobanteAfip!;
   }
 }

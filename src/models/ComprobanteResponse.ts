@@ -1,18 +1,27 @@
+import { Expose } from 'class-transformer';
+
 export class ComprobanteResponse {
   error: string;
   errores: string[];
   rta: string;
   cae: string;
   requiere_fec: string;
+  @Expose({ name: 'vencimiento_cae' })
   vencimiento_cae: string;
+  @Expose({ name: 'vencimiento_pago' })
   vencimiento_pago: string;
+  @Expose({ name: 'comprobante_pdf_url' })
   comprobante_pdf_url: string;
+  @Expose({ name: 'comprobante_ticket_url' })
   comprobante_ticket_url: string;
   afip_qr: string;
   afip_codigo_barras: string;
   envio_x_mail: string;
+  @Expose({ name: 'external_reference' })
   external_reference: string;
+  @Expose({ name: 'comprobante_nro' })
   comprobante_nro: string;
+  @Expose({ name: 'comprobante_tipo' })
   comprobante_tipo: string;
   micrositios: Micrositios;
   envio_x_mail_direcciones: string;
