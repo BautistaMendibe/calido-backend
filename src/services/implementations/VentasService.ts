@@ -7,11 +7,18 @@ import { IVentasRepository } from '../../repositories/VentasRepository';
 import { Venta } from '../../models/Venta';
 import { SpResult } from '../../models';
 import { Producto } from '../../models/Producto';
-import { buscarUsuariosClientes } from '../../controllers/VentasController';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
 import { PoolClient } from 'pg';
+import { CondicionIva } from '../../models/CondicionIva';
+import { TipoFactura } from '../../models/TipoFactura';
+import axios from 'axios';
+import { ComprobanteResponse } from '../../models/ComprobanteResponse';
+import { error } from 'winston';
+import { IUsersRepository } from '../../repositories';
+import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
+import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -20,9 +27,11 @@ import { PoolClient } from 'pg';
 @injectable()
 export class VentasService implements IVentasService {
   private readonly _ventasRepository: IVentasRepository;
+  private readonly _usuariosRepository: IUsersRepository;
 
-  constructor(@inject(TYPES.VentasRepository) repository: IVentasRepository) {
+  constructor(@inject(TYPES.VentasRepository) repository: IVentasRepository, @inject(TYPES.UsersRepository) userRepository: IUsersRepository) {
     this._ventasRepository = repository;
+    this._usuariosRepository = userRepository;
   }
 
   public async registrarVentaConDetalles(venta: Venta): Promise<SpResult> {
@@ -96,6 +105,157 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.buscarFormasDePago();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerCondicionesIva(): Promise<CondicionIva[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.obtenerCondicionesIva();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerTipoFacturacion(): Promise<TipoFactura[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.obtenerTipoFacturacion();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async facturarVentaConAfip(venta: Venta): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (venta.usuario?.id) {
+          // buscar info del usuario vinculado a la venta
+          const filtroCliente = new FiltroEmpleados();
+          filtroCliente.id = venta.usuario.id;
+          const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
+          // Asignar el usuario actualizado
+          venta.usuario = usuarios[0];
+        } else {
+          venta.usuario = new Usuario();
+        }
+
+        venta.fechaString = new Date(venta.fecha).toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+
+        const result = await this.llamarApiFacturacion(venta);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  // Funcion para hacer la llamada a la API de facturación
+  private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
+    const payload = {
+      apitoken: process.env['API_TOKEN'],
+      apikey: process.env['API_KEY'],
+      usertoken: process.env['USER_TOKEN'],
+      cliente: {
+        documento_tipo: 'DNI',
+        condicion_iva: venta.usuario?.condicionIva?.abreviatura ? venta.usuario?.condicionIva.abreviatura : 'CF',
+        domicilio: 'Av Sta Fe 23132',
+        condicion_pago: '201',
+        documento_nro: venta.usuario.dni ? venta.usuario.dni : '11111111',
+        razon_social: venta.usuario.nombre + venta.usuario.apellido,
+        provincia: '2',
+        email: venta.usuario.mail ? venta.usuario.mail : '',
+        envia_por_mail: venta.usuario.mail ? 'S' : 'N',
+        rg5329: 'N'
+      },
+      comprobante: {
+        rubro: 'Tienda de indumentaria',
+        tipo: venta.facturacion.nombre,
+        numero: venta.id,
+        operacion: 'V',
+        detalle: venta.productos.map((producto) => ({
+          cantidad: 1,
+          afecta_stock: 'S',
+          actualiza_precio: 'S',
+          bonificacion_porcentaje: 0,
+          producto: {
+            descripcion: producto.nombre,
+            codigo: producto.id,
+            lista_precios: 'standard',
+            leyenda: '',
+            unidad_bulto: 1,
+            alicuota: 21,
+            precio_unitario_sin_iva: producto.costo,
+            rg5329: 'N'
+          }
+        })),
+        fecha: venta.fechaString,
+        vencimiento: '12/12/2025',
+        rubro_grupo_contable: 'Productos',
+        total: venta.montoTotal,
+        cotizacion: 1,
+        moneda: 'PES',
+        punto_venta: 679,
+        tributos: {}
+      }
+    };
+
+    try {
+      const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
+
+      if (response.data.error === 'N') {
+        const comprobante = new ComprobanteResponse(response.data);
+        return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
+      } else {
+        console.error('Error en la facturación:', response.data.errores);
+        throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));
+      }
+    } catch (error) {
+      console.error('Error en la llamada a la API de facturación:', error.message);
+      throw new Error('Error al llamar a la API de facturación.');
+    }
+  }
+
+  public async buscarVentas(filtros: FiltrosVentas): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentas(filtros);
+
+        const ventas: Venta[] = await Promise.all(
+          result.map(async (venta) => {
+            venta.productos = await this.buscarProductosPorVenta(venta.id);
+            return venta;
+          })
+        );
+
+        resolve(ventas);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarProductosPorVenta(idVenta: number): Promise<Producto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarProductosPorVenta(idVenta);
         resolve(result);
       } catch (e) {
         logger.error(e);

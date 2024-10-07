@@ -15,6 +15,7 @@ import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Rol } from '../models/Rol';
+import { CondicionIva } from '../models/CondicionIva';
 
 const secretKey = 'secret';
 
@@ -134,11 +135,12 @@ export class UsersRepository implements IUsersRepository {
       usuario.domicilio.calle ? usuario.domicilio.calle : null,
       usuario.domicilio.numero ? usuario.domicilio.numero : null,
       usuario.roles ? usuario.roles : null,
-      usuario.mail ? usuario.mail : null
+      usuario.mail ? usuario.mail : null,
+      usuario.idCondicionIva ? usuario.idCondicionIva : null
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -225,24 +227,26 @@ export class UsersRepository implements IUsersRepository {
    */
   async consultarClientes(filtro: FiltroEmpleados): Promise<Usuario[]> {
     const client = await PoolDb.connect();
-
+    const id = filtro.id;
     const nombre = filtro.nombre;
     const apellido = filtro.apellido;
     const mail = filtro.mail;
-    const params = [nombre, apellido, mail];
+    const params = [id, nombre, apellido, mail];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_CLIENTES($1, $2, $3, $4)', params);
 
       const usuarios = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Usuario
         const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
         const localidad: Localidad = plainToClass(Localidad, row, { excludeExtraneousValues: true });
         const domicilio: Domicilio = plainToClass(Domicilio, row, { excludeExtraneousValues: true });
+        const condicionIva: CondicionIva = plainToClass(CondicionIva, row, { excludeExtraneousValues: true });
         const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
 
         domicilio.localidad = localidad;
         localidad.provincia = provincia;
         usuario.domicilio = domicilio;
+        usuario.condicionIva = condicionIva;
 
         return usuario;
       });

@@ -7,6 +7,10 @@ import { VentasService } from '../services/implementations/VentasService';
 import { Venta } from '../models/Venta';
 import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
+import { TipoFactura } from '../models/TipoFactura';
+import { CondicionIva } from '../models/CondicionIva';
+import { ComprobanteResponse } from '../models/ComprobanteResponse';
+import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -48,8 +52,66 @@ export async function buscarFormasDePago(request: Request, response: Response): 
     });
 }
 
+export async function obtenerCondicionesIva(request: Request, response: Response): Promise<Response> {
+  return _ventasService
+    .obtenerCondicionesIva()
+    .then((x: CondicionIva[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function obtenerTipoFacturacion(request: Request, response: Response): Promise<Response> {
+  //const idCondicionIva = +request.params.idCondicionIva;
+
+  return _ventasService
+    .obtenerTipoFacturacion()
+    .then((x: TipoFactura[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function facturarVentaConAfip(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .facturarVentaConAfip(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function buscarVentas(request: Request, response: Response): Promise<Response> {
+  const filtros: FiltrosVentas = request.body;
+
+  return _ventasService
+    .buscarVentas(filtros)
+    .then((x: Venta[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
-  buscarFormasDePago
+  buscarFormasDePago,
+  obtenerCondicionesIva,
+  obtenerTipoFacturacion,
+  facturarVentaConAfip,
+  buscarVentas
 };

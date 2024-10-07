@@ -2,6 +2,7 @@ import { Expose } from 'class-transformer';
 import { Domicilio } from './Domicilio';
 import { Rol } from './Rol';
 import { TipoUsuario } from './TipoUsuario';
+import { CondicionIva } from './CondicionIva';
 
 export class Usuario {
   @Expose({ name: 'idusuario' })
@@ -30,11 +31,13 @@ export class Usuario {
   activo: number;
   @Expose({ name: 'mail' })
   mail: string;
+  @Expose({ name: 'idcondicioniva' })
+  idCondicionIva: number;
 
   tipoUsuario: TipoUsuario;
-
   roles: Rol[];
   domicilio: Domicilio;
+  condicionIva: CondicionIva;
 
   constructor(
     id?: number,
@@ -51,7 +54,9 @@ export class Usuario {
     activo?: number,
     roles?: Rol[],
     mail?: string,
-    tipoUsuario?: TipoUsuario
+    tipoUsuario?: TipoUsuario,
+    idCondicionIva?: number,
+    condicionIva?: CondicionIva
   ) {
     this.id = id ? id : null;
     this.nombreUsuario = nombreUsuario ? nombreUsuario : null;
@@ -68,5 +73,7 @@ export class Usuario {
     this.roles = roles ? roles : null;
     this.mail = mail ? mail : null;
     this.tipoUsuario = tipoUsuario ? tipoUsuario : null;
+    this.idCondicionIva = idCondicionIva ? idCondicionIva : null;
+    this.condicionIva = condicionIva ? condicionIva : null;
   }
 }

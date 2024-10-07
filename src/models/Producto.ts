@@ -21,11 +21,15 @@ export class Producto {
   @Expose({ name: 'margenganancia' })
   margenGanancia: number;
 
+  @Expose({ name: 'subtotalventa' })
+  subTotalVenta: number;
+
   tipoProducto: TipoProducto;
   marca: Marca;
   proveedor: Proveedor;
-
   cantidadEnStock: number;
+
+  @Expose({ name: 'cantidad' })
   cantidadSeleccionada: number;
 
   constructor(
@@ -41,7 +45,8 @@ export class Producto {
     proveedor?: Proveedor,
     cantidadEnStock?: number,
     cantidadSeleccionada?: number,
-    margenGanancia?: number
+    margenGanancia?: number,
+    subTotalVenta?: number
   ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
@@ -55,6 +60,7 @@ export class Producto {
     this.imgProducto = imgProducto ? imgProducto : null;
     this.cantidadEnStock = cantidadEnStock ? cantidadEnStock : null;
     this.cantidadSeleccionada = cantidadSeleccionada ? cantidadSeleccionada : null;
+    this.subTotalVenta = subTotalVenta ? subTotalVenta : null;
     this.margenGanancia = margenGanancia ? margenGanancia : null;
   }
 }

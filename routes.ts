@@ -343,6 +343,30 @@ export const AppRoutes = [
     action: VentasController.buscarFormasDePago,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-condiciones-iva',
+    method: 'get',
+    action: VentasController.obtenerCondicionesIva,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/obtener-tipos-facturacion',
+    method: 'get',
+    action: VentasController.obtenerTipoFacturacion,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/facturar-venta',
+    method: 'post',
+    action: VentasController.facturarVentaConAfip,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/buscar-ventas',
+    method: 'post',
+    action: VentasController.buscarVentas,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes
