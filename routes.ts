@@ -10,6 +10,7 @@ import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
 import { PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
+import { TarjetasController } from './src/controllers/TarjetasController';
 
 /**
  * Rutas del Backend.
@@ -439,5 +440,45 @@ export const AppRoutes = [
     method: 'post',
     action: ComprobantesController.modificarComprobante,
     schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Tarjetas
+  {
+    path: '/tarjetas/registrar-tarjeta',
+    method: 'post',
+    action: TarjetasController.registrarTarjeta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/consultar-tarjetas',
+    method: 'post',
+    action: TarjetasController.consultarTarjetas,
+    schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/eliminar-tarjeta/:id',
+    method: 'get',
+    action: TarjetasController.eliminarTarjeta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/buscar-tipo-tarjetas',
+    method: 'get',
+    action: TarjetasController.buscarTiposTarjetas,
+    schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/modificar-tarjeta',
+    method: 'post',
+    action: TarjetasController.modificarTarjeta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/tarjetas/buscar-cuotas',
+    method: 'get',
+    action: TarjetasController.consultarCuotas,
+    schema: schemaEmpty
   }
+  //#endregion
 ];

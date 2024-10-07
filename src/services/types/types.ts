@@ -12,6 +12,7 @@ export const TYPES = {
   TransportesService: Symbol('ITransportesService'),
   PedidosService: Symbol('IPedidosService'),
   ComprobantesService: Symbol('IComprobantesService'),
+  TarjetasService: Symbol('ITarjetasService'),
 
   // Repositorys
   UsersRepository: Symbol('IUsersRepository'),
@@ -24,5 +25,6 @@ export const TYPES = {
   VentasRepository: Symbol('IVentasRepository'),
   TransportesRepository: Symbol('ITransportesRepository'),
   PedidosRepository: Symbol('IPedidosRepository'),
-  ComprobantesRepository: Symbol('IComprobantesRepository')
+  ComprobantesRepository: Symbol('IComprobantesRepository'),
+  TarjetasRepository: Symbol('ITarjetasRepository')
 };
