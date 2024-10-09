@@ -9,13 +9,22 @@ import { FiltrosPromociones } from '../models/comandos/FiltroPromociones';
 import path from 'node:path';
 import multer from 'multer';
 import { Producto } from '../models/Producto';
+import * as fs from 'node:fs';
 
 const _promocionesService = container.get<PromocionesService>(TYPES.PromocionesService);
+
+// Carpeta de destino de las imagenes de instagram
+const destFolder = path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram');
+
+// Asegurar que la carpeta de imagenes de instagram exista
+if (!fs.existsSync(destFolder)) {
+  fs.mkdirSync(destFolder, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Se guarda la imagen en la carpeta de imagenes de instagram
-    cb(null, path.join(process.cwd(), 'src', 'assets', 'imgs', 'instagram'));
+    cb(null, destFolder);
   },
   filename: (req, file, cb) => {
     // Se asigna un nombre único a la imagen
