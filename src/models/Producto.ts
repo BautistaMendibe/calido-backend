@@ -27,6 +27,8 @@ export class Producto {
   tipoProducto: TipoProducto;
   marca: Marca;
   proveedor: Proveedor;
+
+  @Expose({ name: 'canteninventario' })
   cantidadEnStock: number;
 
   @Expose({ name: 'cantidad' })
