@@ -17,7 +17,7 @@ import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Rol } from '../models/Rol';
 import { CondicionIva } from '../models/CondicionIva';
 
-const secretKey = 'secret';
+const secretKey = process.env.JWT_SECRET;
 
 /**
  * Configuración de argon2 para hashear contraseñas

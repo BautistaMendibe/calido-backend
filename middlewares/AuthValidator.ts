@@ -12,7 +12,7 @@ import jwt from 'jsonwebtoken';
  */
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers['authorization']?.split(' ')[1]; // Obtener el token del header
-  const secret = 'secret'; // Asegúrate de usar el mismo secret que para firmar el token
+  const secretKey = process.env.JWT_SECRET;
   const rutasExceptuadas = [
     '/usuarios/validar-inicio-sesion',
     '/configuraciones/existe-configuracion',
@@ -26,7 +26,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ message: 'Token not provided' });
   }
 
-  jwt.verify(token, secret, (err: any, decoded: any) => {
+  jwt.verify(token, secretKey, (err: any, decoded: any) => {
     if (err) {
       return res.status(401).json({ message: 'Token is invalid or expired' });
     }

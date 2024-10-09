@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import { AppRoutes } from './routes';
 import { checkSchema, validationResult } from 'express-validator';
 import { logger } from './src/logger/CustomLogger';
-import { connectDatabase } from './config/database.config';
+import { connectDatabase } from './src/data/db';
 import cors from 'cors';
 import { authenticateToken } from './middlewares/AuthValidator';
 import { requireAdminRole } from './middlewares/RolValidator';
