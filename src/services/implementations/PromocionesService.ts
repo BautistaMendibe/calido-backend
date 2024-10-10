@@ -8,6 +8,7 @@ import { Promocion } from '../../models/Promocion';
 import { SpResult } from '../../models';
 import { FiltrosPromociones } from '../../models/comandos/FiltroPromociones';
 import { Producto } from '../../models/Producto';
+import PoolDb from '../../data/db';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -25,13 +26,26 @@ export class PromocionesService implements IPromocionesService {
   }
 
   public async registrarPromocion(promocion: Promocion): Promise<SpResult> {
+    const client = await PoolDb.connect();
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._promocionesRepository.registrarPromocion(promocion);
+        await client.query('BEGIN');
+        const result = await this._promocionesRepository.registrarPromocion(promocion, client);
+        const promocionId = result.id;
+        for (const producto of promocion.productos) {
+          const detallePromocion: SpResult = await this._promocionesRepository.registrarDetallePromocion(promocionId, producto, client);
+          if (detallePromocion.mensaje != 'OK') {
+            throw new Error('Error al registrar el detalle de la promocion.');
+          }
+        }
+        await client.query('COMMIT');
         resolve(result);
       } catch (e) {
+        await client.query('ROLLBACK');
         logger.error(e);
         reject(e);
+      } finally {
+        client.release();
       }
     });
   }
@@ -40,15 +54,15 @@ export class PromocionesService implements IPromocionesService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._promocionesRepository.consultarPromociones(filtro);
-
+        return;
         // Mapea sobre las promociones para buscar su producto correspondiente
-        const promociones = await Promise.all(
-          result.map(async (promocion) => {
-            const producto: Producto = await this.buscarProducto(promocion.idProducto);
-            return { ...promocion, producto };
-          })
-        );
-        resolve(promociones);
+        //const promociones = await Promise.all(
+        //  result.map(async (promocion) => {
+        //    const producto: Producto = await this.buscarProducto(promocion.idProducto);
+        //    return { ...promocion, producto };
+        //  })
+        //);
+        //resolve(promociones);
       } catch (e) {
         logger.error(e);
         reject(e);

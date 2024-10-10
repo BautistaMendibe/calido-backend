@@ -10,12 +10,14 @@ import { IgApiClient } from 'instagram-private-api';
 import { promisify } from 'util';
 import { readFile } from 'fs';
 import path from 'node:path';
+import { PoolClient } from 'pg';
 
 /**
  * Interfaz del repositorio de Promociones
  */
 export interface IPromocionesRepository {
-  registrarPromocion(promocion: Promocion): Promise<SpResult>;
+  registrarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult>;
+  registrarDetallePromocion(promocionId: number, producto: Producto, client: PoolClient): Promise<SpResult>;
   consultarPromociones(filtro: FiltrosPromociones): Promise<Promocion[]>;
   modificarPromocion(promocion: Promocion): Promise<SpResult>;
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
@@ -34,11 +36,10 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @param {Promocion} promocion
    * @returns {SpResult}
    */
-  async registrarPromocion(promocion: Promocion): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    const params = [promocion.nombre, promocion.porcentajeDescuento, promocion.idProducto];
+  async registrarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult> {
+    const params = [promocion.nombre, promocion.porcentajeDescuento];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROMOCION_PRODUCTO($1, $2, $3)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROMOCION_PRODUCTO($1, $2)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -46,8 +47,26 @@ export class PromocionesRepository implements IPromocionesRepository {
     } catch (err) {
       logger.error('Error al registrar Promocion: ' + err);
       throw new Error('Error al registrar Promocion.');
-    } finally {
-      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para registar el detalle de una promocion
+   * @param {idPromocion} number
+   * @param {producto} Producto
+   * @returns {SpResult}
+   */
+  async registrarDetallePromocion(promocionId: number, producto: Producto, client: PoolClient): Promise<SpResult> {
+    const params = [promocionId, producto.id];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PROMOCION($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar detalle de Promocion: ' + err);
+      throw new Error('Error al registrar detalle de Promocion.');
     }
   }
 
@@ -82,9 +101,9 @@ export class PromocionesRepository implements IPromocionesRepository {
    */
   async modificarPromocion(promocion: Promocion): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento, promocion.idProducto];
+    //const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento, promocion.idProducto];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3, $4)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3, $4)', []);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
