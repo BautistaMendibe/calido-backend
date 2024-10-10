@@ -19,6 +19,7 @@ export interface IPromocionesRepository {
   registrarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult>;
   registrarDetallePromocion(promocionId: number, producto: Producto, client: PoolClient): Promise<SpResult>;
   consultarPromociones(filtro: FiltrosPromociones): Promise<Promocion[]>;
+  buscarProductosPorPromocion(idPromocion: number): Promise<Producto[]>;
   modificarPromocion(promocion: Promocion): Promise<SpResult>;
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
   buscarProductos(): Promise<Producto[]>;
@@ -59,7 +60,7 @@ export class PromocionesRepository implements IPromocionesRepository {
   async registrarDetallePromocion(promocionId: number, producto: Producto, client: PoolClient): Promise<SpResult> {
     const params = [promocionId, producto.id];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_PROMOCION($1, $2)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTAR_DETALLE_PROMOCION($1, $2)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -83,6 +84,29 @@ export class PromocionesRepository implements IPromocionesRepository {
     try {
       const res = await client.query<Promocion[]>('SELECT * FROM PUBLIC.BUSCAR_PROMOCIONES_PRODUCTO($1)', params);
       const result: Promocion[] = plainToClass(Promocion, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Promociones: ' + err);
+      throw new Error('Error al consultar Promociones.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar los productos de una determinada promocion
+   * @param {idPromocion}
+   * @returns {Producto []}
+   */
+  async buscarProductosPorPromocion(idPromocion: number): Promise<Producto[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Producto[]>(
+        `SELECT p.* FROM producto p JOIN detalle_promocion dp ON p.idproducto = dp.idproducto WHERE dp.idpromocionproducto = ${idPromocion}`
+      );
+      const result: Producto[] = plainToClass(Producto, res.rows, {
         excludeExtraneousValues: true
       });
       return result;

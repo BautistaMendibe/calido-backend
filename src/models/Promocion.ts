@@ -7,17 +7,14 @@ export class Promocion {
   @Expose({ name: 'npromocionproducto' })
   nombre: string;
   @Expose({ name: 'percentdescuento' })
-  porcentajeDescuento: string;
-  @Expose({ name: 'iddetallepromocion' })
-  idDetallePromocion: number;
+  porcentajeDescuento: number;
 
   productos: Producto[];
 
-  constructor(id?: number, nombre?: string, porcentajeDescuento?: string, idDetallePromocion?: number, productos?: Producto[]) {
+  constructor(id?: number, nombre?: string, porcentajeDescuento?: number, productos?: Producto[]) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.porcentajeDescuento = porcentajeDescuento ? porcentajeDescuento : null;
-    this.idDetallePromocion = idDetallePromocion ? idDetallePromocion : null;
     this.productos = productos ? productos : [];
   }
 }
