@@ -111,8 +111,8 @@ export class PromocionesRepository implements IPromocionesRepository {
       });
       return result;
     } catch (err) {
-      logger.error('Error al consultar Promociones: ' + err);
-      throw new Error('Error al consultar Promociones.');
+      logger.error('Error al consultar productos por Promociones: ' + err);
+      throw new Error('Error al consultar productos por Promociones.');
     } finally {
       client.release();
     }
