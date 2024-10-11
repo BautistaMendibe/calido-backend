@@ -20,7 +20,8 @@ export interface IPromocionesRepository {
   registrarDetallePromocion(promocionId: number, producto: Producto, client: PoolClient): Promise<SpResult>;
   consultarPromociones(filtro: FiltrosPromociones): Promise<Promocion[]>;
   buscarProductosPorPromocion(idPromocion: number): Promise<Producto[]>;
-  modificarPromocion(promocion: Promocion): Promise<SpResult>;
+  modificarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult>;
+  modificarDetallePromocion(idPromocion: number, idProducto: number, client: PoolClient): Promise<SpResult>;
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
   buscarProductos(): Promise<Producto[]>;
   buscarProducto(idProducto: number): Promise<Producto>;
@@ -123,11 +124,10 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @param {Promocion} promocion
    * @returns {SpResult}
    */
-  async modificarPromocion(promocion: Promocion): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    //const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento, promocion.idProducto];
+  async modificarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult> {
+    const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3, $4)', []);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -135,8 +135,26 @@ export class PromocionesRepository implements IPromocionesRepository {
     } catch (err) {
       logger.error('Error al modificar la promoción: ' + err);
       throw new Error('Error al modificar la promoción.');
-    } finally {
-      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para modificar el detalle de una promocion
+   * @param {idPromocion} number
+   * @param {idProducto} number
+   * @returns {SpResult}
+   */
+  async modificarDetallePromocion(idPromocion: number, idProducto: number, client: PoolClient): Promise<SpResult> {
+    const params = [idPromocion, idProducto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_DETALLE_PROMOCION($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar el detalle de promoción: ' + err);
+      throw new Error('Error al modificar el detalle de promoción.');
     }
   }
 

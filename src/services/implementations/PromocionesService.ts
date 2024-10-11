@@ -9,7 +9,6 @@ import { SpResult } from '../../models';
 import { FiltrosPromociones } from '../../models/comandos/FiltroPromociones';
 import { Producto } from '../../models/Producto';
 import PoolDb from '../../data/db';
-import { Venta } from '../../models/Venta';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -70,13 +69,25 @@ export class PromocionesService implements IPromocionesService {
   }
 
   public async modificarPromocion(promocion: Promocion): Promise<SpResult> {
+    const client = await PoolDb.connect();
     return new Promise(async (resolve, reject) => {
+      await client.query('BEGIN');
       try {
-        const result = await this._promocionesRepository.modificarPromocion(promocion);
+        const result = await this._promocionesRepository.modificarPromocion(promocion, client);
+        for (const producto of promocion.productos) {
+          const detallePromocion: SpResult = await this._promocionesRepository.modificarDetallePromocion(promocion.id, producto.id, client);
+          if (detallePromocion.mensaje != 'OK') {
+            throw new Error('Error al modificar el detalle de la promocion.');
+          }
+        }
+        await client.query('COMMIT');
         resolve(result);
       } catch (e) {
+        await client.query('ROLLBACK');
         logger.error(e);
         reject(e);
+      } finally {
+        client.release();
       }
     });
   }
