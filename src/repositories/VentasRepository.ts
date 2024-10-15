@@ -13,6 +13,8 @@ import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { TipoProveedor } from '../models/TipoProveedor';
+import { DetalleVenta } from '../models/DetalleVenta';
+import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -27,6 +29,7 @@ export interface IVentasRepository {
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
+  buscarVentasPorCC(filtro: FiltroCuentasCorrientes): Promise<Venta[]>;
 }
 
 /**
@@ -242,6 +245,79 @@ export class VentasRepository implements IVentasRepository {
       throw new Error('Error al buscar productos por venta.');
     } finally {
       client.release();
+    }
+  }
+
+  async buscarVentasPorCC(filtro: FiltroCuentasCorrientes): Promise<Venta[]> {
+    const client = await PoolDb.connect();
+    if (!filtro.fechaDesde) {
+      filtro.fechaDesde = null;
+    }
+    if (!filtro.fechaHasta) {
+      filtro.fechaHasta = null;
+    }
+
+    const params = [filtro.idUsuario, filtro.fechaDesde, filtro.fechaHasta];
+
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_POR_CC($1, $2, $3)', params);
+      console.log('Resultado de la consulta:', res);
+      console.log('Parametros de la consulta:', params);
+      // Mapa para agrupar las ventas
+      const ventasMap = new Map<number, Venta>();
+      res.rows.forEach((row) => {
+        const ventaId = row.idventa;
+        // Si la venta no existe en el map, la creamos
+        if (!ventasMap.has(ventaId)) {
+          const venta: Venta = plainToClass(
+            Venta,
+            {
+              id: row.idventa,
+              fecha: row.fechaventa,
+              montoTotal: row.monto_total,
+              detalleVenta: [] // Inicializamos el array vacío
+            },
+            {
+              excludeExtraneousValues: true
+            }
+          );
+
+          ventasMap.set(ventaId, venta);
+        }
+
+        // Crear el objeto Producto
+        const producto: Producto = plainToClass(
+          Producto,
+          {
+            id: row.idproducto,
+            nombre: row.nproducto
+          },
+          {
+            excludeExtraneousValues: true
+          }
+        );
+
+        // Crear el objeto DetalleVenta
+        const detalleVenta: DetalleVenta = plainToClass(
+          DetalleVenta,
+          {
+            id: row.iddetalle,
+            cantidad: row.cantidad,
+            subTotal: row.subtotalventa, // Usar el subtotal original
+            producto: producto
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        // Agregar el detalle de la venta a la venta correspondiente
+        ventasMap.get(ventaId)?.detalleVenta.push(detalleVenta);
+      });
+
+      // Convertir el map a un array
+      return Array.from(ventasMap.values());
+    } catch (err) {
+      logger.error('repository error: ' + err);
+      throw new Error('repository error');
     }
   }
 }
