@@ -106,6 +106,20 @@ export async function buscarVentas(request: Request, response: Response): Promis
     });
 }
 
+export async function buscarVentasPorCC(request: Request, response: Response): Promise<Response> {
+  const idUsuario = +request.params.idUsuario;
+
+  return _ventasService
+    .buscarVentasPorCC(idUsuario)
+    .then((x: Venta[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -113,5 +127,6 @@ export const VentasController = {
   obtenerCondicionesIva,
   obtenerTipoFacturacion,
   facturarVentaConAfip,
-  buscarVentas
+  buscarVentas,
+  buscarVentasPorCC
 };
