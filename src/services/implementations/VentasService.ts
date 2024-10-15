@@ -263,4 +263,24 @@ export class VentasService implements IVentasService {
       }
     });
   }
+
+  public async buscarVentasPorCC(idUsuario: number): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentasPorCC(idUsuario);
+
+        const ventas: Venta[] = await Promise.all(
+          result.map(async (venta) => {
+            venta.productos = await this.buscarProductosPorVenta(venta.id);
+            return venta;
+          })
+        );
+
+        resolve(ventas);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

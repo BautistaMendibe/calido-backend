@@ -12,7 +12,6 @@ import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
-import { TipoProveedor } from '../models/TipoProveedor';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -27,6 +26,7 @@ export interface IVentasRepository {
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
+  buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
 }
 
 /**
@@ -240,6 +240,36 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar productos por venta: ' + err);
       throw new Error('Error al buscar productos por venta.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas generadas.
+   * @returns {Venta[]}
+   */
+  async buscarVentasPorCC(idUsuario: number): Promise<Venta[]> {
+    const client = await PoolDb.connect();
+    const params = [idUsuario];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_POR_CC($1)', params);
+
+      const ventas: Venta[] = res.rows.map((row) => {
+        const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+
+        venta.formaDePago = formaDePago;
+        venta.comprobanteAfip = comprobante;
+
+        return venta;
+      });
+
+      return ventas;
+    } catch (err) {
+      logger.error('Error al buscar las ventas: ' + err);
+      throw new Error('Error al buscar las ventas.');
     } finally {
       client.release();
     }

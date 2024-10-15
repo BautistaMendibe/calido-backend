@@ -473,9 +473,9 @@ export class UsersRepository implements IUsersRepository {
 
   async modificarCuentaCorriente(cuenta: CuentaCorriente): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [cuenta.id, cuenta.balanceTotal];
+    const params = [cuenta.id, cuenta.balanceTotal, cuenta.usuario.id, cuenta.fechaDesde];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CUENTA_CORRIENTE($1, $2)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CUENTA_CORRIENTE($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

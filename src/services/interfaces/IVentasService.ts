@@ -6,7 +6,6 @@ import { FormaDePago } from '../../models/FormaDePago';
 import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
-import { ComprobanteResponse } from '../../models/ComprobanteResponse';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 
 export interface IVentasService {
@@ -19,4 +18,5 @@ export interface IVentasService {
   facturarVentaConAfip(venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
+  buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
 }
