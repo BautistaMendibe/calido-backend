@@ -8,6 +8,7 @@ import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
+import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -19,4 +20,5 @@ export interface IVentasService {
   facturarVentaConAfip(venta: Venta): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
+  buscarVentasPorCC(filtro: FiltroCuentasCorrientes): Promise<Venta[]>;
 }

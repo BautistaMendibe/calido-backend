@@ -19,6 +19,9 @@ import { error } from 'winston';
 import { IUsersRepository } from '../../repositories';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
+import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
+import { plainToClass } from 'class-transformer';
+import { DetalleVenta } from '../../models/DetalleVenta';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -256,6 +259,17 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.buscarProductosPorVenta(idVenta);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+  public async buscarVentasPorCC(filtro: FiltroCuentasCorrientes): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentasPorCC(filtro);
         resolve(result);
       } catch (e) {
         logger.error(e);
