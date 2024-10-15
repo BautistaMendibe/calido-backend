@@ -367,6 +367,12 @@ export const AppRoutes = [
     action: VentasController.buscarVentas,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/buscar-ventas-por-cc/:idUsuario',
+    method: 'get',
+    action: VentasController.buscarVentasPorCC,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

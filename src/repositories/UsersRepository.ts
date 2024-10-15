@@ -417,14 +417,14 @@ export class UsersRepository implements IUsersRepository {
   async consultarCuentasCorrientesxUsuario(filtro: FiltroCuentasCorrientes): Promise<CuentaCorriente[]> {
     const client = await PoolDb.connect();
 
-    // Asigna null a filtro.desdeMonto si es falsy
+    filtro.cliente = filtro.cliente || null;
     filtro.desdeMonto = filtro.desdeMonto || null;
 
     const params = [filtro.cliente, filtro.desdeMonto];
     try {
-      const res = await client.query<CuentaCorriente>('SELECT * FROM PUBLIC.BUSCAR_CUENTAS_CORRIENTESSS($1, $2)', params);
+      const res = await client.query<CuentaCorriente>('SELECT * FROM PUBLIC.BUSCAR_CUENTAS_CORRIENTES($1, $2)', params);
       const cuentas = res.rows.map((row) => {
-        // Armamos los objetos necesarios para la clase Usuario
+        // Armamos los objetos necesarios para la clase Cuentas Corrientes
         const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
         const cuentaCorriente: CuentaCorriente = plainToClass(CuentaCorriente, row, { excludeExtraneousValues: true });
         cuentaCorriente.usuario = usuario;
@@ -473,9 +473,9 @@ export class UsersRepository implements IUsersRepository {
 
   async modificarCuentaCorriente(cuenta: CuentaCorriente): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [cuenta.id, cuenta.balanceTotal];
+    const params = [cuenta.id, cuenta.balanceTotal, cuenta.usuario.id, cuenta.fechaDesde];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CUENTA_CORRIENTE($1, $2)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CUENTA_CORRIENTE($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

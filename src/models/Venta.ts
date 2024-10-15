@@ -21,7 +21,6 @@ export class Venta {
   productos: Producto[];
   facturacion: TipoFactura;
   comprobanteAfip: ComprobanteResponse;
-  detalleVenta: DetalleVenta[];
 
   constructor(
     id?: number,
@@ -33,8 +32,7 @@ export class Venta {
     productos?: Producto[],
     facturacion?: TipoFactura,
     fechaString?: string,
-    comprobanteAfip?: ComprobanteResponse,
-    detalleVenta?: DetalleVenta[]
+    comprobanteAfip?: ComprobanteResponse
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -46,6 +44,5 @@ export class Venta {
     this.fechaVencimiento = fechaVencimiento!;
     this.fechaString = fechaString!;
     this.comprobanteAfip = comprobanteAfip!;
-    this.detalleVenta = detalleVenta!;
   }
 }
