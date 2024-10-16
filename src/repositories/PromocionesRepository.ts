@@ -26,6 +26,7 @@ export interface IPromocionesRepository {
   buscarProductos(): Promise<Producto[]>;
   buscarProducto(idProducto: number): Promise<Producto>;
   notificarPromocion(imagen: string, comentario: string): Promise<string>;
+  buscarPromocionPorProducto(idProducto: number): Promise<Promocion[]>;
 }
 
 /**
@@ -210,7 +211,7 @@ export class PromocionesRepository implements IPromocionesRepository {
   async buscarProducto(idProducto: number): Promise<Producto> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Producto>(`SELECT * FROM PUBLIC.PRODUCTO WHERE idproducto = ${idProducto}`);
+      const res = await client.query<Producto>(`SELECT * FROM PUBLIC.PRODUCTO WHERE idproducto = ${idProducto} AND activo = 1`);
       const result: Producto = plainToClass(Producto, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -263,6 +264,27 @@ export class PromocionesRepository implements IPromocionesRepository {
     } catch (err) {
       logger.error('Error al consultar usuario y contraseña de base de datos: ' + err);
       throw new Error('Error al consultar usuario y contraseña de base de datos.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener las promociones que tiene un producto
+   * @param {idProducto} number id del Producto
+   * @returns {Promocion}
+   */
+  async buscarPromocionPorProducto(idProducto: number): Promise<Promocion[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Promocion[]>(`SELECT p.* FROM promocion_producto p JOIN detalle_promocion dp ON dp.idproducto = ${idProducto} WHERE activo = 1`);
+      const result: Promocion[] = plainToClass(Promocion, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar promociones por producto: ' + err);
+      throw new Error('Error al consultar promociones por producto.');
     } finally {
       client.release();
     }

@@ -9,6 +9,7 @@ import { SpResult } from '../../models';
 import { FiltrosPromociones } from '../../models/comandos/FiltroPromociones';
 import { Producto } from '../../models/Producto';
 import PoolDb from '../../data/db';
+import { buscarPromocionPorProducto } from '../../controllers/PromocionesController';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -132,6 +133,18 @@ export class PromocionesService implements IPromocionesService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._promocionesRepository.notificarPromocion(imagen, comentario);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarPromocionPorProducto(idProducto: number): Promise<Promocion[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._promocionesRepository.buscarPromocionPorProducto(idProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);
