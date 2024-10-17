@@ -105,9 +105,7 @@ export class PromocionesRepository implements IPromocionesRepository {
   async buscarProductosPorPromocion(idPromocion: number): Promise<Producto[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Producto[]>(
-        `SELECT p.* FROM producto p JOIN detalle_promocion dp ON p.idproducto = dp.idproducto WHERE dp.idpromocionproducto = ${idPromocion}`
-      );
+      const res = await client.query<Producto[]>(`SELECT p.* FROM producto p WHERE p.idpromocionproducto = ${idPromocion}`);
       const result: Producto[] = plainToClass(Producto, res.rows, {
         excludeExtraneousValues: true
       });
