@@ -2,6 +2,7 @@ import { Expose } from 'class-transformer';
 import { TipoProducto } from './TipoProducto';
 import { Marca } from './Marca';
 import { Proveedor } from './Proveedor';
+import { Promocion } from './Promocion';
 
 export class Producto {
   @Expose({ name: 'idproducto' })
@@ -34,6 +35,8 @@ export class Producto {
   @Expose({ name: 'cantidad' })
   cantidadSeleccionada: number;
 
+  promocion: Promocion;
+
   constructor(
     id?: number,
     nombre?: string,
@@ -48,7 +51,8 @@ export class Producto {
     cantidadEnStock?: number,
     cantidadSeleccionada?: number,
     margenGanancia?: number,
-    subTotalVenta?: number
+    subTotalVenta?: number,
+    promocion?: Promocion
   ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
@@ -64,5 +68,6 @@ export class Producto {
     this.cantidadSeleccionada = cantidadSeleccionada ? cantidadSeleccionada : null;
     this.subTotalVenta = subTotalVenta ? subTotalVenta : null;
     this.margenGanancia = margenGanancia ? margenGanancia : null;
+    this.promocion = promocion ? promocion : null;
   }
 }
