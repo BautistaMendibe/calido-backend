@@ -221,6 +221,7 @@ export class ProductosRepository implements IProductosRepository {
       const detallesProductos: DetalleProducto[] = res.rows.map((row: any) => {
         const producto: Producto = plainToClass(Producto, row, { excludeExtraneousValues: true });
         const proveedor: Proveedor = plainToClass(Proveedor, row, { excludeExtraneousValues: true });
+        const marca: Marca = plainToClass(Marca, row, { excludeExtraneousValues: true });
 
         // Mapeamos el detalleProductos
         const detalleProducto: DetalleProducto = plainToClass(DetalleProducto, row, { excludeExtraneousValues: true });
@@ -228,6 +229,7 @@ export class ProductosRepository implements IProductosRepository {
         // Establecemos las relaciones del detalle producto
         detalleProducto.producto = producto;
         detalleProducto.proveedor = proveedor;
+        producto.marca = marca;
 
         return detalleProducto;
       });
