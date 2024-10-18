@@ -9,6 +9,7 @@ import { FiltrosProductos } from '../models/comandos/FiltroProductos';
 import { TipoProducto } from '../models/TipoProducto';
 import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProductos';
 import { DetalleProducto } from '../models/DetalleProducto';
+import { MovimientoProducto } from '../models/MovimientoProducto';
 
 const _productosService = container.get<ProductosService>(TYPES.ProductosService);
 
@@ -136,6 +137,20 @@ export async function eliminarDetalleProducto(request: Request, response: Respon
     });
 }
 
+export async function consultarMovimientosPorProducto(request: Request, response: Response): Promise<Response> {
+  const idProducto: number = +request.params.id;
+
+  return _productosService
+    .consultarMovimientosPorProducto(idProducto)
+    .then((x: MovimientoProducto[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const ProductosController = {
   consultarProductos,
   consultarTipoProductos,
@@ -145,5 +160,6 @@ export const ProductosController = {
   consultarDetalleProductos,
   registrarDetalleProducto,
   modificarDetalleProducto,
-  eliminarDetalleProducto
+  eliminarDetalleProducto,
+  consultarMovimientosPorProducto
 };

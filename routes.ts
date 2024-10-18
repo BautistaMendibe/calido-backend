@@ -286,6 +286,12 @@ export const AppRoutes = [
     action: ProductosController.eliminarDetalleProducto,
     schema: schemaEmpty
   },
+  {
+    path: '/productos/buscar-movimientos-por-producto/:id',
+    method: 'get',
+    action: ProductosController.consultarMovimientosPorProducto,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // Region Marcas

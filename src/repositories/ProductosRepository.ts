@@ -10,6 +10,7 @@ import { TipoProducto } from '../models/TipoProducto';
 import { Marca } from '../models/Marca';
 import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProductos';
 import { DetalleProducto } from '../models/DetalleProducto';
+import { MovimientoProducto } from '../models/MovimientoProducto';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -24,6 +25,7 @@ export interface IProductosRepository {
   registrarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
   eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
   modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
+  consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]>;
 }
 
 /**
@@ -285,6 +287,32 @@ export class ProductosRepository implements IProductosRepository {
     } catch (err) {
       logger.error('Error al modificar el Detalle Producto: ' + err);
       throw new Error('Error al modificar el Detalle Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]> {
+    const client = await PoolDb.connect();
+
+    const params = [idProducto];
+
+    try {
+      const res = await client.query<DetalleProducto[]>('SELECT * FROM public.BUSCAR_MOVIMIENTOS_PRODUCTO($1)', params);
+
+      const movimientos: MovimientoProducto[] = res.rows.map((row: any) => {
+        const movimiento: MovimientoProducto = plainToClass(MovimientoProducto, row, { excludeExtraneousValues: true });
+        const producto: Producto = plainToClass(Producto, row, { excludeExtraneousValues: true });
+
+        movimiento.producto = producto;
+
+        return movimiento;
+      });
+
+      return movimientos;
+    } catch (err) {
+      logger.error('Error al consultar Movimientos del Producto: ' + err);
+      throw new Error('Error al consultar Movimientos del Producto.');
     } finally {
       client.release();
     }
