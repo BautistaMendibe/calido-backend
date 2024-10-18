@@ -130,11 +130,25 @@ export async function notificarPromocion(request: Request, response: Response): 
   });
 }
 
+export async function buscarPromocionPorProducto(request: Request, response: Response): Promise<Response> {
+  const idProducto: number = +request.params.idProducto;
+  return _promocionesService
+    .buscarPromocionPorProducto(idProducto)
+    .then((x: Promocion[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const PromocionesController = {
   registrarPromocion,
   consultarPromociones,
   modificarPromocion,
   eliminarPromocion,
   buscarProductos,
-  notificarPromocion
+  notificarPromocion,
+  buscarPromocionPorProducto
 };

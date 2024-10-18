@@ -220,6 +220,12 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/promociones/consultar-promociones-por-producto/:idProducto',
+    method: 'get',
+    action: PromocionesController.buscarPromocionPorProducto,
+    schema: schemaEmpty
+  },
+  {
     path: '/domicilio/obtener-localidades-por-provincia/:idProvincia',
     method: 'get',
     action: DomicilioController.obtenerLocalidadesPorProvincia,

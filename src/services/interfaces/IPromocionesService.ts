@@ -11,4 +11,5 @@ export interface IPromocionesService {
   buscarProductos(): Promise<Producto[]>;
   buscarProducto(idProducto: number): Promise<Producto>;
   notificarPromocion(imagen: string, comentario: string): Promise<string>;
+  buscarPromocionPorProducto(idProducto: number): Promise<Promocion[]>;
 }
