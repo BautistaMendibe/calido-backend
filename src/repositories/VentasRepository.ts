@@ -40,10 +40,9 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async registarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
-    //const params = [venta.usuario ? venta.usuario.id : null, venta.formaDePago, venta.montoTotal];
-    const params = [1, venta.formaDePago.id, venta.montoTotal];
+    const params = [venta.usuario ? venta.usuario.id : null, venta.formaDePago.id, venta.montoTotal, venta.idEmpleado];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

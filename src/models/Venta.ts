@@ -1,7 +1,6 @@
 import { Expose } from 'class-transformer';
 import { Usuario } from './Usuario';
 import { FormaDePago } from './FormaDePago';
-import { DetalleVenta } from './DetalleVenta';
 import { Producto } from './Producto';
 import { TipoFactura } from './TipoFactura';
 import { ComprobanteResponse } from './ComprobanteResponse';
@@ -21,6 +20,8 @@ export class Venta {
   productos: Producto[];
   facturacion: TipoFactura;
   comprobanteAfip: ComprobanteResponse;
+  @Expose({ name: 'idempleado' })
+  idEmpleado: number;
 
   constructor(
     id?: number,
@@ -32,7 +33,8 @@ export class Venta {
     productos?: Producto[],
     facturacion?: TipoFactura,
     fechaString?: string,
-    comprobanteAfip?: ComprobanteResponse
+    comprobanteAfip?: ComprobanteResponse,
+    idEmpleado?: number
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -44,5 +46,6 @@ export class Venta {
     this.fechaVencimiento = fechaVencimiento!;
     this.fechaString = fechaString!;
     this.comprobanteAfip = comprobanteAfip!;
+    this.idEmpleado = idEmpleado!;
   }
 }
