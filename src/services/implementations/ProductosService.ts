@@ -10,6 +10,7 @@ import { FiltrosProductos } from '../../models/comandos/FiltroProductos';
 import { TipoProducto } from '../../models/TipoProducto';
 import { DetalleProducto } from '../../models/DetalleProducto';
 import { FiltrosDetallesProductos } from '../../models/comandos/FiltroDetallesProductos';
+import { MovimientoProducto } from '../../models/MovimientoProducto';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -126,6 +127,18 @@ export class ProductosService implements IProductosService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._productosRepository.eliminarDetalleProducto(idDetalleProducto);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.consultarMovimientosPorProducto(idProducto);
         resolve(result);
       } catch (e) {
         logger.error(e);
