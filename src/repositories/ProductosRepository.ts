@@ -10,6 +10,7 @@ import { TipoProducto } from '../models/TipoProducto';
 import { Marca } from '../models/Marca';
 import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProductos';
 import { DetalleProducto } from '../models/DetalleProducto';
+import { Promocion } from '../models/Promocion';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -115,6 +116,16 @@ export class ProductosRepository implements IProductosRepository {
           { excludeExtraneousValues: true }
         );
 
+        const promocion: Promocion = plainToClass(
+          Promocion,
+          {
+            idpromocionproducto: row.idpromocionproducto,
+            npromocionproducto: row.npromocionproducto,
+            percentdescuento: row.percentdescuento
+          },
+          { excludeExtraneousValues: true }
+        );
+
         const producto = new Producto(
           row.idproducto,
           row.nproducto,
@@ -128,6 +139,7 @@ export class ProductosRepository implements IProductosRepository {
           proveedor
         );
         producto.margenGanancia = row.margenganancia;
+        producto.promocion = promocion;
 
         return producto;
       });
