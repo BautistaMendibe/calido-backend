@@ -5,9 +5,9 @@ import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../../models/CuentaCorriente';
-import { Request, Response } from 'express';
 import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
+import { Motivo } from '../../models/Motivo';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -28,4 +28,5 @@ export interface IUsersService {
   modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
   consultarAllUsuarios(): Promise<TipoProducto[]>;
   eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
+  obtenerMotivosLicencia(): Promise<Motivo[]>;
 }

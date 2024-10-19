@@ -16,6 +16,7 @@ import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrien
 import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Rol } from '../models/Rol';
 import { CondicionIva } from '../models/CondicionIva';
+import { Motivo } from '../models/Motivo';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -58,6 +59,7 @@ export interface IUsersRepository {
   modificarCuentaCorriente(cuentaCorriente: CuentaCorriente): Promise<SpResult>;
   consultarAllUsuarios(): Promise<Usuario[]>;
   eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
+  obtenerMotivosLicencia(): Promise<Motivo[]>;
 }
 
 /**
@@ -549,6 +551,29 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar Roles: ' + err);
       throw new Error('Error al consultar Roles.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener todos los motivos de licencia
+   * @returns {Motivo[]} - devuelve un array de strings de motivos de licencia
+   */
+  async obtenerMotivosLicencia(): Promise<Motivo[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<{ nmotivolicencia: string; idmotivolicencia: number }>(
+        `SELECT m.nmotivolicencia, m.idmotivolicencia FROM PUBLIC.MOTIVO_LICENCIA m WHERE m.activo = 1`
+      );
+      const result: Motivo[] = plainToClass(Motivo, res.rows, {
+        excludeExtraneousValues: true
+      });
+
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Motivos de Licencia: ' + err);
+      throw new Error('Error al consultar Motivos de Licencia.');
     } finally {
       client.release();
     }

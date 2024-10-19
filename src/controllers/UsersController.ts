@@ -11,6 +11,7 @@ import { FiltroAsistencias } from '../models/comandos/FiltroAsistencias';
 import { Rol } from '../models/Rol';
 import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../models/CuentaCorriente';
+import { Motivo } from '../models/Motivo';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -263,6 +264,18 @@ export async function obtenerRoles(request: Request, response: Response): Promis
     });
 }
 
+export async function obtenerMotivosLicencia(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .obtenerMotivosLicencia()
+    .then((x: Motivo[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -281,5 +294,6 @@ export const UsersController = {
   eliminarCuentaCorriente,
   modificarCuentaCorriente,
   obtenerRolesUsuario,
-  obtenerRoles
+  obtenerRoles,
+  obtenerMotivosLicencia
 };

@@ -125,6 +125,12 @@ export const AppRoutes = [
     action: UsersController.obtenerRoles,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/obtener-motivos-licencia',
+    method: 'get',
+    action: UsersController.obtenerMotivosLicencia,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores

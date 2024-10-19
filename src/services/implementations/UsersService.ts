@@ -13,6 +13,7 @@ import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorr
 import { CuentaCorriente } from '../../models/CuentaCorriente';
 import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
+import { Motivo } from '../../models/Motivo';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -236,6 +237,18 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.eliminarCuentaCorriente(idCuentaCorriente);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerMotivosLicencia(): Promise<Motivo[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerMotivosLicencia();
         resolve(result);
       } catch (e) {
         logger.error(e);
