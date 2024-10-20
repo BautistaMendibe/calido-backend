@@ -11,9 +11,10 @@ import { Asistencia } from '../../models/Asistencia';
 import { FiltroAsistencias } from '../../models/comandos/FiltroAsistencias';
 import { FiltroCuentasCorrientes } from '../../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../../models/CuentaCorriente';
-import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
 import { Motivo } from '../../models/Motivo';
+import { Licencia } from '../../models/Licencia';
+import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -249,6 +250,42 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.obtenerMotivosLicencia();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarLicencia(licencia: Licencia): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.registrarLicencia(licencia);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarLicencia(idLicencia: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.eliminarLicencia(idLicencia);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarLicencias(filtro);
         resolve(result);
       } catch (e) {
         logger.error(e);

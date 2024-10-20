@@ -17,6 +17,9 @@ import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Rol } from '../models/Rol';
 import { CondicionIva } from '../models/CondicionIva';
 import { Motivo } from '../models/Motivo';
+import { Licencia } from '../models/Licencia';
+import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
+import { EstadoLicencia } from '../models/EstadoLicencia';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -60,6 +63,9 @@ export interface IUsersRepository {
   consultarAllUsuarios(): Promise<Usuario[]>;
   eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
   obtenerMotivosLicencia(): Promise<Motivo[]>;
+  registrarLicencia(licencia: Licencia): Promise<SpResult>;
+  eliminarLicencia(idLicencia: number): Promise<SpResult>;
+  consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
 }
 
 /**
@@ -574,6 +580,72 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar Motivos de Licencia: ' + err);
       throw new Error('Error al consultar Motivos de Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarLicencia(licencia: Licencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [licencia.idUsuario, licencia.fechaInicio, licencia.fechaFin, licencia.idMotivoLicencia, licencia.idEstadoLicencia, licencia.comentario];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_LICENCIA($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Licencia: ' + err);
+      throw new Error('Error al registrar Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarLicencia(idLicencia: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idLicencia];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_LICENCIA($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar Licencia: ' + err);
+      throw new Error('Error al eliminar Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]> {
+    const client = await PoolDb.connect();
+
+    filtro.idUsuario = filtro.idUsuario || null;
+
+    const params = [filtro.idUsuario];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_LICENCIAS($1)', params);
+      const licencias = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Licencia
+        const licencia: Licencia = plainToClass(Licencia, row, { excludeExtraneousValues: true });
+        const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const estadoLicencia: EstadoLicencia = plainToClass(EstadoLicencia, row, { excludeExtraneousValues: true });
+        const motivo: Motivo = plainToClass(Motivo, row, { excludeExtraneousValues: true });
+
+        // Asignaciones
+        licencia.usuario = usuario;
+        licencia.estadoLicencia = estadoLicencia;
+        licencia.motivo = motivo;
+
+        return licencia;
+      });
+
+      return licencias;
+    } catch (err) {
+      logger.error('Error al consultar Licencias: ' + err);
+      throw new Error('Error al consultar Licencias.');
     } finally {
       client.release();
     }

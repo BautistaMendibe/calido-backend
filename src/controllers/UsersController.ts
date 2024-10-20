@@ -12,6 +12,8 @@ import { Rol } from '../models/Rol';
 import { FiltroCuentasCorrientes } from '../models/comandos/FiltroCuentasCorrientes';
 import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Motivo } from '../models/Motivo';
+import { Licencia } from '../models/Licencia';
+import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -276,6 +278,48 @@ export async function obtenerMotivosLicencia(request: Request, response: Respons
     });
 }
 
+export async function registrarLicencia(request: Request, response: Response): Promise<Response> {
+  const licencia: Licencia = request.body;
+
+  return _usersService
+    .registrarLicencia(licencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarLicencia(request: Request, response: Response): Promise<Response> {
+  const idLicencia: number = +request.params.id;
+
+  return _usersService
+    .eliminarLicencia(idLicencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultarLicencias(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltrosLicencias = request.body;
+
+  return _usersService
+    .consultarLicencias(filtro)
+    .then((x: Licencia[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -295,5 +339,8 @@ export const UsersController = {
   modificarCuentaCorriente,
   obtenerRolesUsuario,
   obtenerRoles,
-  obtenerMotivosLicencia
+  obtenerMotivosLicencia,
+  registrarLicencia,
+  eliminarLicencia,
+  consultarLicencias
 };

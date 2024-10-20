@@ -131,6 +131,25 @@ export const AppRoutes = [
     action: UsersController.obtenerMotivosLicencia,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/registrar-licencia',
+    method: 'post',
+    action: UsersController.registrarLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-licencia/:id',
+    method: 'get',
+    action: UsersController.eliminarLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/consultar-licencias',
+    method: 'post',
+    action: UsersController.consultarLicencias,
+    schema: schemaEmpty
+  },
+
   //#endregion
 
   // region Proveedores

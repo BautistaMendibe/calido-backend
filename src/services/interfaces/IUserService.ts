@@ -8,6 +8,8 @@ import { CuentaCorriente } from '../../models/CuentaCorriente';
 import { TipoProducto } from '../../models/TipoProducto';
 import { Rol } from '../../models/Rol';
 import { Motivo } from '../../models/Motivo';
+import { Licencia } from '../../models/Licencia';
+import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -29,4 +31,7 @@ export interface IUsersService {
   consultarAllUsuarios(): Promise<TipoProducto[]>;
   eliminarCuentaCorriente(idCuentaCorriente: number): Promise<SpResult>;
   obtenerMotivosLicencia(): Promise<Motivo[]>;
+  registrarLicencia(licencia: Licencia): Promise<SpResult>;
+  eliminarLicencia(idLicencia: number): Promise<SpResult>;
+  consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
 }
