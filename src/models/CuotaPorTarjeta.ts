@@ -13,13 +13,16 @@ export class CuotaPorTarjeta {
   recargo: number;
   @Expose({ name: 'descuento' })
   descuento: number;
+  @Expose({ name: 'cantcuotas' })
+  cantidadCuota: number;
 
-  constructor(id?: number, interes?: number, idCuota?: number, idTarjeta?: number, recargo?: number, descuento?: number) {
+  constructor(id?: number, interes?: number, idCuota?: number, idTarjeta?: number, recargo?: number, descuento?: number, cantidadCuota?: number) {
     this.id = id ? id : null;
     this.interes = interes ? interes : null;
     this.idCuota = idCuota ? idCuota : null;
     this.idTarjeta = idTarjeta ? idTarjeta : null;
     this.recargo = recargo ? recargo : null;
     this.descuento = descuento ? descuento : null;
+    this.cantidadCuota = cantidadCuota ? cantidadCuota : null;
   }
 }
