@@ -36,4 +36,5 @@ export interface IUsersService {
   eliminarLicencia(idLicencia: number): Promise<SpResult>;
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
+  modificarLicencia(licencia: Licencia): Promise<SpResult>;
 }
