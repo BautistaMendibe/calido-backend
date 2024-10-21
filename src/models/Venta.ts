@@ -23,6 +23,15 @@ export class Venta {
   @Expose({ name: 'idempleado' })
   idEmpleado: number;
 
+  @Expose({ name: 'tarjeta' })
+  tarjeta: string;
+  @Expose({ name: 'cantcuotas' })
+  cantidadCuotas: number;
+  @Expose({ name: 'interes' })
+  interes: number;
+  @Expose({ name: 'descuento' })
+  descuento: number;
+
   constructor(
     id?: number,
     montoTotal?: number,
@@ -34,7 +43,11 @@ export class Venta {
     facturacion?: TipoFactura,
     fechaString?: string,
     comprobanteAfip?: ComprobanteResponse,
-    idEmpleado?: number
+    idEmpleado?: number,
+    tarjeta?: string,
+    cantidadCuotas?: number,
+    interes?: number,
+    descuento?: number
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -47,5 +60,9 @@ export class Venta {
     this.fechaString = fechaString!;
     this.comprobanteAfip = comprobanteAfip!;
     this.idEmpleado = idEmpleado!;
+    this.tarjeta = tarjeta!;
+    this.cantidadCuotas = cantidadCuotas!;
+    this.interes = interes!;
+    this.descuento = descuento!;
   }
 }
