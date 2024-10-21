@@ -45,13 +45,17 @@ export class VentasService implements IVentasService {
       const ventaId: number = ventaResult.id;
 
       // Registrar detalles de venta para cada producto
-      for (const producto of venta.productos) {
-        const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
+      if (ventaId) {
+        for (const producto of venta.productos) {
+          const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
 
-        // Si el detalleResult no es OK, lanzar un error
-        if (detalleResult.mensaje !== 'OK') {
-          throw new Error('Error al registrar el detalle de la venta.');
+          // Si el detalleResult no es OK, lanzar un error
+          if (detalleResult.mensaje !== 'OK') {
+            throw new Error('Error al registrar el detalle de la venta.');
+          }
         }
+      } else {
+        return ventaResult;
       }
 
       await client.query('COMMIT'); // Confirmamos la transacción si salió bien
@@ -140,15 +144,15 @@ export class VentasService implements IVentasService {
   public async facturarVentaConAfip(venta: Venta): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        if (venta.usuario?.id) {
+        if (venta.cliente?.id) {
           // buscar info del usuario vinculado a la venta
           const filtroCliente = new FiltroEmpleados();
-          filtroCliente.id = venta.usuario.id;
+          filtroCliente.id = venta.cliente.id;
           const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
           // Asignar el usuario actualizado
-          venta.usuario = usuarios[0];
+          venta.cliente = usuarios[0];
         } else {
-          venta.usuario = new Usuario();
+          venta.cliente = new Usuario();
         }
 
         venta.fechaString = new Date(venta.fecha).toLocaleDateString('es-ES', {
@@ -174,14 +178,14 @@ export class VentasService implements IVentasService {
       usertoken: process.env['USER_TOKEN'],
       cliente: {
         documento_tipo: 'DNI',
-        condicion_iva: venta.usuario?.condicionIva?.abreviatura ? venta.usuario?.condicionIva.abreviatura : 'CF',
+        condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: 'Av Sta Fe 23132',
         condicion_pago: '201',
-        documento_nro: venta.usuario.dni ? venta.usuario.dni : '11111111',
-        razon_social: venta.usuario.nombre + venta.usuario.apellido,
+        documento_nro: venta.cliente.dni ? venta.cliente.dni : '-',
+        razon_social: venta.cliente.nombre + venta.cliente.apellido,
         provincia: '2',
-        email: venta.usuario.mail ? venta.usuario.mail : '',
-        envia_por_mail: venta.usuario.mail ? 'S' : 'N',
+        email: venta.cliente.mail ? venta.cliente.mail : '',
+        envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
       },
       comprobante: {

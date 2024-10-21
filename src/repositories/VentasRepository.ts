@@ -41,16 +41,16 @@ export class VentasRepository implements IVentasRepository {
    */
   async registarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     const params = [
-      venta.usuario ? venta.usuario.id : null,
+      venta.cliente ? venta.cliente.id : null,
       venta.formaDePago.id,
       venta.montoTotal,
       venta.idEmpleado,
       null,
-      venta.tarjeta,
-      venta.cantidadCuotas,
-      venta.interes,
-      venta.descuento,
-      venta.facturacion.id
+      venta.tarjeta ? venta.tarjeta : null,
+      venta.cantidadCuotas ? venta.cantidadCuotas : null,
+      venta.interes ? venta.interes : null,
+      venta.descuento ? venta.descuento : null,
+      venta.facturacion.id ? venta.facturacion.id : null
     ];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
@@ -218,9 +218,11 @@ export class VentasRepository implements IVentasRepository {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
         const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
         const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
 
         venta.formaDePago = formaDePago;
         venta.comprobanteAfip = comprobante;
+        venta.cliente = cliente;
 
         return venta;
       });

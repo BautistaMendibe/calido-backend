@@ -15,7 +15,7 @@ export class Venta {
   fechaString: string;
   fechaVencimiento: Date;
   @Expose({ name: 'idusuario' })
-  usuario: Usuario;
+  cliente: Usuario;
   formaDePago: FormaDePago;
   productos: Producto[];
   facturacion: TipoFactura;
@@ -36,7 +36,7 @@ export class Venta {
     id?: number,
     montoTotal?: number,
     fecha?: Date,
-    usuario?: Usuario,
+    cliente?: Usuario,
     formaDePago?: FormaDePago,
     fechaVencimiento?: Date,
     productos?: Producto[],
@@ -52,7 +52,7 @@ export class Venta {
     this.id = id!;
     this.montoTotal = montoTotal!;
     this.fecha = fecha!;
-    this.usuario = usuario!;
+    this.cliente = cliente!;
     this.formaDePago = formaDePago!;
     this.productos = productos!;
     this.facturacion = facturacion!;
