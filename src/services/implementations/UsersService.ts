@@ -15,6 +15,7 @@ import { Rol } from '../../models/Rol';
 import { Motivo } from '../../models/Motivo';
 import { Licencia } from '../../models/Licencia';
 import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
+import { EstadoLicencia } from '../../models/EstadoLicencia';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -286,6 +287,30 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.consultarLicencias(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerEstadosLicencia(): Promise<EstadoLicencia[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.obtenerEstadosLicencia();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarLicencia(licencia: Licencia): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.modificarLicencia(licencia);
         resolve(result);
       } catch (e) {
         logger.error(e);

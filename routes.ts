@@ -149,6 +149,18 @@ export const AppRoutes = [
     action: UsersController.consultarLicencias,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/obtener-estados-licencia',
+    method: 'get',
+    action: UsersController.obtenerEstadosLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/modificar-licencia',
+    method: 'post',
+    action: UsersController.modificarLicencia,
+    schema: schemaEmpty
+  },
 
   //#endregion
 

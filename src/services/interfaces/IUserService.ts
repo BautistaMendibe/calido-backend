@@ -10,6 +10,7 @@ import { Rol } from '../../models/Rol';
 import { Motivo } from '../../models/Motivo';
 import { Licencia } from '../../models/Licencia';
 import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
+import { EstadoLicencia } from '../../models/EstadoLicencia';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -34,4 +35,5 @@ export interface IUsersService {
   registrarLicencia(licencia: Licencia): Promise<SpResult>;
   eliminarLicencia(idLicencia: number): Promise<SpResult>;
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
+  obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
 }

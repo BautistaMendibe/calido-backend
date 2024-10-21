@@ -66,6 +66,8 @@ export interface IUsersRepository {
   registrarLicencia(licencia: Licencia): Promise<SpResult>;
   eliminarLicencia(idLicencia: number): Promise<SpResult>;
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
+  obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
+  modificarLicencia(licencia: Licencia): Promise<SpResult>;
 }
 
 /**
@@ -623,10 +625,11 @@ export class UsersRepository implements IUsersRepository {
     const client = await PoolDb.connect();
 
     filtro.idUsuario = filtro.idUsuario || null;
+    filtro.fecha = filtro.fecha || null;
 
-    const params = [filtro.idUsuario];
+    const params = [filtro.idUsuario, filtro.fecha];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_LICENCIAS($1)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_LICENCIAS($1, $2)', params);
       const licencias = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Licencia
         const licencia: Licencia = plainToClass(Licencia, row, { excludeExtraneousValues: true });
@@ -646,6 +649,42 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar Licencias: ' + err);
       throw new Error('Error al consultar Licencias.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async obtenerEstadosLicencia(): Promise<EstadoLicencia[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<{ nestadolicencia: string; idestadolicencia: number }>(
+        `SELECT e.nestadolicencia, e.idestadolicencia FROM PUBLIC.ESTADO_LICENCIA e WHERE e.activo = 1`
+      );
+      const result: EstadoLicencia[] = plainToClass(EstadoLicencia, res.rows, {
+        excludeExtraneousValues: true
+      });
+
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar Estados de Licencia: ' + err);
+      throw new Error('Error al consultar Estados de Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async modificarLicencia(licencia: Licencia): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [licencia.id, licencia.idUsuario, licencia.fechaInicio, licencia.fechaFin, licencia.idMotivoLicencia, licencia.idEstadoLicencia, licencia.comentario];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_LICENCIA($1, $2, $3, $4, $5, $6, $7)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al modificar Licencia: ' + err);
+      throw new Error('Error al modificar Licencia.');
     } finally {
       client.release();
     }

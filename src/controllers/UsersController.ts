@@ -14,6 +14,7 @@ import { CuentaCorriente } from '../models/CuentaCorriente';
 import { Motivo } from '../models/Motivo';
 import { Licencia } from '../models/Licencia';
 import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
+import { EstadoLicencia } from '../models/EstadoLicencia';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -320,6 +321,32 @@ export async function consultarLicencias(request: Request, response: Response): 
     });
 }
 
+export async function obtenerEstadosLicencia(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .obtenerEstadosLicencia()
+    .then((x: EstadoLicencia[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function modificarLicencia(request: Request, response: Response): Promise<Response> {
+  const licencia: Licencia = request.body;
+
+  return _usersService
+    .modificarLicencia(licencia)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -342,5 +369,7 @@ export const UsersController = {
   obtenerMotivosLicencia,
   registrarLicencia,
   eliminarLicencia,
-  consultarLicencias
+  consultarLicencias,
+  obtenerEstadosLicencia,
+  modificarLicencia
 };
