@@ -40,9 +40,20 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async registarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
-    const params = [venta.usuario ? venta.usuario.id : null, venta.formaDePago.id, venta.montoTotal, venta.idEmpleado];
+    const params = [
+      venta.cliente ? venta.cliente.id : null,
+      venta.formaDePago.id,
+      venta.montoTotal,
+      venta.idEmpleado,
+      null,
+      venta.tarjeta ? venta.tarjeta : null,
+      venta.cantidadCuotas ? venta.cantidadCuotas : null,
+      venta.interes ? venta.interes : null,
+      venta.descuento ? venta.descuento : null,
+      venta.facturacion.id ? venta.facturacion.id : null
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -207,9 +218,13 @@ export class VentasRepository implements IVentasRepository {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
         const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
         const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
 
         venta.formaDePago = formaDePago;
         venta.comprobanteAfip = comprobante;
+        venta.cliente = cliente;
+        venta.facturacion = facturacion;
 
         return venta;
       });
