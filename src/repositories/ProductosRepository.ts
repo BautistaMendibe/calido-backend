@@ -142,6 +142,7 @@ export class ProductosRepository implements IProductosRepository {
         );
         producto.margenGanancia = row.margenganancia;
         producto.promocion = promocion;
+        producto.cantidadEnStock = row.canteninventario;
 
         return producto;
       });

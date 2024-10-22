@@ -21,6 +21,8 @@ export class Producto {
   descripcion: string;
   @Expose({ name: 'margenganancia' })
   margenGanancia: number;
+  @Expose({ name: 'canteninventario' })
+  cantidadEnStock: number;
 
   @Expose({ name: 'subtotalventa' })
   subTotalVenta: number;
@@ -28,9 +30,6 @@ export class Producto {
   tipoProducto: TipoProducto;
   marca: Marca;
   proveedor: Proveedor;
-
-  @Expose({ name: 'canteninventario' })
-  cantidadEnStock: number;
 
   @Expose({ name: 'cantidad' })
   cantidadSeleccionada: number;
