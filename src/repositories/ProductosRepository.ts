@@ -53,7 +53,8 @@ export class ProductosRepository implements IProductosRepository {
       producto.codigoBarra,
       producto.descripcion,
       producto.imgProducto,
-      producto.margenGanancia
+      producto.margenGanancia,
+      producto.precioConIVA
     ];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REG_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
@@ -143,6 +144,7 @@ export class ProductosRepository implements IProductosRepository {
         producto.margenGanancia = row.margenganancia;
         producto.promocion = promocion;
         producto.cantidadEnStock = row.canteninventario;
+        producto.precioConIVA = row.precioconiva;
 
         return producto;
       });
@@ -171,10 +173,11 @@ export class ProductosRepository implements IProductosRepository {
       producto.codigoBarra,
       producto.descripcion,
       producto.imgProducto,
-      producto.margenGanancia
+      producto.margenGanancia,
+      producto.precioConIVA
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
