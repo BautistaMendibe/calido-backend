@@ -149,8 +149,12 @@ export class VentasService implements IVentasService {
           const filtroCliente = new FiltroEmpleados();
           filtroCliente.id = venta.cliente.id;
           const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
+          const cliente = usuarios[0];
+          cliente.domicilioString = cliente.domicilio
+            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ',' + cliente.domicilio.localidad?.provincia?.nombre}`
+            : 'No registrado';
           // Asignar el usuario actualizado
-          venta.cliente = usuarios[0];
+          venta.cliente = cliente;
         } else {
           venta.cliente = new Usuario();
         }
@@ -179,9 +183,9 @@ export class VentasService implements IVentasService {
       cliente: {
         documento_tipo: 'DNI',
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
-        domicilio: 'Av Sta Fe 23132',
+        domicilio: venta.cliente.domicilioString,
         condicion_pago: '201',
-        documento_nro: venta.cliente.dni ? venta.cliente.dni : '-',
+        documento_nro: venta.cliente.dni ? venta.cliente.dni : 'No registrado',
         razon_social: venta.cliente.nombre + venta.cliente.apellido,
         provincia: '2',
         email: venta.cliente.mail ? venta.cliente.mail : '',
@@ -197,7 +201,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: 0,
+          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
@@ -205,7 +209,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.costo,
+            precio_unitario_sin_iva: producto.precioSinIVA,
             rg5329: 'N'
           }
         })),
