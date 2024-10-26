@@ -6,6 +6,9 @@ import { Caja } from '../../models/Caja';
 import { FiltrosCajas } from '../../models/comandos/FiltroCaja';
 import { ICajasService } from '../interfaces/ICajasService';
 import { ICajasRepository } from '../../repositories/CajasRepository';
+import { Arqueo } from '../../models/Arqueo';
+import { FiltrosArqueos } from '../../models/comandos/FiltroArqueo';
+import { EstadoArqueo } from '../../models/EstadoArqueo';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -62,6 +65,66 @@ export class CajasService implements ICajasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._cajasRepository.modificarCaja(caja);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.registrarArqueo(arqueo);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarArqueos(filtro: FiltrosArqueos): Promise<Arqueo[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.obtenerArqueos(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarArqueo(idArqueo: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.eliminarArqueo(idArqueo);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async modificarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.modificarArqueo(arqueo);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async obtenerEstadosArqueo(): Promise<EstadoArqueo[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.obtenerEstadosArqueo();
         resolve(result);
       } catch (e) {
         logger.error(e);

@@ -582,6 +582,36 @@ export const AppRoutes = [
     method: 'post',
     action: CajasController.modificarCaja,
     schema: schemaEmpty
+  },
+  {
+    path: '/cajas/registrar-arqueo',
+    method: 'post',
+    action: CajasController.registrarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-arqueos',
+    method: 'post',
+    action: CajasController.consultarArqueos,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-arqueo/:id',
+    method: 'get',
+    action: CajasController.eliminarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/modificar-arqueo',
+    method: 'post',
+    action: CajasController.modificarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/buscar-estados-arqueo',
+    method: 'get',
+    action: CajasController.obtenerEstadosArqueo,
+    schema: schemaEmpty
   }
   //#endregion
 ];
