@@ -209,7 +209,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.precioSinIVA,
+            precio_unitario_sin_iva: producto.precioConIVA / 1.21,
             rg5329: 'N'
           }
         })),
