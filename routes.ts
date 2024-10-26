@@ -11,6 +11,10 @@ import { TransportesController } from './src/controllers/TransportesController';
 import { PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
+import { FilesController } from './src/controllers/FilesController';
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * Rutas del Backend.
@@ -533,6 +537,22 @@ export const AppRoutes = [
     path: '/tarjetas/buscar-cuotas',
     method: 'get',
     action: TarjetasController.consultarCuotas,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Files
+  {
+    path: '/files/upload',
+    method: 'post',
+    action: FilesController.guardarArchivo,
+    middleware: [upload.single('file')],
+    schema: schemaEmpty
+  },
+  {
+    path: '/files/download/:nombreOriginal',
+    method: 'get',
+    action: FilesController.obtenerArchivo,
     schema: schemaEmpty
   }
   //#endregion
