@@ -150,8 +150,8 @@ export class VentasService implements IVentasService {
           filtroCliente.id = venta.cliente.id;
           const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
           const cliente = usuarios[0];
-          cliente.domicilioString = cliente.domicilio
-            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ',' + cliente.domicilio.localidad?.provincia?.nombre}`
+          cliente.domicilioString = cliente.domicilio.localidad?.nombre
+            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
             : 'No registrado';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
@@ -186,8 +186,8 @@ export class VentasService implements IVentasService {
         domicilio: venta.cliente.domicilioString,
         condicion_pago: '201',
         documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
-        razon_social: venta.cliente.nombre + venta.cliente.apellido,
-        provincia: '2',
+        razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
+        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '2',
         email: venta.cliente.mail ? venta.cliente.mail : '',
         envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
@@ -209,7 +209,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.precioConIVA / 1.21,
+            precio_unitario_sin_iva: producto.precioSinIVA / 1.21,
             rg5329: 'N'
           }
         })),
