@@ -181,11 +181,11 @@ export class VentasService implements IVentasService {
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
-        documento_tipo: 'DNI',
+        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
         condicion_pago: '201',
-        documento_nro: venta.cliente.dni ? venta.cliente.dni : 'No registrado',
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
         razon_social: venta.cliente.nombre + venta.cliente.apellido,
         provincia: '2',
         email: venta.cliente.mail ? venta.cliente.mail : '',
