@@ -13,6 +13,7 @@ import { ComprobantesController } from './src/controllers/ComprobantesController
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
 import multer from 'multer';
+import { CajasController } from './src/controllers/CajasController';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -553,6 +554,33 @@ export const AppRoutes = [
     path: '/files/download/:nombreOriginal',
     method: 'get',
     action: FilesController.obtenerArchivo,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Cajas
+  {
+    path: '/cajas/registrar-caja',
+    method: 'post',
+    action: CajasController.registrarCaja,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-cajas',
+    method: 'post',
+    action: CajasController.consultarCajas,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-caja/:id',
+    method: 'get',
+    action: CajasController.eliminarCaja,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/modificar-caja',
+    method: 'post',
+    action: CajasController.modificarCaja,
     schema: schemaEmpty
   }
   //#endregion
