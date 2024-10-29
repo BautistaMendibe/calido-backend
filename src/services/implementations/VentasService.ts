@@ -152,7 +152,7 @@ export class VentasService implements IVentasService {
           const cliente = usuarios[0];
           cliente.domicilioString = cliente.domicilio.localidad?.nombre
             ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
-            : 'No registrado';
+            : '-';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
         } else {
