@@ -152,7 +152,7 @@ export class VentasService implements IVentasService {
           const cliente = usuarios[0];
           cliente.domicilioString = cliente.domicilio.localidad?.nombre
             ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
-            : '-';
+            : 'No registrado';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
         } else {
@@ -184,10 +184,10 @@ export class VentasService implements IVentasService {
         documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
-        condicion_pago: '201',
+        condicion_pago: venta.formaDePago.idAfip,
         documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
-        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '2',
+        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
         envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
