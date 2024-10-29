@@ -21,7 +21,7 @@ export interface IPromocionesRepository {
   consultarPromociones(filtro: FiltrosPromociones): Promise<Promocion[]>;
   buscarProductosPorPromocion(idPromocion: number): Promise<Producto[]>;
   modificarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult>;
-  modificarDetallePromocion(idPromocion: number, idProducto: number, client: PoolClient): Promise<SpResult>;
+  modificarDetallePromocion(idPromocion: number, idProducto: number, esEliminar: boolean, client: PoolClient): Promise<SpResult>;
   eliminarPromocion(idPromocion: number): Promise<SpResult>;
   buscarProductos(): Promise<Producto[]>;
   buscarProducto(idProducto: number): Promise<Producto>;
@@ -143,10 +143,10 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @param {idProducto} number
    * @returns {SpResult}
    */
-  async modificarDetallePromocion(idPromocion: number, idProducto: number, client: PoolClient): Promise<SpResult> {
-    const params = [idPromocion, idProducto];
+  async modificarDetallePromocion(idPromocion: number, idProducto: number, esEliminar: boolean, client: PoolClient): Promise<SpResult> {
+    const params = [idPromocion, idProducto, esEliminar];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_DETALLE_PROMOCION($1, $2)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_DETALLE_PROMOCION($1, $2, $3)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -187,15 +187,15 @@ export class PromocionesRepository implements IPromocionesRepository {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<Producto[]>(
-        'SELECT p.*, dp.canteninventario FROM PUBLIC.PRODUCTO p JOIN PUBLIC.DETALLE_PRODUCTO dp ON p.idproducto = dp.idproducto WHERE p.activo = 1'
+        'SELECT p.*, dp.canteninventario FROM PUBLIC.PRODUCTO p JOIN PUBLIC.DETALLE_PRODUCTO dp ON p.idproducto = dp.idproducto WHERE p.activo = 1 AND dp.activo = 1'
       );
       const result: Producto[] = plainToClass(Producto, res.rows, {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al eliminar el producto: ' + err);
-      throw new Error('Error al eliminar el producto.');
+      logger.error('Error al buscar el producto: ' + err);
+      throw new Error('Error al buscar el producto.');
     } finally {
       client.release();
     }
@@ -215,8 +215,8 @@ export class PromocionesRepository implements IPromocionesRepository {
       });
       return result;
     } catch (err) {
-      logger.error('Error al eliminar el producto: ' + err);
-      throw new Error('Error al eliminar el producto.');
+      logger.error('Error al buscar el producto: ' + err);
+      throw new Error('Error al buscar el producto.');
     } finally {
       client.release();
     }

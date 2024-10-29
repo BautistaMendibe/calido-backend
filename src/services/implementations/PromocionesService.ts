@@ -75,12 +75,27 @@ export class PromocionesService implements IPromocionesService {
       await client.query('BEGIN');
       try {
         const result = await this._promocionesRepository.modificarPromocion(promocion, client);
-        for (const producto of promocion.productos) {
-          const detallePromocion: SpResult = await this._promocionesRepository.modificarDetallePromocion(promocion.id, producto.id, client);
-          if (detallePromocion.mensaje != 'OK') {
-            throw new Error('Error al modificar el detalle de la promocion.');
+
+        // Verificar si hay productos para agregar a la promoción
+        if (promocion.productos && promocion.productos.length > 0) {
+          for (const producto of promocion.productos) {
+            const detallePromocion: SpResult = await this._promocionesRepository.modificarDetallePromocion(promocion.id, producto.id, false, client);
+            if (detallePromocion.mensaje !== 'OK') {
+              throw new Error('Error al modificar el detalle de la promoción.');
+            }
           }
         }
+
+        // Verificar si hay productos para eliminar de la promoción
+        if (promocion.productosEliminados && promocion.productosEliminados.length > 0) {
+          for (const producto of promocion.productosEliminados) {
+            const detallePromocion: SpResult = await this._promocionesRepository.modificarDetallePromocion(promocion.id, producto.id, true, client);
+            if (detallePromocion.mensaje !== 'OK') {
+              throw new Error('Error al modificar el detalle de la promoción.');
+            }
+          }
+        }
+
         await client.query('COMMIT');
         resolve(result);
       } catch (e) {

@@ -10,11 +10,13 @@ export class Promocion {
   porcentajeDescuento: number;
 
   productos: Producto[];
+  productosEliminados: Producto[];
 
-  constructor(id?: number, nombre?: string, porcentajeDescuento?: number, productos?: Producto[]) {
+  constructor(id?: number, nombre?: string, porcentajeDescuento?: number, productos?: Producto[], productosEliminados?: Producto[]) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
     this.porcentajeDescuento = porcentajeDescuento ? porcentajeDescuento : null;
     this.productos = productos ? productos : [];
+    this.productosEliminados = productosEliminados ? productosEliminados : [];
   }
 }
