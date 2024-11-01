@@ -13,6 +13,8 @@ export const TYPES = {
   PedidosService: Symbol('IPedidosService'),
   ComprobantesService: Symbol('IComprobantesService'),
   TarjetasService: Symbol('ITarjetasService'),
+  FilesService: Symbol('IFilesService'),
+  CajasService: Symbol('ICajasService'),
 
   // Repositorys
   UsersRepository: Symbol('IUsersRepository'),
@@ -26,5 +28,7 @@ export const TYPES = {
   TransportesRepository: Symbol('ITransportesRepository'),
   PedidosRepository: Symbol('IPedidosRepository'),
   ComprobantesRepository: Symbol('IComprobantesRepository'),
-  TarjetasRepository: Symbol('ITarjetasRepository')
+  TarjetasRepository: Symbol('ITarjetasRepository'),
+  FilesRepository: Symbol('IFilesRepository'),
+  CajasRepository: Symbol('ICajasRepository')
 };

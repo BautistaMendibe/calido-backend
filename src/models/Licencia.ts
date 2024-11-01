@@ -2,6 +2,7 @@ import { Expose } from 'class-transformer';
 import { Usuario } from './Usuario';
 import { EstadoLicencia } from './EstadoLicencia';
 import { Motivo } from './Motivo';
+import { Archivo } from './Archivo';
 
 export class Licencia {
   @Expose({ name: 'idlicencia' })
@@ -22,6 +23,7 @@ export class Licencia {
   usuario: Usuario;
   estadoLicencia: EstadoLicencia;
   motivo: Motivo;
+  archivo: Archivo;
 
   constructor(
     id?: number,
@@ -33,7 +35,9 @@ export class Licencia {
     comentario?: string,
     usuario?: Usuario,
     estadoLicencia?: EstadoLicencia,
-    motivo?: Motivo
+    motivo?: Motivo,
+    idArchivo?: number,
+    archivo?: Archivo
   ) {
     this.id = id ? id : null;
     this.idUsuario = idUsuario ? idUsuario : null;
@@ -45,5 +49,6 @@ export class Licencia {
     this.usuario = usuario ? usuario : null;
     this.estadoLicencia = estadoLicencia ? estadoLicencia : null;
     this.motivo = motivo ? motivo : null;
+    this.archivo = archivo ? archivo : null;
   }
 }

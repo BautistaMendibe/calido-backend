@@ -11,6 +11,11 @@ import { TransportesController } from './src/controllers/TransportesController';
 import { PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
+import { FilesController } from './src/controllers/FilesController';
+import multer from 'multer';
+import { CajasController } from './src/controllers/CajasController';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * Rutas del Backend.
@@ -539,6 +544,79 @@ export const AppRoutes = [
     path: '/tarjetas/buscar-cuotas',
     method: 'get',
     action: TarjetasController.consultarCuotas,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Files
+  {
+    path: '/files/upload',
+    method: 'post',
+    action: FilesController.guardarArchivo,
+    middleware: [upload.single('file')],
+    schema: schemaEmpty
+  },
+  {
+    path: '/files/download/:nombreOriginal',
+    method: 'get',
+    action: FilesController.obtenerArchivo,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Cajas
+  {
+    path: '/cajas/registrar-caja',
+    method: 'post',
+    action: CajasController.registrarCaja,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-cajas',
+    method: 'post',
+    action: CajasController.consultarCajas,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-caja/:id',
+    method: 'get',
+    action: CajasController.eliminarCaja,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/modificar-caja',
+    method: 'post',
+    action: CajasController.modificarCaja,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/registrar-arqueo',
+    method: 'post',
+    action: CajasController.registrarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-arqueos',
+    method: 'post',
+    action: CajasController.consultarArqueos,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-arqueo/:id',
+    method: 'get',
+    action: CajasController.eliminarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/modificar-arqueo',
+    method: 'post',
+    action: CajasController.modificarArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/buscar-estados-arqueo',
+    method: 'get',
+    action: CajasController.obtenerEstadosArqueo,
     schema: schemaEmpty
   }
   //#endregion

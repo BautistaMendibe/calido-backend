@@ -20,6 +20,7 @@ import { Motivo } from '../models/Motivo';
 import { Licencia } from '../models/Licencia';
 import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
+import { Archivo } from '../models/Archivo';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -276,7 +277,7 @@ export class UsersRepository implements IUsersRepository {
     // Asigna la contraseña a la variable, si es distinta a '********' la hashea, sino la deja en '********' para que no se modifique (por funcion en BD)
     let contrasenaHashed = usuario.contrasena;
     // Hashear la nueva contraseña antes de enviarla a la base de datos si es distinta a '********'
-    if (usuario.contrasena != '********') {
+    if (usuario.contrasena && usuario.idTipoUsuario === 1 && usuario.contrasena != '********') {
       contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
     }
 
@@ -289,24 +290,25 @@ export class UsersRepository implements IUsersRepository {
       usuario.codigoPostal,
       usuario.dni,
       usuario.cuil,
-      contrasenaHashed, // La nueva contraseña tendrá que hashearse de nuevo.
-      1, // siempre empleado, forzado.
+      contrasenaHashed,
+      usuario.idTipoUsuario,
       usuario.idGenero,
       usuario.domicilio.localidad.id,
-      usuario.domicilio.calle,
-      usuario.domicilio.numero,
-      usuario.roles
+      usuario.domicilio.calle || null,
+      usuario.domicilio.numero || null,
+      usuario.roles,
+      usuario.idCondicionIva
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al modificar el empleado: ' + err);
-      throw new Error('Error al modificar el empleado.');
+      logger.error('Error al modificar el usuario: ' + err);
+      throw new Error('Error al modificar el usuario.');
     } finally {
       client.release();
     }
@@ -589,9 +591,9 @@ export class UsersRepository implements IUsersRepository {
 
   async registrarLicencia(licencia: Licencia): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [licencia.idUsuario, licencia.fechaInicio, licencia.fechaFin, licencia.idMotivoLicencia, licencia.idEstadoLicencia, licencia.comentario];
+    const params = [licencia.idUsuario, licencia.fechaInicio, licencia.fechaFin, licencia.idMotivoLicencia, licencia.idEstadoLicencia, licencia.comentario, licencia.archivo.id];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_LICENCIA($1, $2, $3, $4, $5, $6)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_LICENCIA($1, $2, $3, $4, $5, $6, $7)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -636,11 +638,13 @@ export class UsersRepository implements IUsersRepository {
         const usuario: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
         const estadoLicencia: EstadoLicencia = plainToClass(EstadoLicencia, row, { excludeExtraneousValues: true });
         const motivo: Motivo = plainToClass(Motivo, row, { excludeExtraneousValues: true });
+        const archivo: Archivo = plainToClass(Archivo, row, { excludeExtraneousValues: true });
 
         // Asignaciones
         licencia.usuario = usuario;
         licencia.estadoLicencia = estadoLicencia;
         licencia.motivo = motivo;
+        licencia.archivo = archivo;
 
         return licencia;
       });

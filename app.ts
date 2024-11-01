@@ -29,7 +29,9 @@ app.use(requireAdminRole);
 
 // register all application routes
 AppRoutes.forEach((route) => {
-  app.use(route.path, checkSchema(route.schema), (request: Request, response: Response, next: Function) => {
+  const middlewares = route.middleware || [];
+
+  app.use(route.path, ...middlewares, checkSchema(route.schema), (request: Request, response: Response, next: Function) => {
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
       return response.json(validationResult(request).array());
