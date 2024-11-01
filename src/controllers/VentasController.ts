@@ -120,6 +120,20 @@ export async function buscarVentasPorCC(request: Request, response: Response): P
     });
 }
 
+export async function anularVenta(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .anularVenta(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -128,5 +142,6 @@ export const VentasController = {
   obtenerTipoFacturacion,
   facturarVentaConAfip,
   buscarVentas,
-  buscarVentasPorCC
+  buscarVentasPorCC,
+  anularVenta
 };

@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { Usuario } from './Usuario';
 
 export class Configuracion {
@@ -30,6 +30,9 @@ export class Configuracion {
   contrasenaInstagram: string;
   @Expose({ name: 'usuario_ig' })
   usuarioInstagram: string;
+  @Expose({ name: 'facturacion_automatica' })
+  @Transform((value) => value === 'S')
+  facturacionAutomatica: boolean;
 
   usuario: Usuario;
 
@@ -47,7 +50,8 @@ export class Configuracion {
     numero?: number,
     ciudad?: string,
     provincia?: string,
-    codigoPostal?: number
+    codigoPostal?: number,
+    facturacionAutomatica?: boolean
   ) {
     this.id = id!;
     this.idUsuario = idUsuario!;
@@ -63,5 +67,6 @@ export class Configuracion {
     this.ciudad = ciudad!;
     this.provincia = provincia!;
     this.codigoPostal = codigoPostal!;
+    this.facturacionAutomatica = facturacionAutomatica!;
   }
 }
