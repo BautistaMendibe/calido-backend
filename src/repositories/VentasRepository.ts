@@ -27,6 +27,7 @@ export interface IVentasRepository {
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
+  anularVenta(venta: Venta): Promise<SpResult>;
 }
 
 /**
@@ -284,6 +285,27 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas: ' + err);
       throw new Error('Error al buscar las ventas.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para setear el valor anulado de venta igual a 0
+   * @param {Venta}
+   * @returns {SpResult}
+   */
+  async anularVenta(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA(?)', [venta.id]);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar las categorias: ' + err);
+      throw new Error('Error al buscar las categorias.');
     } finally {
       client.release();
     }

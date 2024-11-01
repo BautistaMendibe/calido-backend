@@ -19,4 +19,5 @@ export interface IVentasService {
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
+  anularVenta(venta: Venta): Promise<SpResult>;
 }

@@ -422,6 +422,12 @@ export const AppRoutes = [
     action: VentasController.buscarVentasPorCC,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/anular-venta',
+    method: 'post',
+    action: VentasController.anularVenta,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes
