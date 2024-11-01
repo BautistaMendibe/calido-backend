@@ -150,8 +150,8 @@ export class VentasService implements IVentasService {
           filtroCliente.id = venta.cliente.id;
           const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
           const cliente = usuarios[0];
-          cliente.domicilioString = cliente.domicilio
-            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ',' + cliente.domicilio.localidad?.provincia?.nombre}`
+          cliente.domicilioString = cliente.domicilio.localidad?.nombre
+            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
             : 'No registrado';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
@@ -184,10 +184,10 @@ export class VentasService implements IVentasService {
         documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
-        condicion_pago: '201',
+        condicion_pago: venta.formaDePago.idAfip,
         documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
-        razon_social: venta.cliente.nombre + venta.cliente.apellido,
-        provincia: '2',
+        razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
+        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
         envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
@@ -201,7 +201,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
+          bonificacion_porcentaje: 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
@@ -209,7 +209,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.precioSinIVA,
+            precio_unitario_sin_iva: producto.precioSinIVA / 1.21,
             rg5329: 'N'
           }
         })),
@@ -290,5 +290,87 @@ export class VentasService implements IVentasService {
         reject(e);
       }
     });
+  }
+
+  public async anularVenta(venta: Venta): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.llamarApiNotaCredito(venta).then(async (res) => {
+          if (res.mensaje == 'OK') {
+            const result = await this._ventasRepository.anularVenta(venta);
+            resolve(result);
+          }
+        });
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  // Funcion para hacer la llamada a la API de facturación
+  private async llamarApiNotaCredito(venta: Venta): Promise<SpResult> {
+    const payload = {
+      apitoken: process.env['API_TOKEN'],
+      apikey: process.env['API_KEY'],
+      usertoken: process.env['USER_TOKEN'],
+      cliente: {
+        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
+        condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
+        domicilio: venta.cliente.domicilioString,
+        condicion_pago: venta.formaDePago.idAfip,
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
+        razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
+        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
+        email: venta.cliente.mail ? venta.cliente.mail : '',
+        envia_por_mail: venta.cliente.mail ? 'S' : 'N',
+        rg5329: 'N'
+      },
+      comprobante: {
+        rubro: 'Tienda de indumentaria',
+        tipo: venta.facturacion.nombre,
+        numero: venta.id,
+        operacion: 'V',
+        detalle: venta.productos.map((producto) => ({
+          cantidad: producto.cantidadSeleccionada,
+          afecta_stock: 'S',
+          actualiza_precio: 'S',
+          bonificacion_porcentaje: 0,
+          producto: {
+            descripcion: producto.nombre,
+            codigo: producto.id,
+            lista_precios: 'standard',
+            leyenda: '',
+            unidad_bulto: 1,
+            alicuota: 21,
+            precio_unitario_sin_iva: producto.precioSinIVA / 1.21,
+            rg5329: 'N'
+          }
+        })),
+        fecha: venta.fechaString,
+        vencimiento: '12/12/2025',
+        rubro_grupo_contable: 'Productos',
+        total: venta.montoTotal,
+        cotizacion: 1,
+        moneda: 'PES',
+        punto_venta: 679,
+        tributos: {}
+      }
+    };
+
+    try {
+      const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
+
+      if (response.data.error === 'N') {
+        const comprobante = new ComprobanteResponse(response.data);
+        return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
+      } else {
+        console.error('Error en la facturación:', response.data.errores);
+        throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));
+      }
+    } catch (error) {
+      console.error('Error en la llamada a la API de facturación:', error.message);
+      throw new Error('Error al llamar a la API de facturación.');
+    }
   }
 }
