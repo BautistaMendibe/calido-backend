@@ -229,6 +229,11 @@ export class VentasService implements IVentasService {
 
       if (response.data.error === 'N') {
         const comprobante = new ComprobanteResponse(response.data);
+        comprobante.fechaComprobante = new Date().toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
         return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
       } else {
         console.error('Error en la facturación:', response.data.errores);
@@ -295,12 +300,12 @@ export class VentasService implements IVentasService {
   public async anularVenta(venta: Venta): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        this.llamarApiNotaCredito(venta).then(async (res) => {
-          if (res.mensaje == 'OK') {
-            const result = await this._ventasRepository.anularVenta(venta);
-            resolve(result);
-          }
-        });
+        const result = await this.llamarApiNotaCredito(venta);
+
+        if (result.mensaje == 'OK') {
+
+        }
+
       } catch (e) {
         logger.error(e);
         reject(e);
@@ -317,18 +322,18 @@ export class VentasService implements IVentasService {
       cliente: {
         documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
-        domicilio: venta.cliente.domicilioString,
+        domicilio: venta.cliente.domicilioString ? venta.cliente.domicilioString : 'No registrado',
         condicion_pago: venta.formaDePago.idAfip,
         documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
-        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
+        provincia: venta.cliente.domicilio?.localidad?.provincia?.id ? venta.cliente.domicilio?.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
         envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
       },
       comprobante: {
         rubro: 'Tienda de indumentaria',
-        tipo: venta.facturacion.nombre,
+        tipo: 'NOTA DE CREDITO B',
         numero: venta.id,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
@@ -351,6 +356,15 @@ export class VentasService implements IVentasService {
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
+        comprobantes_asociados: [
+          {
+            tipo_comprobante: 'FACTURA B',
+            punto_venta: 679,
+            numero: venta.comprobanteAfip.comprobante_nro,
+            comprobante_fecha: venta.comprobanteAfip.fechaComprobante,
+            cuit: 30000000007
+          }
+        ],
         cotizacion: 1,
         moneda: 'PES',
         punto_venta: 679,

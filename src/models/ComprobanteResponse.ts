@@ -35,6 +35,9 @@ export class ComprobanteResponse {
   micrositios?: Micrositios;
   envio_x_mail_direcciones?: string;
 
+  @Expose({ name: 'fecha_comprobante' })
+  fechaComprobante?: string;
+
   constructor(data: any = {}) {
     this.error = data.error ?? null;
     this.errores = data.errores ?? null;
@@ -53,6 +56,7 @@ export class ComprobanteResponse {
     this.comprobante_tipo = data.comprobante_tipo ?? null;
     this.micrositios = data.micrositios ? new Micrositios(data.micrositios) : null;
     this.envio_x_mail_direcciones = data.envio_x_mail_direcciones ?? null;
+    this.fechaComprobante = data.fechaComprobante ?? null;
   }
 }
 
