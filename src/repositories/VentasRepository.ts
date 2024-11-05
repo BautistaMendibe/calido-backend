@@ -24,10 +24,11 @@ export interface IVentasRepository {
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
+  modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
-  anularVenta(venta: Venta): Promise<SpResult>;
+  anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
 }
 
 /**
@@ -171,6 +172,37 @@ export class VentasRepository implements IVentasRepository {
    * @param {idCategoria}
    * @returns {CondicionIva[]}
    */
+  async modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult> {
+    const params = [
+      venta.id,
+      comprobanteResponse.comprobante_nro,
+      comprobanteResponse.afip_qr,
+      comprobanteResponse.cae,
+      comprobanteResponse.comprobante_tipo,
+      comprobanteResponse.comprobante_pdf_url,
+      comprobanteResponse.comprobante_ticket_url,
+      comprobanteResponse.vencimiento_pago,
+      comprobanteResponse.afip_codigo_barras,
+      comprobanteResponse.vencimiento_cae,
+      comprobanteResponse.fechaComprobante
+    ];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al guardar el comprobante de venta: ' + err);
+      throw new Error('Error al guardar el comprobante de venta.');
+    }
+  }
+
+  /**
+   * Método asíncrono para modificar el comprobante generado y vincularlo a la venta
+   * @param {idCategoria}
+   * @returns {CondicionIva[]}
+   */
   async guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult> {
     const client = await PoolDb.connect();
     const params = [
@@ -296,8 +328,7 @@ export class VentasRepository implements IVentasRepository {
    * @param {Venta}
    * @returns {SpResult}
    */
-  async anularVenta(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
+  async anularVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA(?)', [venta.id]);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
@@ -307,8 +338,6 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las categorias: ' + err);
       throw new Error('Error al buscar las categorias.');
-    } finally {
-      client.release();
     }
   }
 }

@@ -10,7 +10,7 @@ import { Producto } from '../../models/Producto';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
-import { PoolClient } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import axios from 'axios';
@@ -299,22 +299,39 @@ export class VentasService implements IVentasService {
 
   public async anularVenta(venta: Venta): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
+      const client = await PoolDb.connect();
       try {
-        const result = await this.llamarApiNotaCredito(venta);
+        await client.query('BEGIN');
+        const result = await this.llamarApiNotaCredito(venta, client);
 
         if (result.mensaje == 'OK') {
-
+          const anularVenta = await this._ventasRepository.anularVenta(venta, client);
+          if (anularVenta.mensaje == 'OK') {
+            resolve(anularVenta);
+            return;
+          }
         }
 
+        await client.query('COMMIT');
+        resolve(result);
       } catch (e) {
-        logger.error(e);
-        reject(e);
+        await client.query('ROLLBACK');
+        logger.error('Transacción fallida: ' + e.message);
+        throw new Error('Error al anular la venta y sus detalles.');
+      } finally {
+        client.release();
       }
     });
   }
 
   // Funcion para hacer la llamada a la API de facturación
-  private async llamarApiNotaCredito(venta: Venta): Promise<SpResult> {
+  private async llamarApiNotaCredito(venta: Venta, client: PoolClient): Promise<SpResult> {
+    const fechaHoy = new Date().toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
@@ -334,7 +351,6 @@ export class VentasService implements IVentasService {
       comprobante: {
         rubro: 'Tienda de indumentaria',
         tipo: 'NOTA DE CREDITO B',
-        numero: venta.id,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: producto.cantidadSeleccionada,
@@ -352,7 +368,7 @@ export class VentasService implements IVentasService {
             rg5329: 'N'
           }
         })),
-        fecha: venta.fechaString,
+        fecha: fechaHoy,
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
@@ -360,7 +376,7 @@ export class VentasService implements IVentasService {
           {
             tipo_comprobante: 'FACTURA B',
             punto_venta: 679,
-            numero: venta.comprobanteAfip.comprobante_nro,
+            numero: venta.comprobanteAfip.comprobante_nro.toString().slice(-8),
             comprobante_fecha: venta.comprobanteAfip.fechaComprobante,
             cuit: 30000000007
           }
@@ -377,7 +393,7 @@ export class VentasService implements IVentasService {
 
       if (response.data.error === 'N') {
         const comprobante = new ComprobanteResponse(response.data);
-        return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
+        return await this._ventasRepository.modificarComprobanteAfip(comprobante, venta, client);
       } else {
         console.error('Error en la facturación:', response.data.errores);
         throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));

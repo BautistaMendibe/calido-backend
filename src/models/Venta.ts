@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { Usuario } from './Usuario';
 import { FormaDePago } from './FormaDePago';
 import { Producto } from './Producto';
@@ -31,6 +31,9 @@ export class Venta {
   interes: number;
   @Expose({ name: 'descuento' })
   descuento: number;
+  @Expose({ name: 'anulada' })
+  @Transform((value) => value == 1)
+  anulada: boolean;
 
   constructor(
     id?: number,
@@ -47,7 +50,8 @@ export class Venta {
     tarjeta?: string,
     cantidadCuotas?: number,
     interes?: number,
-    descuento?: number
+    descuento?: number,
+    anulada?: boolean
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -64,5 +68,6 @@ export class Venta {
     this.cantidadCuotas = cantidadCuotas!;
     this.interes = interes!;
     this.descuento = descuento!;
+    this.anulada = anulada!;
   }
 }
