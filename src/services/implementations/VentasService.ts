@@ -312,6 +312,14 @@ export class VentasService implements IVentasService {
           }
         }
 
+        for (const producto of venta.productos) {
+          const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+
+          if (actualizarStock.mensaje !== 'OK') {
+            throw new Error('Error al actualizar el stock del producto.');
+          }
+        }
+
         await client.query('COMMIT');
         resolve(result);
       } catch (e) {
@@ -320,6 +328,18 @@ export class VentasService implements IVentasService {
         throw new Error('Error al anular la venta y sus detalles.');
       } finally {
         client.release();
+      }
+    });
+  }
+
+  public async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.actualizarStockPorAnulacion(producto, idVenta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
       }
     });
   }

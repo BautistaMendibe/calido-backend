@@ -1,4 +1,4 @@
-import { injectable } from 'inversify';
+import { id, injectable } from 'inversify';
 import { logger } from '../logger/CustomLogger';
 import PoolDb from '../data/db';
 import { plainToClass } from 'class-transformer';
@@ -29,6 +29,7 @@ export interface IVentasRepository {
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
+  actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
 }
 
 /**
@@ -330,14 +331,34 @@ export class VentasRepository implements IVentasRepository {
    */
   async anularVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA(?)', [venta.id]);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA($1)', [venta.id]);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al buscar las categorias: ' + err);
-      throw new Error('Error al buscar las categorias.');
+      logger.error('Error al anular la venta: ' + err);
+      throw new Error('Error al anular la venta.');
+    }
+  }
+
+  /**
+   * Método asíncrono para actualizar el stock de un producto dada una venta anulada
+   * @param {idVenta}
+   * @param {producto}
+   * @returns {SpResult}
+   */
+  async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    const params = [producto.id, producto.cantidadSeleccionada, idVenta];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ACTUALIZAR_STOCK_VENTA_ANULADA(?)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al actualizar el stock de un producto dada una venta anulada: ' + err);
+      throw new Error('Error al actualizar el stock de un producto dada una venta anulada.');
     }
   }
 }
