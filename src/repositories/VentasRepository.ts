@@ -349,9 +349,9 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.id, producto.cantidadSeleccionada, idVenta];
+    const params = [producto.id, producto.cantidadSeleccionada, true, idVenta, 'Anulacion de venta'];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ACTUALIZAR_STOCK_VENTA_ANULADA(?)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_inventario_venta($1, $2, $3, $4, $5)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

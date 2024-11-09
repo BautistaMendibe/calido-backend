@@ -307,16 +307,9 @@ export class VentasService implements IVentasService {
         if (result.mensaje == 'OK') {
           const anularVenta = await this._ventasRepository.anularVenta(venta, client);
           if (anularVenta.mensaje == 'OK') {
-            resolve(anularVenta);
-            return;
-          }
-        }
-
-        for (const producto of venta.productos) {
-          const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
-
-          if (actualizarStock.mensaje !== 'OK') {
-            throw new Error('Error al actualizar el stock del producto.');
+            for (const producto of venta.productos) {
+              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            }
           }
         }
 
