@@ -34,6 +34,8 @@ export class Venta {
   @Expose({ name: 'anulada' })
   @Transform((value) => value == 1)
   anulada: boolean;
+  @Expose({ name: 'idcaja' })
+  idCaja: number;
 
   constructor(
     id?: number,
@@ -51,7 +53,8 @@ export class Venta {
     cantidadCuotas?: number,
     interes?: number,
     descuento?: number,
-    anulada?: boolean
+    anulada?: boolean,
+    idCaja?: number
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -69,5 +72,6 @@ export class Venta {
     this.interes = interes!;
     this.descuento = descuento!;
     this.anulada = anulada!;
+    this.idCaja = idCaja!;
   }
 }
