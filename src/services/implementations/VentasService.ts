@@ -186,7 +186,7 @@ export class VentasService implements IVentasService {
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
         condicion_pago: venta.formaDePago.idAfip,
-        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : venta.cliente?.cuit ? venta.cliente.cuit : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
         provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
