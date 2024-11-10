@@ -139,6 +139,7 @@ export class UsersRepository implements IUsersRepository {
       usuario.codigoPostal ? usuario.codigoPostal : null,
       usuario.dni ? usuario.dni : null,
       usuario.cuil ? usuario.cuil : null,
+      usuario.cuit ? usuario.cuit : null,
       contrasenaHashed,
       usuario.tipoUsuario.id ? usuario.tipoUsuario.id : null,
       usuario.idGenero ? usuario.idGenero : null,
@@ -151,7 +152,7 @@ export class UsersRepository implements IUsersRepository {
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

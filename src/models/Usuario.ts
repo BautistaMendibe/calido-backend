@@ -21,6 +21,8 @@ export class Usuario {
   dni: number;
   @Expose({ name: 'cuil' })
   cuil: string;
+  @Expose({ name: 'cuit' })
+  cuit: string;
   @Expose({ name: 'contrasena' })
   contrasena: string;
   @Expose({ name: 'idtipousuario' })
@@ -50,6 +52,7 @@ export class Usuario {
     codigoPostal?: number,
     dni?: number,
     cuil?: string,
+    cuit?: string,
     contrasena?: string,
     idTipoUsuario?: number,
     idGenero?: number,
@@ -69,6 +72,7 @@ export class Usuario {
     this.codigoPostal = codigoPostal ? codigoPostal : null;
     this.dni = dni ? dni : null;
     this.cuil = cuil ? cuil : null;
+    this.cuit = cuit ? cuit : null;
     this.contrasena = contrasena ? contrasena : null;
     this.idTipoUsuario = idTipoUsuario ? idTipoUsuario : null;
     this.idGenero = idGenero ? idGenero : null;
