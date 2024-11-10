@@ -153,6 +153,7 @@ export class VentasService implements IVentasService {
           cliente.domicilioString = cliente.domicilio.localidad?.nombre
             ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
             : 'No registrado';
+          cliente.tipoDocumento = cliente.dni ? 'DNI' : cliente.cuit ? 'CUIT' : 'OTRO';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
         } else {
@@ -181,7 +182,7 @@ export class VentasService implements IVentasService {
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
-        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
+        documento_tipo: venta.cliente.tipoDocumento,
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
         condicion_pago: venta.formaDePago.idAfip,
