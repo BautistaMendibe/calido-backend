@@ -30,6 +30,7 @@ export interface IVentasRepository {
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
 }
 
 /**
@@ -362,6 +363,40 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al actualizar el stock de un producto dada una venta anulada: ' + err);
       throw new Error('Error al actualizar el stock de un producto dada una venta anulada.');
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas generadas en una fecha determinada a partir de una hora.
+   * @returns {Venta[]}
+   */
+  async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+    const client = await PoolDb.connect();
+    const params = [new Date(fechaHora) || null];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1)', params);
+
+      const ventas: Venta[] = res.rows.map((row) => {
+        const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
+
+        venta.formaDePago = formaDePago;
+        venta.comprobanteAfip = comprobante;
+        venta.cliente = cliente;
+        venta.facturacion = facturacion;
+
+        return venta;
+      });
+
+      return ventas;
+    } catch (err) {
+      logger.error('Error al buscar las ventas en fecha y hora: ' + err);
+      throw new Error('Error al buscar las ventas en fecha y hora.');
+    } finally {
+      client.release();
     }
   }
 }
