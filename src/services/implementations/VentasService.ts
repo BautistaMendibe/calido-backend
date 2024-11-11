@@ -299,31 +299,38 @@ export class VentasService implements IVentasService {
   }
 
   public async anularVenta(venta: Venta): Promise<SpResult> {
-    return new Promise(async (resolve, reject) => {
-      const client = await PoolDb.connect();
-      try {
-        await client.query('BEGIN');
-        const result = await this.llamarApiNotaCredito(venta, client);
+    const client = await PoolDb.connect();
+    let result: SpResult = new SpResult();
 
-        if (result.mensaje == 'OK') {
-          const anularVenta = await this._ventasRepository.anularVenta(venta, client);
-          if (anularVenta.mensaje == 'OK') {
-            for (const producto of venta.productos) {
-              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
-            }
-          }
-        }
+    try {
+      await client.query('BEGIN');
 
-        await client.query('COMMIT');
-        resolve(result);
-      } catch (e) {
-        await client.query('ROLLBACK');
-        logger.error('Transacción fallida: ' + e.message);
-        throw new Error('Error al anular la venta y sus detalles.');
-      } finally {
-        client.release();
+      if (venta.comprobanteAfip.comprobante_nro) {
+        result = await this.llamarApiNotaCredito(venta, client);
+      } else {
+        result.mensaje = 'OK';
       }
-    });
+
+      if (result.mensaje === 'OK') {
+        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
+        if (anularVentaResult.mensaje === 'OK') {
+          for (const producto of venta.productos) {
+            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+          }
+        } else {
+          throw new Error('Error al anular la venta en el repositorio');
+        }
+      }
+
+      await client.query('COMMIT');
+      return result;
+    } catch (e) {
+      await client.query('ROLLBACK');
+      logger.error('Transacción fallida: ' + e.message);
+      throw new Error('Error al anular la venta y sus detalles.');
+    } finally {
+      client.release();
+    }
   }
 
   public async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
