@@ -153,6 +153,7 @@ export class VentasService implements IVentasService {
           cliente.domicilioString = cliente.domicilio.localidad?.nombre
             ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
             : 'No registrado';
+          cliente.tipoDocumento = cliente.dni ? 'DNI' : cliente.cuit ? 'CUIT' : 'OTRO';
           // Asignar el usuario actualizado
           venta.cliente = cliente;
         } else {
@@ -181,11 +182,11 @@ export class VentasService implements IVentasService {
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
-        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
+        documento_tipo: venta.cliente.tipoDocumento,
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString,
         condicion_pago: venta.formaDePago.idAfip,
-        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : venta.cliente?.cuit ? venta.cliente.cuit : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
         provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
@@ -298,31 +299,38 @@ export class VentasService implements IVentasService {
   }
 
   public async anularVenta(venta: Venta): Promise<SpResult> {
-    return new Promise(async (resolve, reject) => {
-      const client = await PoolDb.connect();
-      try {
-        await client.query('BEGIN');
-        const result = await this.llamarApiNotaCredito(venta, client);
+    const client = await PoolDb.connect();
+    let result: SpResult = new SpResult();
 
-        if (result.mensaje == 'OK') {
-          const anularVenta = await this._ventasRepository.anularVenta(venta, client);
-          if (anularVenta.mensaje == 'OK') {
-            for (const producto of venta.productos) {
-              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
-            }
-          }
-        }
+    try {
+      await client.query('BEGIN');
 
-        await client.query('COMMIT');
-        resolve(result);
-      } catch (e) {
-        await client.query('ROLLBACK');
-        logger.error('Transacción fallida: ' + e.message);
-        throw new Error('Error al anular la venta y sus detalles.');
-      } finally {
-        client.release();
+      if (venta.comprobanteAfip.comprobante_nro) {
+        result = await this.llamarApiNotaCredito(venta, client);
+      } else {
+        result.mensaje = 'OK';
       }
-    });
+
+      if (result.mensaje === 'OK') {
+        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
+        if (anularVentaResult.mensaje === 'OK') {
+          for (const producto of venta.productos) {
+            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+          }
+        } else {
+          throw new Error('Error al anular la venta en el repositorio');
+        }
+      }
+
+      await client.query('COMMIT');
+      return result;
+    } catch (e) {
+      await client.query('ROLLBACK');
+      logger.error('Transacción fallida: ' + e.message);
+      throw new Error('Error al anular la venta y sus detalles.');
+    } finally {
+      client.release();
+    }
   }
 
   public async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
@@ -345,16 +353,19 @@ export class VentasService implements IVentasService {
       year: 'numeric'
     });
 
+    venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
+    venta.notaCredito = venta.facturacion.nombre == 'FACTURA B' ? 'NOTA DE CREDITO B' : 'NOTA DE CREDITO A';
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
-        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
+        documento_tipo: venta.cliente.tipoDocumento,
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString ? venta.cliente.domicilioString : 'No registrado',
         condicion_pago: venta.formaDePago.idAfip,
-        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : venta.cliente?.cuit ? venta.cliente.cuit : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
         provincia: venta.cliente.domicilio?.localidad?.provincia?.id ? venta.cliente.domicilio?.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
@@ -363,7 +374,7 @@ export class VentasService implements IVentasService {
       },
       comprobante: {
         rubro: 'Tienda de indumentaria',
-        tipo: 'NOTA DE CREDITO B',
+        tipo: venta.notaCredito,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: producto.cantidadSeleccionada,
@@ -387,7 +398,7 @@ export class VentasService implements IVentasService {
         total: venta.montoTotal,
         comprobantes_asociados: [
           {
-            tipo_comprobante: 'FACTURA B',
+            tipo_comprobante: venta.facturacion.nombre,
             punto_venta: 679,
             numero: venta.comprobanteAfip.comprobante_nro.toString().slice(-8),
             comprobante_fecha: venta.comprobanteAfip.fechaComprobante,
