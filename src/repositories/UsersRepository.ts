@@ -291,6 +291,7 @@ export class UsersRepository implements IUsersRepository {
       usuario.codigoPostal,
       usuario.dni,
       usuario.cuil,
+      usuario.cuit,
       contrasenaHashed,
       usuario.idTipoUsuario,
       usuario.idGenero,
@@ -302,7 +303,7 @@ export class UsersRepository implements IUsersRepository {
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

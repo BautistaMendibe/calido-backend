@@ -42,6 +42,7 @@ export class Usuario {
   condicionIva: CondicionIva;
 
   domicilioString: string;
+  tipoDocumento: string;
 
   constructor(
     id?: number,
@@ -62,7 +63,8 @@ export class Usuario {
     tipoUsuario?: TipoUsuario,
     idCondicionIva?: number,
     condicionIva?: CondicionIva,
-    domicilioString?: string
+    domicilioString?: string,
+    tipoDocumento?: string
   ) {
     this.id = id ? id : null;
     this.nombreUsuario = nombreUsuario ? nombreUsuario : null;
@@ -83,5 +85,6 @@ export class Usuario {
     this.idCondicionIva = idCondicionIva ? idCondicionIva : null;
     this.condicionIva = condicionIva ? condicionIva : null;
     this.domicilioString = domicilioString ? domicilioString : null;
+    this.tipoDocumento = tipoDocumento ? tipoDocumento : null;
   }
 }
