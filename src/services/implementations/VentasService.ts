@@ -353,16 +353,19 @@ export class VentasService implements IVentasService {
       year: 'numeric'
     });
 
+    venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
+    venta.notaCredito = venta.facturacion.nombre == 'FACTURA B' ? 'NOTA DE CREDITO B' : 'NOTA DE CREDITO A';
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
-        documento_tipo: venta.cliente?.dni ? 'DNI' : 'OTRO',
+        documento_tipo: venta.cliente.tipoDocumento,
         condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
         domicilio: venta.cliente.domicilioString ? venta.cliente.domicilioString : 'No registrado',
         condicion_pago: venta.formaDePago.idAfip,
-        documento_nro: venta.cliente?.dni ? venta.cliente.dni : '0',
+        documento_nro: venta.cliente?.dni ? venta.cliente.dni : venta.cliente?.cuit ? venta.cliente.cuit : '0',
         razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
         provincia: venta.cliente.domicilio?.localidad?.provincia?.id ? venta.cliente.domicilio?.localidad?.provincia?.id : '26',
         email: venta.cliente.mail ? venta.cliente.mail : '',
@@ -371,7 +374,7 @@ export class VentasService implements IVentasService {
       },
       comprobante: {
         rubro: 'Tienda de indumentaria',
-        tipo: 'NOTA DE CREDITO B',
+        tipo: venta.notaCredito,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: producto.cantidadSeleccionada,
@@ -395,7 +398,7 @@ export class VentasService implements IVentasService {
         total: venta.montoTotal,
         comprobantes_asociados: [
           {
-            tipo_comprobante: 'FACTURA B',
+            tipo_comprobante: venta.facturacion.nombre,
             punto_venta: 679,
             numero: venta.comprobanteAfip.comprobante_nro.toString().slice(-8),
             comprobante_fecha: venta.comprobanteAfip.fechaComprobante,

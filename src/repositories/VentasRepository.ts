@@ -256,11 +256,13 @@ export class VentasRepository implements IVentasRepository {
         const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
         const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
         const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
+        const condicionIva: CondicionIva = plainToClass(CondicionIva, row, { excludeExtraneousValues: true });
 
         venta.formaDePago = formaDePago;
         venta.comprobanteAfip = comprobante;
         venta.cliente = cliente;
         venta.facturacion = facturacion;
+        venta.cliente.condicionIva = condicionIva;
 
         return venta;
       });
