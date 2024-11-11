@@ -101,9 +101,9 @@ export class CajasRepository implements ICajasRepository {
   async obtenerArqueos(filtro: FiltrosArqueos): Promise<Arqueo[]> {
     const client = await PoolDb.connect();
 
-    const params = [filtro.fechaApertura || null, filtro.estado || null];
+    const params = [filtro.idArqueo || null, filtro.fechaApertura || null, filtro.estado || null];
     try {
-      const res = await client.query<Arqueo[]>('SELECT * FROM public.BUSCAR_ARQUEOS($1, $2)', params);
+      const res = await client.query<Arqueo[]>('SELECT * FROM public.BUSCAR_ARQUEOS($1, $2, $3)', params);
       const arqueos = res.rows.map((row: any) => {
         // Mapeo de objetos del arqueo (caja y estado)
         const caja: Caja = plainToClass(Caja, row, { excludeExtraneousValues: true });

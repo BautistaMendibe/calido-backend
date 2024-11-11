@@ -265,6 +265,18 @@ export class VentasService implements IVentasService {
     });
   }
 
+  public async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentasConFechaHora(fechaHora);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async buscarProductosPorVenta(idVenta: number): Promise<Producto[]> {
     return new Promise(async (resolve, reject) => {
       try {

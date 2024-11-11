@@ -433,6 +433,12 @@ export const AppRoutes = [
     action: VentasController.anularVenta,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/buscar-ventas-fecha-hora',
+    method: 'post',
+    action: VentasController.buscarVentasConFechaHora,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

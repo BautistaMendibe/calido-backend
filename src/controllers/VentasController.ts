@@ -120,6 +120,20 @@ export async function buscarVentasPorCC(request: Request, response: Response): P
     });
 }
 
+export async function buscarVentasConFechaHora(request: Request, response: Response): Promise<Response> {
+  const fechaHora: string = request.body.fechaHora;
+
+  return _ventasService
+    .buscarVentasConFechaHora(fechaHora)
+    .then((x: Venta[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function anularVenta(request: Request, response: Response): Promise<Response> {
   const venta: Venta = request.body;
 
@@ -143,5 +157,6 @@ export const VentasController = {
   facturarVentaConAfip,
   buscarVentas,
   buscarVentasPorCC,
-  anularVenta
+  anularVenta,
+  buscarVentasConFechaHora
 };
