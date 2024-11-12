@@ -175,8 +175,6 @@ export class ComprobantesRepository implements IComprobantesRepository {
   async modificarComprobante(comprobante: Comprobante): Promise<SpResult> {
     const client = await PoolDb.connect();
 
-    const detalleComprobanteJsonb = JSON.stringify(comprobante.detalleComprobante);
-
     const params = [
       comprobante.id,
       comprobante.numeroComprobante,
@@ -185,14 +183,11 @@ export class ComprobantesRepository implements IComprobantesRepository {
       comprobante.observaciones,
       comprobante.total,
       comprobante.idResponsable,
-      comprobante.idReceptor,
-      detalleComprobanteJsonb,
-      comprobante.idTipoComprobante,
-      comprobante.idPedido
+      comprobante.idReceptor
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_COMPROBANTE($1, $2, $3, $4, $5, $6, $7, $8)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
