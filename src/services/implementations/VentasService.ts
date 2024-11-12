@@ -196,7 +196,6 @@ export class VentasService implements IVentasService {
       comprobante: {
         rubro: 'Tienda de indumentaria',
         tipo: venta.facturacion.nombre,
-        numero: venta.id,
         operacion: 'V',
         detalle: venta.productos.map((producto) => ({
           cantidad: producto.cantidadSeleccionada,
@@ -210,7 +209,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.precioSinIVA / 1.21,
+            precio_unitario_sin_iva: producto.precioSinIVA,
             rg5329: 'N'
           }
         })),
@@ -400,7 +399,7 @@ export class VentasService implements IVentasService {
             leyenda: '',
             unidad_bulto: 1,
             alicuota: 21,
-            precio_unitario_sin_iva: producto.precioSinIVA / 1.21,
+            precio_unitario_sin_iva: producto.precioSinIVA,
             rg5329: 'N'
           }
         })),
