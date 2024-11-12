@@ -201,7 +201,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: 0,
+          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
@@ -364,8 +364,17 @@ export class VentasService implements IVentasService {
       year: 'numeric'
     });
 
-    venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
     venta.notaCredito = venta.facturacion.nombre == 'FACTURA B' ? 'NOTA DE CREDITO B' : 'NOTA DE CREDITO A';
+
+    const filtroCliente = new FiltroEmpleados();
+    filtroCliente.id = venta.cliente.id;
+    const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
+    const cliente = usuarios[0];
+    cliente.domicilioString = cliente.domicilio.localidad?.nombre
+      ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
+      : 'No registrado';
+    venta.cliente = cliente;
+    venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
 
     const payload = {
       apitoken: process.env['API_TOKEN'],
@@ -391,7 +400,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: 0,
+          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,

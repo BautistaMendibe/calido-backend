@@ -55,7 +55,7 @@ export class ProductosRepository implements IProductosRepository {
       producto.imgProducto,
       producto.margenGanancia,
       producto.precioConIVA,
-      producto.promocion.id ? producto.promocion.id : null
+      producto.promocion.id != -1 ? producto.promocion.id : null
     ];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REG_PRODUCTO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', params);
