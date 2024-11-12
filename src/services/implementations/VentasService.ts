@@ -201,7 +201,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: 0,
+          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
@@ -391,7 +391,7 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: 0,
+          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
