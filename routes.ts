@@ -166,6 +166,18 @@ export const AppRoutes = [
     action: UsersController.modificarLicencia,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/recuperar-contrasena',
+    method: 'post',
+    action: UsersController.recuperarContrasena,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/cambiar-contrasena',
+    method: 'post',
+    action: UsersController.cambiarContrasena,
+    schema: schemaEmpty
+  },
 
   //#endregion
 

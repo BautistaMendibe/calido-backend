@@ -21,6 +21,7 @@ import { Licencia } from '../models/Licencia';
 import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
 import { Archivo } from '../models/Archivo';
+import { RecuperarContrasena } from '../models/RecuperarContrasena';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -69,6 +70,8 @@ export interface IUsersRepository {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
+  cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
 }
 
 /**
@@ -299,11 +302,12 @@ export class UsersRepository implements IUsersRepository {
       usuario.domicilio.calle || null,
       usuario.domicilio.numero || null,
       usuario.roles,
-      usuario.idCondicionIva
+      usuario.idCondicionIva,
+      usuario.mail
     ];
 
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_USUARIO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -691,6 +695,44 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al modificar Licencia: ' + err);
       throw new Error('Error al modificar Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [recuperarContrasena.correo];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.EXISTE_USUARIO_CORREO($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar correo para recuperar contraseña: ' + err);
+      throw new Error('Error al consultar correo para recuperar contraseña.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
+    // Hashear la contraseña antes de enviarla a la base de datos
+    const contrasenaHashed = await argon2.hash(recuperarContrasena.contrasena, argonConfig);
+
+    const params = [recuperarContrasena.correo, contrasenaHashed];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CAMBIAR_CONTRASENA_USUARIO($1, $2)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al cambiar contraseña: ' + err);
+      throw new Error('Error al cambiar contraseña.');
     } finally {
       client.release();
     }

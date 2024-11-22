@@ -11,6 +11,7 @@ import { Motivo } from '../../models/Motivo';
 import { Licencia } from '../../models/Licencia';
 import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../../models/EstadoLicencia';
+import { RecuperarContrasena } from '../../models/RecuperarContrasena';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -37,4 +38,6 @@ export interface IUsersService {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
+  cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
 }
