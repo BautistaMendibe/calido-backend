@@ -1,5 +1,5 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { UsersController } from './src/controllers/UsersController';
+import { buscarUltimosClientes, UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
@@ -164,6 +164,12 @@ export const AppRoutes = [
     path: '/usuarios/modificar-licencia',
     method: 'post',
     action: UsersController.modificarLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/uscar-ultimos-clientes',
+    method: 'get',
+    action: UsersController.buscarUltimosClientes,
     schema: schemaEmpty
   },
 

@@ -37,4 +37,5 @@ export interface IUsersService {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  buscarUltimosClientes(): Promise<Usuario[]>;
 }

@@ -318,4 +318,16 @@ export class UsersService implements IUsersService {
       }
     });
   }
+
+  public async buscarUltimosClientes(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.buscarUltimosClientes();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

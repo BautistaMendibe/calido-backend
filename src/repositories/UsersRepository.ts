@@ -69,6 +69,7 @@ export interface IUsersRepository {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  buscarUltimosClientes(): Promise<Usuario[]>;
 }
 
 /**
@@ -691,6 +692,22 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al modificar Licencia: ' + err);
       throw new Error('Error al modificar Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarUltimosClientes(): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Usuario[]>('SELECT FROM usuario where activo = 1 and idtipousuario = 2 ORDER BY idusuario DESC LIMIT 4');
+      const result: Usuario[] = plainToClass(Usuario, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar los ultimos clientes: ' + err);
+      throw new Error('Error al consultar los ultimos clientes.');
     } finally {
       client.release();
     }
