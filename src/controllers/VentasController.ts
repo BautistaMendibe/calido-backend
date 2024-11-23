@@ -148,6 +148,20 @@ export async function anularVenta(request: Request, response: Response): Promise
     });
 }
 
+export async function pagarConQRSIRO(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .pagarConSIROQR(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -158,5 +172,6 @@ export const VentasController = {
   buscarVentas,
   buscarVentasPorCC,
   anularVenta,
-  buscarVentasConFechaHora
+  buscarVentasConFechaHora,
+  pagarConQRSIRO
 };

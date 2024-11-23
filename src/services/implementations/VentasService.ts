@@ -447,4 +447,35 @@ export class VentasService implements IVentasService {
       throw new Error('Error al llamar a la API de facturación.');
     }
   }
+
+  // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
+  public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
+    try {
+      const token =
+        'bearer 3YPnXeNUFgDpIrkiHX52qXbJUrDL5GsEMb2cEs97KFUfpkZOYaV4PE6ZfLLfg3wFMpq4ekEoCLJh06HIvBEEzyawtkebyxTj0ZIBtVzKNcL5Gtys_SJWKshHepjy2D8myRFMzfb7xE_EVb9QeFYWHFb_DhxE6PRP3ZjR8fbh4nM07t0EKasswwBj3bDxELRMJNrlu3vHRICBpGav7cscuzFluDNtgmm3OsynWaLfAhK4H29wbI0ORD21Yi53Pqxryp_eVDnDjMLpScaM7BAjj3uAkTXXf2krPB2j24Za1WF0__VtWEkV5oCO0ozDHYbujRREq68YM5_wN_XvJpT9UTvrQTspkLITh7mlZZyLoi4g5z-Z';
+      // llamar a API Sesion para que se cargue solo
+      const response = await axios.post(
+        'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
+        {
+          nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
+          nro_cliente_empresa: venta.cliente.id.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
+          nro_comprobante: venta.id.toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
+          Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal - venta.descuento + venta.interes) consultar estos valores
+          URL_OK: 'https://www.youtube.com/',
+          URL_ERROR: 'https://www.youtube.com/error',
+          IdReferenciaOperacion: 'QRE' + venta.id.toString()
+        },
+        {
+          headers: {
+            Authorization: token, // Aquí se incluye el token en el header
+            'Content-Type': 'application/json' // Opcional si la API requiere JSON explícito
+          }
+        }
+      );
+      return response.data; // Devuelve la respuesta de la API
+    } catch (error) {
+      console.error('Error al crear el pago:', error.response?.data || error.message);
+      throw new Error('Error al crear la intención de pago.');
+    }
+  }
 }

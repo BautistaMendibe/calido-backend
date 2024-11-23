@@ -439,6 +439,12 @@ export const AppRoutes = [
     action: VentasController.buscarVentasConFechaHora,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/generar-pago',
+    method: 'post',
+    action: VentasController.pagarConQRSIRO,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

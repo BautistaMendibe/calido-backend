@@ -22,4 +22,5 @@ export interface IVentasService {
   anularVenta(venta: Venta): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  pagarConSIROQR(venta: Venta): Promise<SpResult>;
 }
