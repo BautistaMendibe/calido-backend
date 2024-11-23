@@ -167,7 +167,7 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
-    path: '/usuarios/uscar-ultimos-clientes',
+    path: '/usuarios/buscar-ultimos-clientes',
     method: 'get',
     action: UsersController.buscarUltimosClientes,
     schema: schemaEmpty
