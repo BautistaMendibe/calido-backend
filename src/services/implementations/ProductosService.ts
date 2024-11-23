@@ -146,4 +146,16 @@ export class ProductosService implements IProductosService {
       }
     });
   }
+
+  public async consultarProductosConStockLimitado(): Promise<Producto[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._productosRepository.consultarProductosConStockLimitado();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

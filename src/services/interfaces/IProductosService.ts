@@ -16,4 +16,5 @@ export interface IProductosService {
   consultarDetallesProductos(filtro: FiltrosDetallesProductos): Promise<DetalleProducto[]>;
   eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
   consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]>;
+  consultarProductosConStockLimitado(): Promise<Producto[]>;
 }

@@ -4,7 +4,7 @@ import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
-import { ProductosController } from './src/controllers/ProductosController';
+import { consultarProductosConStockLimitado, ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
@@ -338,6 +338,12 @@ export const AppRoutes = [
     path: '/productos/buscar-movimientos-por-producto/:id',
     method: 'get',
     action: ProductosController.consultarMovimientosPorProducto,
+    schema: schemaEmpty
+  },
+  {
+    path: '/productos/consultar-productos-stock-limitado',
+    method: 'get',
+    action: ProductosController.consultarProductosConStockLimitado,
     schema: schemaEmpty
   },
   //#endregion

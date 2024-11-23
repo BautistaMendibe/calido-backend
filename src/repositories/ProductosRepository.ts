@@ -27,6 +27,7 @@ export interface IProductosRepository {
   eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
   modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
   consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]>;
+  consultarProductosConStockLimitado(): Promise<Producto[]>;
 }
 
 /**
@@ -331,6 +332,79 @@ export class ProductosRepository implements IProductosRepository {
     } catch (err) {
       logger.error('Error al consultar Movimientos del Producto: ' + err);
       throw new Error('Error al consultar Movimientos del Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarProductosConStockLimitado(): Promise<Producto[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Producto[]>('SELECT * FROM public.buscar_productos_stock_limitado()');
+
+      const productos = res.rows.map((row: any) => {
+        // Armamos los objetos necesarios para la clase Proveedor
+        const tipoProducto: TipoProducto = plainToClass(
+          TipoProducto,
+          {
+            idtipoproducto: row.idtipoproducto,
+            ntipoproducto: row.ntipoproducto
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const marca: Marca = plainToClass(
+          Marca,
+          {
+            idmarca: row.idmarca,
+            nmarca: row.nmarca
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const proveedor: Proveedor = plainToClass(
+          Proveedor,
+          {
+            idproveedor: row.idproveedor,
+            nproveedor: row.nproveedor
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const promocion: Promocion = plainToClass(
+          Promocion,
+          {
+            idpromocionproducto: row.idpromocionproducto,
+            npromocionproducto: row.npromocionproducto,
+            percentdescuento: row.percentdescuento
+          },
+          { excludeExtraneousValues: true }
+        );
+
+        const producto = new Producto(
+          row.idproducto,
+          row.nproducto,
+          row.preciocosto,
+          row.preciosiniva,
+          row.imgproducto,
+          row.codigobarra,
+          row.descripcion,
+          tipoProducto,
+          marca,
+          proveedor
+        );
+        producto.margenGanancia = row.margenganancia;
+        producto.promocion = promocion;
+        producto.cantidadEnStock = row.canteninventario;
+        producto.precioConIVA = row.precioconiva;
+
+        return producto;
+      });
+
+      return productos;
+    } catch (err) {
+      logger.error('Error al consultar producto con stock limitado: ' + err);
+      throw new Error('Error al consultar producto con stock limitado');
     } finally {
       client.release();
     }
