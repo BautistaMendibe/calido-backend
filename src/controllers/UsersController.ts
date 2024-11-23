@@ -348,7 +348,6 @@ export async function modificarLicencia(request: Request, response: Response): P
 }
 
 export async function buscarUltimosClientes(request: Request, response: Response): Promise<Response> {
-
   return _usersService
     .buscarUltimosClientes()
     .then((x: Usuario[]) => {
