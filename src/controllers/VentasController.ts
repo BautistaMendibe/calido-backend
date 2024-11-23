@@ -149,6 +149,7 @@ export async function anularVenta(request: Request, response: Response): Promise
 }
 
 export async function pagarConQRSIRO(request: Request, response: Response): Promise<Response> {
+  console.log('Payload recibido en el backend:', request.body);
   const venta: Venta = request.body;
 
   return _ventasService

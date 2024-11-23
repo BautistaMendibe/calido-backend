@@ -450,20 +450,24 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
+    console.log(venta.cliente.id.toString().padStart(9, '0'));
     try {
+      const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
+      console.log('Número de venta más alto:', numeroVentaMasAlto);
+      console.log('Número de venta más alto:', numeroVentaMasAlto.toString().padStart(20, '0'));
       const token =
-        'bearer 3YPnXeNUFgDpIrkiHX52qXbJUrDL5GsEMb2cEs97KFUfpkZOYaV4PE6ZfLLfg3wFMpq4ekEoCLJh06HIvBEEzyawtkebyxTj0ZIBtVzKNcL5Gtys_SJWKshHepjy2D8myRFMzfb7xE_EVb9QeFYWHFb_DhxE6PRP3ZjR8fbh4nM07t0EKasswwBj3bDxELRMJNrlu3vHRICBpGav7cscuzFluDNtgmm3OsynWaLfAhK4H29wbI0ORD21Yi53Pqxryp_eVDnDjMLpScaM7BAjj3uAkTXXf2krPB2j24Za1WF0__VtWEkV5oCO0ozDHYbujRREq68YM5_wN_XvJpT9UTvrQTspkLITh7mlZZyLoi4g5z-Z';
-      // llamar a API Sesion para que se cargue solo
+        'bearer bQ3WebWoUNMUbo7GixoPM3FCoYt2a4zH35Gj2xg_ZqIsP7hXzAJlg0aYHgFcqZQoKAhXxruqGAjvO7-59CoYv0kqyn45J3VAi9KZafYiCyMt65pg6YhroxR8wBvfH2pZVUXQbojYaOHUEa2t9ti_opZNMPKxJKLaN3uKO8WyBPMPWRo1JuT54A8TCUjc9mrJbEzxDGt6scmVUsOzHrAbLOTIGLv-Vf5w13Y7KGKXA4_BAt_y8d4IHQNLr4SK0-Hv8tWFp0PpZK5hhxMdHZyvjDPpbjCZgcN2ncrO1_FVfcMVg3jWvq6Z1OMJcwOvZjaLpMzKX33GeVldM1KCR6X92I8fp5lzx2svcvW2raWCJ-L1E7oa';
+      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
         {
           nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
           nro_cliente_empresa: venta.cliente.id.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
-          nro_comprobante: venta.id.toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
+          nro_comprobante: numeroVentaMasAlto.toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
           Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal - venta.descuento + venta.interes) consultar estos valores
           URL_OK: 'https://www.youtube.com/',
           URL_ERROR: 'https://www.youtube.com/error',
-          IdReferenciaOperacion: 'QRE' + venta.id.toString()
+          IdReferenciaOperacion: 'QRE' + numeroVentaMasAlto.toString()
         },
         {
           headers: {
@@ -472,6 +476,7 @@ export class VentasService implements IVentasService {
           }
         }
       );
+      console.log(response.data);
       return response.data; // Devuelve la respuesta de la API
     } catch (error) {
       console.error('Error al crear el pago:', error.response?.data || error.message);

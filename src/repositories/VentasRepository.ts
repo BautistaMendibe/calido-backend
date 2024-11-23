@@ -32,6 +32,7 @@ export interface IVentasRepository {
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  obtenerNumeroVentaMasAlto(): Promise<number>;
 }
 
 /**
@@ -402,6 +403,23 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas en fecha y hora: ' + err);
       throw new Error('Error al buscar las ventas en fecha y hora.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar el numero de la ultima venta
+   * @returns number
+   */
+  async obtenerNumeroVentaMasAlto(): Promise<number> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query('SELECT MAX(idventa) AS numero_mas_alto FROM venta');
+      return res.rows[0].numero_mas_alto || 0; // Retorna 0 si no hay ventas
+    } catch (err) {
+      logger.error('Error al obtener el número de venta más alto: ' + err);
+      throw new Error('Error al obtener el número de venta más alto.');
     } finally {
       client.release();
     }
