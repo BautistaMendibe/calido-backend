@@ -700,7 +700,7 @@ export class UsersRepository implements IUsersRepository {
   async buscarUltimosClientes(): Promise<Usuario[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Usuario[]>('SELECT * FROM usuario where activo = 1 and idtipousuario = 2 ORDER BY idusuario DESC LIMIT 4');
+      const res = await client.query<Usuario[]>('SELECT * FROM usuario where activo = 1 and idtipousuario = 2 ORDER BY idusuario DESC LIMIT 3');
       const result: Usuario[] = plainToClass(Usuario, res.rows, {
         excludeExtraneousValues: true
       });
