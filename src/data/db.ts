@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { Schedulers } from '../schedulers/Schedulers';
 
 /**
  * Create a new pool to connect to the database.
@@ -81,6 +82,9 @@ export const connectDatabase = async (): Promise<void> => {
     const client = await PoolDb.connect();
     console.log('Connected to database');
     client.release();
+
+    const schedulers = new Schedulers();
+    console.log('Schedulers initialized');
   } catch (err) {
     console.error('Error connecting to the database:', err.stack);
     throw err;

@@ -40,9 +40,9 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @returns {SpResult}
    */
   async registrarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult> {
-    const params = [promocion.nombre, promocion.porcentajeDescuento];
+    const params = [promocion.nombre, promocion.porcentajeDescuento, promocion.fechaHasta || null];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROMOCION_PRODUCTO($1, $2)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_PROMOCION_PRODUCTO($1, $2, $3)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -124,9 +124,9 @@ export class PromocionesRepository implements IPromocionesRepository {
    * @returns {SpResult}
    */
   async modificarPromocion(promocion: Promocion, client: PoolClient): Promise<SpResult> {
-    const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento];
+    const params = [promocion.id, promocion.nombre, promocion.porcentajeDescuento, promocion.fechaHasta || null];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_PROMOCION_PRODUCTO($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
