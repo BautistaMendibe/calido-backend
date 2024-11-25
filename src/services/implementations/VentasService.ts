@@ -24,6 +24,11 @@ import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
  * Servicio que tiene como responsabilidad
  * lo vinculado a la configuración
  */
+
+// variables para token API Sesion SIRO
+let siroToken: string | null = null;
+let siroTokenExpiration: Date | null = null;
+
 @injectable()
 export class VentasService implements IVentasService {
   private readonly _ventasRepository: IVentasRepository;
@@ -455,8 +460,7 @@ export class VentasService implements IVentasService {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
       console.log('Número de venta más alto:', numeroVentaMasAlto);
       console.log('Número de venta más alto:', numeroVentaMasAlto.toString().padStart(20, '0'));
-      const token =
-        'bearer bQ3WebWoUNMUbo7GixoPM3FCoYt2a4zH35Gj2xg_ZqIsP7hXzAJlg0aYHgFcqZQoKAhXxruqGAjvO7-59CoYv0kqyn45J3VAi9KZafYiCyMt65pg6YhroxR8wBvfH2pZVUXQbojYaOHUEa2t9ti_opZNMPKxJKLaN3uKO8WyBPMPWRo1JuT54A8TCUjc9mrJbEzxDGt6scmVUsOzHrAbLOTIGLv-Vf5w13Y7KGKXA4_BAt_y8d4IHQNLr4SK0-Hv8tWFp0PpZK5hhxMdHZyvjDPpbjCZgcN2ncrO1_FVfcMVg3jWvq6Z1OMJcwOvZjaLpMzKX33GeVldM1KCR6X92I8fp5lzx2svcvW2raWCJ-L1E7oa';
+      const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
@@ -471,8 +475,8 @@ export class VentasService implements IVentasService {
         },
         {
           headers: {
-            Authorization: token, // Aquí se incluye el token en el header
-            'Content-Type': 'application/json' // Opcional si la API requiere JSON explícito
+            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -481,6 +485,35 @@ export class VentasService implements IVentasService {
     } catch (error) {
       console.error('Error al crear el pago:', error.response?.data || error.message);
       throw new Error('Error al crear la intención de pago.');
+    }
+  }
+
+  private async obtenerTokenSIRO(): Promise<string> {
+    // Verifica si el token es válido
+    if (siroToken && siroTokenExpiration && siroTokenExpiration > new Date()) {
+      return siroToken; // Devuelve el token existente si es válido
+    }
+
+    // Si no hay token válido, solicita uno nuevo
+    try {
+      const response = await axios.post('https://apisesionh.bancoroela.com.ar/auth/sesion', {
+        // Parámetros de autenticación según la API
+        Usuario: '20233953270',
+        Password: 'Lei9PkpoPq'
+      });
+
+      // Extraer el token y la duración de validez
+      siroToken = response.data.access_token; // Almacenar el "access_token"
+      const expiresIn = response.data.expires_in; // Duración en segundos (ejemplo: 3599)
+
+      // Calcular y almacenar la fecha/hora de expiración del token (menos un segundo)
+      siroTokenExpiration = new Date(new Date().getTime() + (expiresIn - 1) * 1000);
+      console.log(siroToken);
+      console.log(siroTokenExpiration);
+      return siroToken;
+    } catch (error) {
+      console.error('Error al obtener el token de SIRO:', error.message);
+      throw new Error('No se pudo obtener el token de SIRO.');
     }
   }
 }
