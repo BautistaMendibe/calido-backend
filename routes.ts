@@ -8,7 +8,7 @@ import { consultarProductosConStockLimitado, ProductosController } from './src/c
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
-import { PedidosController } from './src/controllers/PedidosController';
+import { buscarOrdenesDeCompraHome, PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
@@ -496,7 +496,7 @@ export const AppRoutes = [
   {
     path: '/pedidos/buscar-ordenes-de-compra-home',
     method: 'get',
-    action: PedidosController.obtenerEstadosPedido,
+    action: PedidosController.buscarOrdenesDeCompraHome,
     schema: schemaEmpty
   },
 
