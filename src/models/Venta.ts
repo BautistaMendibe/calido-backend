@@ -37,6 +37,10 @@ export class Venta {
   @Expose({ name: 'idcaja' })
   idCaja: number;
   notaCredito: string;
+  @Expose({ name: 'fechafacturacion' })
+  fechaFacturacion: Date;
+  @Expose({ name: 'fechaanulacion' })
+  fechaAnulacion: Date;
 
   constructor(
     id?: number,
@@ -56,7 +60,9 @@ export class Venta {
     descuento?: number,
     anulada?: boolean,
     idCaja?: number,
-    notaCredito?: string
+    notaCredito?: string,
+    fechaFacturacion?: Date,
+    fechaAnulacion?: Date
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -76,5 +82,7 @@ export class Venta {
     this.anulada = anulada!;
     this.idCaja = idCaja!;
     this.notaCredito = notaCredito!;
+    this.fechaFacturacion = fechaFacturacion!;
+    this.fechaAnulacion = fechaAnulacion!;
   }
 }
