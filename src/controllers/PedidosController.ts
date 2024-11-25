@@ -7,6 +7,7 @@ import { PedidosService } from '../services/implementations/PedidosService';
 import { Pedido } from '../models/Pedido';
 import { FiltroPedidos } from '../models/comandos/FiltroPedidos';
 import { EstadoPedido } from '../models/EstadoPedido';
+import { OrdenDeCompraComando } from '../models/comandos/OrdenesDeCompra.comando';
 
 const _pedidosService = container.get<PedidosService>(TYPES.PedidosService);
 
@@ -64,6 +65,18 @@ export async function obtenerEstadosPedido(request: Request, response: Response)
     });
 }
 
+export async function buscarOrdenesDeCompraHome(request: Request, response: Response): Promise<Response> {
+  return _pedidosService
+    .buscarOrdenesDeCompraHome()
+    .then((x: OrdenDeCompraComando[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function modificarPedido(request: Request, response: Response): Promise<Response> {
   const pedido: Pedido = request.body;
 
@@ -83,5 +96,6 @@ export const PedidosController = {
   consultarPedidos,
   eliminarPedido,
   obtenerEstadosPedido,
-  modificarPedido
+  modificarPedido,
+  buscarOrdenesDeCompraHome
 };

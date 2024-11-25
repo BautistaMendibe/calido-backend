@@ -493,6 +493,12 @@ export const AppRoutes = [
     action: PedidosController.modificarPedido,
     schema: schemaEmpty
   },
+  {
+    path: '/pedidos/buscar-ordenes-de-compra-home',
+    method: 'get',
+    action: PedidosController.obtenerEstadosPedido,
+    schema: schemaEmpty
+  },
 
   // region Comprobantes
   {
