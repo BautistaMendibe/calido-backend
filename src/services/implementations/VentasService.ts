@@ -19,6 +19,7 @@ import { error } from 'winston';
 import { IUsersRepository } from '../../repositories';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
+import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -348,6 +349,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.actualizarStockPorAnulacion(producto, idVenta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarCantidadVentasMensuales();
         resolve(result);
       } catch (e) {
         logger.error(e);

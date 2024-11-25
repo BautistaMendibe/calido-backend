@@ -451,6 +451,12 @@ export const AppRoutes = [
     action: VentasController.buscarVentasConFechaHora,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-cantidad-ventas-mensuales',
+    method: 'get',
+    action: VentasController.buscarCantidadVentasMensuales,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

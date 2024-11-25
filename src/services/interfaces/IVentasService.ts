@@ -7,6 +7,7 @@ import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
+import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -22,4 +23,5 @@ export interface IVentasService {
   anularVenta(venta: Venta): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
 }

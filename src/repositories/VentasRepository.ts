@@ -1,3 +1,5 @@
+// @ts-ignore
+
 import { id, injectable } from 'inversify';
 import { logger } from '../logger/CustomLogger';
 import PoolDb from '../data/db';
@@ -12,6 +14,7 @@ import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -31,6 +34,7 @@ export interface IVentasRepository {
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
 }
 
 /**
@@ -395,6 +399,26 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas en fecha y hora: ' + err);
       throw new Error('Error al buscar las ventas en fecha y hora.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas mensuales
+   * @returns {number[]}
+   */
+  async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasMensuales[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_mensuales()');
+      const result: VentasMensuales[] = plainToClass(VentasMensuales, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas mensuales. ' + err);
+      throw new Error('Error al buscar ventas mensuales.');
     } finally {
       client.release();
     }
