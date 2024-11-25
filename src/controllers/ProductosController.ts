@@ -10,6 +10,7 @@ import { TipoProducto } from '../models/TipoProducto';
 import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProductos';
 import { DetalleProducto } from '../models/DetalleProducto';
 import { MovimientoProducto } from '../models/MovimientoProducto';
+import { ProductoStockLimitadoComando } from '../models/comandos/ProductosStockLimitado';
 
 const _productosService = container.get<ProductosService>(TYPES.ProductosService);
 
@@ -154,7 +155,7 @@ export async function consultarMovimientosPorProducto(request: Request, response
 export async function consultarProductosConStockLimitado(request: Request, response: Response): Promise<Response> {
   return _productosService
     .consultarProductosConStockLimitado()
-    .then((x: Producto[]) => {
+    .then((x: ProductoStockLimitadoComando[]) => {
       return response.status(HttpCodes.OK).json(x);
     })
     .catch((error) => {

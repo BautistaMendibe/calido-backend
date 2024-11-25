@@ -11,6 +11,7 @@ import { TipoProducto } from '../../models/TipoProducto';
 import { DetalleProducto } from '../../models/DetalleProducto';
 import { FiltrosDetallesProductos } from '../../models/comandos/FiltroDetallesProductos';
 import { MovimientoProducto } from '../../models/MovimientoProducto';
+import { ProductoStockLimitadoComando } from '../../models/comandos/ProductosStockLimitado';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -147,7 +148,7 @@ export class ProductosService implements IProductosService {
     });
   }
 
-  public async consultarProductosConStockLimitado(): Promise<Producto[]> {
+  public async consultarProductosConStockLimitado(): Promise<ProductoStockLimitadoComando[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._productosRepository.consultarProductosConStockLimitado();

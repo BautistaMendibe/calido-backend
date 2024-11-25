@@ -12,6 +12,9 @@ import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProdu
 import { DetalleProducto } from '../models/DetalleProducto';
 import { MovimientoProducto } from '../models/MovimientoProducto';
 import { Promocion } from '../models/Promocion';
+import { OrdenDeCompraComando } from '../models/comandos/OrdenesDeCompra.comando';
+import { EstadoPedido } from '../models/EstadoPedido';
+import { ProductoStockLimitadoComando } from '../models/comandos/ProductosStockLimitado';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -27,7 +30,7 @@ export interface IProductosRepository {
   eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
   modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
   consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]>;
-  consultarProductosConStockLimitado(): Promise<Producto[]>;
+  consultarProductosConStockLimitado(): Promise<ProductoStockLimitadoComando[]>;
 }
 
 /**
@@ -337,74 +340,17 @@ export class ProductosRepository implements IProductosRepository {
     }
   }
 
-  async consultarProductosConStockLimitado(): Promise<Producto[]> {
+  async consultarProductosConStockLimitado(): Promise<ProductoStockLimitadoComando[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<Producto[]>('SELECT * FROM public.buscar_productos_stock_limitado()');
-
-      const productos = res.rows.map((row: any) => {
-        // Armamos los objetos necesarios para la clase Proveedor
-        const tipoProducto: TipoProducto = plainToClass(
-          TipoProducto,
-          {
-            idtipoproducto: row.idtipoproducto,
-            ntipoproducto: row.ntipoproducto
-          },
-          { excludeExtraneousValues: true }
-        );
-
-        const marca: Marca = plainToClass(
-          Marca,
-          {
-            idmarca: row.idmarca,
-            nmarca: row.nmarca
-          },
-          { excludeExtraneousValues: true }
-        );
-
-        const proveedor: Proveedor = plainToClass(
-          Proveedor,
-          {
-            idproveedor: row.idproveedor,
-            nproveedor: row.nproveedor
-          },
-          { excludeExtraneousValues: true }
-        );
-
-        const promocion: Promocion = plainToClass(
-          Promocion,
-          {
-            idpromocionproducto: row.idpromocionproducto,
-            npromocionproducto: row.npromocionproducto,
-            percentdescuento: row.percentdescuento
-          },
-          { excludeExtraneousValues: true }
-        );
-
-        const producto = new Producto(
-          row.idproducto,
-          row.nproducto,
-          row.preciocosto,
-          row.preciosiniva,
-          row.imgproducto,
-          row.codigobarra,
-          row.descripcion,
-          tipoProducto,
-          marca,
-          proveedor
-        );
-        producto.margenGanancia = row.margenganancia;
-        producto.promocion = promocion;
-        producto.cantidadEnStock = row.canteninventario;
-        producto.precioConIVA = row.precioconiva;
-
-        return producto;
+      const res = await client.query<ProductoStockLimitadoComando[]>('SELECT * FROM PUBLIC.buscar_productos_stock_limitado()');
+      const result: ProductoStockLimitadoComando[] = plainToClass(ProductoStockLimitadoComando, res.rows, {
+        excludeExtraneousValues: true
       });
-
-      return productos;
+      return result;
     } catch (err) {
-      logger.error('Error al consultar producto con stock limitado: ' + err);
-      throw new Error('Error al consultar producto con stock limitado');
+      logger.error('Error al consultar productos en home: ' + err);
+      throw new Error('Error al consultar productos en home');
     } finally {
       client.release();
     }

@@ -204,7 +204,7 @@ export class PedidosRepository implements IPedidosRepository {
   async buscarOrdenesDeCompraHome(): Promise<OrdenDeCompraComando[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<EstadoPedido[]>('SELECT * FROM PUBLIC.BUSCAR_ORDENES_COMPRA_HOME()');
+      const res = await client.query<OrdenDeCompraComando[]>('SELECT * FROM PUBLIC.BUSCAR_ORDENES_COMPRA_HOME()');
       const result: OrdenDeCompraComando[] = plainToClass(OrdenDeCompraComando, res.rows, {
         excludeExtraneousValues: true
       });
