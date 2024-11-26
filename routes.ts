@@ -445,6 +445,12 @@ export const AppRoutes = [
     action: VentasController.pagarConQRSIRO,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/consultar-pago',
+    method: 'post',
+    action: VentasController.consultaPagoSIROQR,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

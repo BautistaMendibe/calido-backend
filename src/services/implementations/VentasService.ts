@@ -458,8 +458,8 @@ export class VentasService implements IVentasService {
     console.log(venta.cliente.id.toString().padStart(9, '0'));
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
-      console.log('Número de venta más alto:', numeroVentaMasAlto);
-      console.log('Número de venta más alto:', numeroVentaMasAlto.toString().padStart(20, '0'));
+      console.log('Número de venta más alto:', numeroVentaMasAlto + 1);
+      console.log('Número de venta más alto:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
@@ -467,11 +467,11 @@ export class VentasService implements IVentasService {
         {
           nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
           nro_cliente_empresa: venta.cliente.id.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
-          nro_comprobante: numeroVentaMasAlto.toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
+          nro_comprobante: (numeroVentaMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
           Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal - venta.descuento + venta.interes) consultar estos valores
           URL_OK: 'https://www.youtube.com/',
           URL_ERROR: 'https://www.youtube.com/error',
-          IdReferenciaOperacion: 'QRE' + numeroVentaMasAlto.toString()
+          IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString()
         },
         {
           headers: {
@@ -481,7 +481,10 @@ export class VentasService implements IVentasService {
         }
       );
       console.log(response.data);
-      return response.data; // Devuelve la respuesta de la API
+      return {
+        ...response.data, // Mantiene los datos originales
+        IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString() // Incluye el ID en el retorno
+      };
     } catch (error) {
       console.error('Error al crear el pago:', error.response?.data || error.message);
       throw new Error('Error al crear la intención de pago.');
@@ -514,6 +517,37 @@ export class VentasService implements IVentasService {
     } catch (error) {
       console.error('Error al obtener el token de SIRO:', error.message);
       throw new Error('No se pudo obtener el token de SIRO.');
+    }
+  }
+
+  // Funcion para hacer la llamada a la API consulta de SIRO
+  public async consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult> {
+    console.log(IdReferenciaOperacion);
+    console.log(new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString());
+    console.log(new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString());
+    try {
+      const token = await this.obtenerTokenSIRO();
+      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
+      const response = await axios.post(
+        'https://siropagos.bancoroela.com.ar/api/Pago/Consulta',
+        {
+          FechaDesde: new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString(), // 10 minutos menos
+          FechaHasta: new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString(), // 1 segundo mas
+          idReferenciaOperacion: IdReferenciaOperacion,
+          nro_terminal: 'N1'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('respuesta:', response.data);
+      return response.data; // Devuelve la respuesta de la API
+    } catch (error) {
+      console.error('Error al consultar el pago:', error.response?.data || error.message);
+      throw new Error('Error al consultar el pago.');
     }
   }
 }
