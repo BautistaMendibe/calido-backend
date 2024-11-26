@@ -25,5 +25,5 @@ export interface IVentasService {
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
-  buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]>;
+  buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
 }

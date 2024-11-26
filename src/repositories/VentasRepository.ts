@@ -36,7 +36,7 @@ export interface IVentasRepository {
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
-  buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]>;
+  buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
 }
 
 /**
@@ -430,10 +430,10 @@ export class VentasRepository implements IVentasRepository {
    * Método asíncrono para consultar las ventas diarias
    * @returns {VentasDiariaComando[]}
    */
-  async buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]> {
+  async buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<VentasDiariaComando[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_diarias($1)', [new Date(fecha)]);
+      const res = await client.query<VentasDiariaComando[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_hoy_ayer()');
       const result: VentasDiariaComando[] = plainToClass(VentasDiariaComando, res.rows, {
         excludeExtraneousValues: true
       });

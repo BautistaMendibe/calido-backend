@@ -371,10 +371,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]> {
+  public async buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.buscarVentasPorDiaYHora(fecha);
+        const result = await this._ventasRepository.buscarVentasPorDiaYHora();
         resolve(result);
       } catch (e) {
         logger.error(e);

@@ -459,7 +459,7 @@ export const AppRoutes = [
   },
   {
     path: '/ventas/obtener-cantidad-ventas-dia-hora',
-    method: 'post',
+    method: 'get',
     action: VentasController.buscarVentasPorDiaYHora,
     schema: schemaEmpty
   },
