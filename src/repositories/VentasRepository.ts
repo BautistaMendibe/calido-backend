@@ -15,6 +15,7 @@ import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -35,6 +36,7 @@ export interface IVentasRepository {
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
+  buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]>;
 }
 
 /**
@@ -406,7 +408,7 @@ export class VentasRepository implements IVentasRepository {
 
   /**
    * Método asíncrono para consultar las ventas mensuales
-   * @returns {number[]}
+   * @returns {VentasMensuales[]}
    */
   async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
     const client = await PoolDb.connect();
@@ -419,6 +421,26 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar ventas mensuales. ' + err);
       throw new Error('Error al buscar ventas mensuales.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas diarias
+   * @returns {VentasDiariaComando[]}
+   */
+  async buscarVentasPorDiaYHora(fecha: string): Promise<VentasDiariaComando[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasDiariaComando[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_diarias($1)', [new Date(fecha)]);
+      const result: VentasDiariaComando[] = plainToClass(VentasDiariaComando, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas diarias. ' + err);
+      throw new Error('Error al buscar ventas diarias.');
     } finally {
       client.release();
     }

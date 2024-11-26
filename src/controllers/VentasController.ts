@@ -12,6 +12,7 @@ import { CondicionIva } from '../models/CondicionIva';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -161,6 +162,19 @@ export async function buscarCantidadVentasMensuales(request: Request, response: 
     });
 }
 
+export async function buscarVentasPorDiaYHora(request: Request, response: Response): Promise<Response> {
+  const fecha: string = request.body.fecha;
+  return _ventasService
+    .buscarVentasPorDiaYHora(fecha)
+    .then((x: VentasDiariaComando[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -172,5 +186,6 @@ export const VentasController = {
   buscarVentasPorCC,
   anularVenta,
   buscarVentasConFechaHora,
-  buscarCantidadVentasMensuales
+  buscarCantidadVentasMensuales,
+  buscarVentasPorDiaYHora
 };

@@ -457,6 +457,12 @@ export const AppRoutes = [
     action: VentasController.buscarCantidadVentasMensuales,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-cantidad-ventas-dia-hora',
+    method: 'post',
+    action: VentasController.buscarVentasPorDiaYHora,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes
