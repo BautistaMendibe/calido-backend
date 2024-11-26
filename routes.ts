@@ -654,6 +654,14 @@ export const AppRoutes = [
     method: 'get',
     action: CajasController.obtenerEstadosArqueo,
     schema: schemaEmpty
+  },
+  //#endregion
+  // region Logs
+  {
+    path: '/usuarios/buscar-ultimos-logs',
+    method: 'get',
+    action: UsersController.buscarUltimosLogs,
+    schema: schemaEmpty
   }
   //#endregion
 ];

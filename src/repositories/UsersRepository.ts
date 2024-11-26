@@ -21,6 +21,8 @@ import { Licencia } from '../models/Licencia';
 import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
 import { Archivo } from '../models/Archivo';
+import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -70,6 +72,7 @@ export interface IUsersRepository {
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
   buscarUltimosClientes(): Promise<Usuario[]>;
+  buscarUltimosLogs(): Promise<UltimosMovimientos[]>;
 }
 
 /**
@@ -708,6 +711,26 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al consultar los ultimos clientes: ' + err);
       throw new Error('Error al consultar los ultimos clientes.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener los logs de los ultimos 3 dias
+   * @returns {UltimosMovimientos[]}
+   */
+  async buscarUltimosLogs(): Promise<UltimosMovimientos[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<UltimosMovimientos[]>('SELECT * FROM PUBLIC.buscar_ultimos_logs()');
+      const result: UltimosMovimientos[] = plainToClass(UltimosMovimientos, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar los ultimos logs. ' + err);
+      throw new Error('Error al buscar los ultimos logs.');
     } finally {
       client.release();
     }
