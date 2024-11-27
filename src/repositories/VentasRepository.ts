@@ -391,7 +391,7 @@ export class VentasRepository implements IVentasRepository {
     const client = await PoolDb.connect();
 
     // Convertir fechas a formato 'YYYY-MM-DD HH:mm:ss' en la zona horaria de Argentina
-    const formatToSQLTimestamp = (date: string | null, isCierre: boolean = false): string | null => {
+    const formatToSQLTimestamp = (date: string | null, isCierre = false): string | null => {
       if (!date) return null;
 
       const fecha = new Date(date);
