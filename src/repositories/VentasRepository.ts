@@ -1,5 +1,3 @@
-// @ts-ignore
-
 import { id, injectable } from 'inversify';
 import { logger } from '../logger/CustomLogger';
 import PoolDb from '../data/db';
@@ -14,6 +12,7 @@ import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
+import { Promocion } from '../models/Promocion';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
@@ -292,10 +291,16 @@ export class VentasRepository implements IVentasRepository {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<Producto[]>('SELECT * FROM PUBLIC.BUSCAR_PRODUCTOS_POR_VENTA($1)', [idVenta]);
-      const result: Producto[] = plainToClass(Producto, res.rows, {
-        excludeExtraneousValues: true
+
+      const productos: Producto[] = res.rows.map((row: any) => {
+        const producto: Producto = plainToClass(Producto, row, { excludeExtraneousValues: true });
+        const promocion: Promocion = plainToClass(Promocion, row, { excludeExtraneousValues: true });
+
+        producto.promocion = promocion;
+        return producto;
       });
-      return result;
+
+      return productos;
     } catch (err) {
       logger.error('Error al buscar productos por venta: ' + err);
       throw new Error('Error al buscar productos por venta.');

@@ -187,7 +187,7 @@ export class PromocionesRepository implements IPromocionesRepository {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<Producto[]>(
-        'SELECT p.*, dp.canteninventario FROM PUBLIC.PRODUCTO p JOIN PUBLIC.DETALLE_PRODUCTO dp ON p.idproducto = dp.idproducto WHERE p.activo = 1 AND dp.activo = 1'
+        'SELECT p.*, dp.canteninventario FROM PUBLIC.PRODUCTO p LEFT JOIN PUBLIC.DETALLE_PRODUCTO dp ON p.idproducto = dp.idproducto AND dp.activo = 1 WHERE p.activo = 1'
       );
       const result: Producto[] = plainToClass(Producto, res.rows, {
         excludeExtraneousValues: true
