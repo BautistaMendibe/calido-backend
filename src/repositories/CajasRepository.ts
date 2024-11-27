@@ -269,17 +269,34 @@ export class CajasRepository implements ICajasRepository {
     const client = await PoolDb.connect();
     const horaUTC = new Date(arqueo.horaCierre);
 
-    const horaArgentina = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Argentina/Buenos_Aires',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(horaUTC);
+    // Ajustar la hora y la fecha a la zona horaria de Argentina
+    const horaArgentina = new Date(horaUTC.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
 
-    const params = [arqueo.id, horaArgentina, arqueo.diferencia, arqueo.diferenciaOtros, arqueo.montoSistemaCaja, arqueo.montoSistemaOtros];
+    // Verificar si la hora es pasada de medianoche
+    if (horaArgentina.getHours() === 0 && horaArgentina.getMinutes() === 0 && horaArgentina.getSeconds() === 0) {
+      // Ajustar a 23:59:59 del día anterior
+      horaArgentina.setHours(23, 59, 59);
+      horaArgentina.setDate(horaArgentina.getDate() - 1); // Ajustar la fecha al día anterior
+    }
+
+    // Formatear la hora en el formato hh:mm:ss
+    const horaFormatoArgentina = `${horaArgentina.getHours().toString().padStart(2, '0')}:${horaArgentina.getMinutes().toString().padStart(2, '0')}:${horaArgentina
+      .getSeconds()
+      .toString()
+      .padStart(2, '0')}`;
+
+    const params = [
+      arqueo.id,
+      horaFormatoArgentina,
+      arqueo.diferencia,
+      arqueo.diferenciaOtros,
+      arqueo.montoSistemaCaja,
+      arqueo.montoSistemaOtros,
+      arqueo.cantidadDineroCajaUsuario,
+      arqueo.cantidadDineroOtrosUsuario
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CERRAR_ARQUEO($1, $2, $3, $4, $5, $6)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CERRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

@@ -389,23 +389,43 @@ export class VentasRepository implements IVentasRepository {
    */
   async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     const client = await PoolDb.connect();
-    const params = [new Date(fechaHora) || null, new Date(fechaHoraCierre) || null];
+
+    // Convertir fechas a formato 'YYYY-MM-DD HH:mm:ss' en la zona horaria de Argentina
+    const formatToSQLTimestamp = (date: string | null, isCierre: boolean = false): string | null => {
+      if (!date) return null;
+
+      const fecha = new Date(date);
+
+      // Convertir la fecha a la zona horaria de Argentina
+      const fechaArgentina = new Date(fecha.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+
+      // Si es fechaHoraCierre, ajustar a 23:59:59 si la hora es mayor a 00:00:00
+      if (isCierre && (fechaArgentina.getHours() > 0 || fechaArgentina.getMinutes() > 0 || fechaArgentina.getSeconds() > 0)) {
+        fechaArgentina.setHours(23, 59, 59);
+      }
+
+      // Formatear la fecha al estilo SQL
+      const year = fechaArgentina.getFullYear();
+      const month = String(fechaArgentina.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaArgentina.getDate()).padStart(2, '0');
+      const hours = String(fechaArgentina.getHours()).padStart(2, '0');
+      const minutes = String(fechaArgentina.getMinutes()).padStart(2, '0');
+      const seconds = String(fechaArgentina.getSeconds()).padStart(2, '0');
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const params = [formatToSQLTimestamp(fechaHora), formatToSQLTimestamp(fechaHoraCierre, true)];
 
     try {
       const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1, $2)', params);
 
       const ventas: Venta[] = res.rows.map((row) => {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
-        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
-        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
-        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
-        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
-
-        venta.formaDePago = formaDePago;
-        venta.comprobanteAfip = comprobante;
-        venta.cliente = cliente;
-        venta.facturacion = facturacion;
-
+        venta.formaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        venta.comprobanteAfip = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        venta.cliente = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        venta.facturacion = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
         return venta;
       });
 
