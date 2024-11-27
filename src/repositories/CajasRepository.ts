@@ -27,6 +27,7 @@ export interface ICajasRepository {
   registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult>;
   eliminarMovimientoManual(idMovimiento: number): Promise<SpResult>;
   obtenerMovimientosManuales(idMovimiento: number): Promise<MovimientoManual[]>;
+  cerrarArqueo(arqueo: Arqueo): Promise<SpResult>;
 }
 
 /**
@@ -259,6 +260,33 @@ export class CajasRepository implements ICajasRepository {
     } catch (err) {
       logger.error('Error al consultar Movimientos: ' + err);
       throw new Error('Error al consultar Movimientos.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async cerrarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const horaUTC = new Date(arqueo.horaCierre);
+
+    const horaArgentina = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(horaUTC);
+
+    const params = [arqueo.id, horaArgentina, arqueo.diferencia, arqueo.diferenciaOtros, arqueo.montoSistemaCaja, arqueo.montoSistemaOtros];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CERRAR_ARQUEO($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al cerrar el arqueo: ' + err);
+      throw new Error('Error al cerrar el arqueo.');
     } finally {
       client.release();
     }

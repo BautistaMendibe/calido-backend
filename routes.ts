@@ -685,7 +685,14 @@ export const AppRoutes = [
     action: CajasController.eliminarMovimientoManual,
     schema: schemaEmpty
   },
+  {
+    path: '/cajas/cerrar-arqueo',
+    method: 'post',
+    action: CajasController.cerrarArqueo,
+    schema: schemaEmpty
+  },
   //#endregion
+
   // region Logs
   {
     path: '/usuarios/buscar-ultimos-logs',

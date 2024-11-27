@@ -27,6 +27,13 @@ export class Arqueo {
   estadoArqueo: EstadoArqueo;
   caja: Caja;
 
+  @Expose({ name: 'montosistemacaja' })
+  montoSistemaCaja: number;
+  @Expose({ name: 'montosistemaotros' })
+  montoSistemaOtros: number;
+  @Expose({ name: 'diferenciaotros' })
+  diferenciaOtros: number;
+
   constructor(
     id?: number,
     fechaApertura?: Date,
@@ -39,7 +46,10 @@ export class Arqueo {
     idEstadoArqueo?: number,
     idCaja?: number,
     estadoArqueo?: EstadoArqueo,
-    caja?: Caja
+    caja?: Caja,
+    montoSistemaCaja?: number,
+    montoSistemaOtros?: number,
+    diferenciaOtros?: number
   ) {
     this.id = id ? id : null;
     this.fechaApertura = fechaApertura ? fechaApertura : null;
@@ -53,5 +63,8 @@ export class Arqueo {
     this.idCaja = idCaja ? idCaja : null;
     this.estadoArqueo = estadoArqueo ? estadoArqueo : null;
     this.caja = caja ? caja : null;
+    this.montoSistemaCaja = montoSistemaCaja ? montoSistemaCaja : null;
+    this.montoSistemaOtros = montoSistemaOtros ? montoSistemaOtros : null;
+    this.diferenciaOtros = diferenciaOtros ? diferenciaOtros : null;
   }
 }

@@ -268,10 +268,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+  public async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.buscarVentasConFechaHora(fechaHora);
+        const result = await this._ventasRepository.buscarVentasConFechaHora(fechaHora, fechaHoraCierre);
         resolve(result);
       } catch (e) {
         logger.error(e);

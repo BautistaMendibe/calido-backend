@@ -169,4 +169,16 @@ export class CajasService implements ICajasService {
       }
     });
   }
+
+  public async cerrarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.cerrarArqueo(arqueo);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

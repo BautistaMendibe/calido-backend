@@ -19,4 +19,5 @@ export interface ICajasService {
   consultarMovimientosManuales(idArqueo: number): Promise<MovimientoManual[]>;
   registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult>;
   eliminarMovimientoManual(idMovimiento: number): Promise<SpResult>;
+  cerrarArqueo(arqueo: Arqueo): Promise<SpResult>;
 }

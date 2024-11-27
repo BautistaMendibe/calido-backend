@@ -33,7 +33,7 @@ export interface IVentasRepository {
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
-  buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
 }
@@ -387,11 +387,12 @@ export class VentasRepository implements IVentasRepository {
    * Método asíncrono para consultar las ventas generadas en una fecha determinada a partir de una hora.
    * @returns {Venta[]}
    */
-  async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+  async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     const client = await PoolDb.connect();
-    const params = [new Date(fechaHora) || null];
+    const params = [new Date(fechaHora) || null, new Date(fechaHoraCierre) || null];
+
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1, $2)', params);
 
       const ventas: Venta[] = res.rows.map((row) => {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });

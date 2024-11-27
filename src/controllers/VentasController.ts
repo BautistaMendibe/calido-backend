@@ -124,9 +124,10 @@ export async function buscarVentasPorCC(request: Request, response: Response): P
 
 export async function buscarVentasConFechaHora(request: Request, response: Response): Promise<Response> {
   const fechaHora: string = request.body.fechaHora;
+  const fechaHoraCierre: string = request.body.fechaHoraCierre;
 
   return _ventasService
-    .buscarVentasConFechaHora(fechaHora)
+    .buscarVentasConFechaHora(fechaHora, fechaHoraCierre)
     .then((x: Venta[]) => {
       return response.status(HttpCodes.OK).json(x);
     })

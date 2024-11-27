@@ -179,6 +179,20 @@ export async function eliminarMovimientoManual(request: Request, response: Respo
     });
 }
 
+export async function cerrarArqueo(request: Request, response: Response): Promise<Response> {
+  const arqueo: Arqueo = request.body;
+
+  return _cajasService
+    .cerrarArqueo(arqueo)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const CajasController = {
   registrarCaja,
   consultarCajas,
@@ -191,5 +205,6 @@ export const CajasController = {
   obtenerEstadosArqueo,
   registrarMovimientoManual,
   consultarMovimientosManuales,
-  eliminarMovimientoManual
+  eliminarMovimientoManual,
+  cerrarArqueo
 };
