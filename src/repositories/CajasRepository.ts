@@ -10,6 +10,7 @@ import { Arqueo } from '../models/Arqueo';
 import { EstadoArqueo } from '../models/EstadoArqueo';
 import { MovimientoManual } from '../models/MovimientoManual';
 import { FormaDePago } from '../models/FormaDePago';
+import { Usuario } from '../models/Usuario';
 
 /**
  * Interfaz del repositorio de cajas
@@ -115,9 +116,11 @@ export class CajasRepository implements ICajasRepository {
         const caja: Caja = plainToClass(Caja, row, { excludeExtraneousValues: true });
         const estadoArqueo: EstadoArqueo = plainToClass(EstadoArqueo, row, { excludeExtraneousValues: true });
         const arqueo: Arqueo = plainToClass(Arqueo, row, { excludeExtraneousValues: true });
+        const responsable: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
 
         arqueo.caja = caja;
         arqueo.estadoArqueo = estadoArqueo;
+        arqueo.responsable = responsable;
 
         return arqueo;
       });
@@ -141,10 +144,11 @@ export class CajasRepository implements ICajasRepository {
       arqueo.usuario,
       arqueo.diferencia,
       arqueo.idEstadoArqueo,
-      arqueo.idCaja
+      arqueo.idCaja,
+      arqueo.responsable
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -159,9 +163,9 @@ export class CajasRepository implements ICajasRepository {
 
   async modificarArqueo(arqueo: Arqueo): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [arqueo.id, arqueo.fechaApertura, arqueo.horaApertura, arqueo.montoInicial, arqueo.idCaja];
+    const params = [arqueo.id, arqueo.fechaApertura, arqueo.horaApertura, arqueo.montoInicial, arqueo.idCaja, arqueo.responsable];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ARQUEO($1, $2, $3, $4, $5)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ARQUEO($1, $2, $3, $4, $5, $6)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

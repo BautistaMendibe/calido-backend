@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
 import { Caja } from './Caja';
 import { EstadoArqueo } from './EstadoArqueo';
+import { Usuario } from './Usuario';
 
 export class Arqueo {
   @Expose({ name: 'idarqueo' })
@@ -38,6 +39,8 @@ export class Arqueo {
   @Expose({ name: 'cantidaddinerootrosusuario' })
   cantidadDineroOtrosUsuario: number;
 
+  responsable: Usuario;
+
   constructor(
     id?: number,
     fechaApertura?: Date,
@@ -55,7 +58,8 @@ export class Arqueo {
     montoSistemaOtros?: number,
     diferenciaOtros?: number,
     cantidadDineroCajaUsuario?: number,
-    cantidadDineroOtrosUsuario?: number
+    cantidadDineroOtrosUsuario?: number,
+    responsable?: Usuario
   ) {
     this.id = id ? id : null;
     this.fechaApertura = fechaApertura ? fechaApertura : null;
@@ -74,5 +78,6 @@ export class Arqueo {
     this.diferenciaOtros = diferenciaOtros ? diferenciaOtros : null;
     this.cantidadDineroCajaUsuario = cantidadDineroCajaUsuario ? cantidadDineroCajaUsuario : null;
     this.cantidadDineroOtrosUsuario = cantidadDineroOtrosUsuario ? cantidadDineroOtrosUsuario : null;
+    this.responsable = responsable ? responsable : null;
   }
 }
