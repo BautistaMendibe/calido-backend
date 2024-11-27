@@ -9,6 +9,7 @@ import { FiltrosCajas } from '../models/comandos/FiltroCaja';
 import { Arqueo } from '../models/Arqueo';
 import { FiltrosArqueos } from '../models/comandos/FiltroArqueo';
 import { EstadoArqueo } from '../models/EstadoArqueo';
+import { MovimientoManual } from '../models/MovimientoManual';
 
 const _cajasService = container.get<CajasService>(TYPES.CajasService);
 
@@ -136,6 +137,48 @@ export async function obtenerEstadosArqueo(request: Request, response: Response)
     });
 }
 
+export async function registrarMovimientoManual(request: Request, response: Response): Promise<Response> {
+  const movimiento: MovimientoManual = request.body;
+
+  return _cajasService
+    .registrarMovimientoManual(movimiento)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultarMovimientosManuales(request: Request, response: Response): Promise<Response> {
+  const idArqueo: number = +request.params.id;
+
+  return _cajasService
+    .consultarMovimientosManuales(idArqueo)
+    .then((x: MovimientoManual[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function eliminarMovimientoManual(request: Request, response: Response): Promise<Response> {
+  const idMovimiento: number = +request.params.id;
+
+  return _cajasService
+    .eliminarMovimientoManual(idMovimiento)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const CajasController = {
   registrarCaja,
   consultarCajas,
@@ -145,5 +188,8 @@ export const CajasController = {
   consultarArqueos,
   eliminarArqueo,
   modificarArqueo,
-  obtenerEstadosArqueo
+  obtenerEstadosArqueo,
+  registrarMovimientoManual,
+  consultarMovimientosManuales,
+  eliminarMovimientoManual
 };

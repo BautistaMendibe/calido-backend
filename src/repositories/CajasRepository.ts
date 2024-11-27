@@ -8,6 +8,8 @@ import { FiltrosCajas } from '../models/comandos/FiltroCaja';
 import { FiltrosArqueos } from '../models/comandos/FiltroArqueo';
 import { Arqueo } from '../models/Arqueo';
 import { EstadoArqueo } from '../models/EstadoArqueo';
+import { MovimientoManual } from '../models/MovimientoManual';
+import { FormaDePago } from '../models/FormaDePago';
 
 /**
  * Interfaz del repositorio de cajas
@@ -22,6 +24,9 @@ export interface ICajasRepository {
   modificarArqueo(arqueo: Arqueo): Promise<SpResult>;
   eliminarArqueo(idArqueo: number): Promise<SpResult>;
   obtenerEstadosArqueo(): Promise<EstadoArqueo[]>;
+  registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult>;
+  eliminarMovimientoManual(idMovimiento: number): Promise<SpResult>;
+  obtenerMovimientosManuales(idMovimiento: number): Promise<MovimientoManual[]>;
 }
 
 /**
@@ -196,6 +201,64 @@ export class CajasRepository implements ICajasRepository {
     } catch (err) {
       logger.error('Error al consultar Estados Arqueo: ' + err);
       throw new Error('Error al consultar Estados Arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [movimiento.idArqueo, movimiento.fechaMovimiento, movimiento.formaPago, movimiento.descripcion, movimiento.tipoMovimiento, movimiento.monto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_MANUAL($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Movimiento Manual de Arqueo: ' + err);
+      throw new Error('Error al registrar Movimiento Manual de Arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarMovimientoManual(idMovimiento: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idMovimiento];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_MOVIMIENTO_MANUAL($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el movimiento manual de arqueo: ' + err);
+      throw new Error('Error al eliminar el movimiento manual de arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async obtenerMovimientosManuales(idArqueo: number): Promise<MovimientoManual[]> {
+    const client = await PoolDb.connect();
+
+    const params = [idArqueo];
+    try {
+      const res = await client.query<MovimientoManual[]>('SELECT * FROM public.BUSCAR_MOVIMIENTOS_MANUALES($1)', params);
+      const movimientos: MovimientoManual[] = res.rows.map((row: any) => {
+        // Mapeo de objetos del movimiento (forma de pago)
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const movimiento: MovimientoManual = plainToClass(MovimientoManual, row, { excludeExtraneousValues: true });
+
+        movimiento.formaPago = formaDePago;
+
+        return movimiento;
+      });
+      return movimientos;
+    } catch (err) {
+      logger.error('Error al consultar Movimientos: ' + err);
+      throw new Error('Error al consultar Movimientos.');
     } finally {
       client.release();
     }

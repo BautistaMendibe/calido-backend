@@ -4,6 +4,7 @@ import { FiltrosCajas } from '../../models/comandos/FiltroCaja';
 import { FiltrosArqueos } from '../../models/comandos/FiltroArqueo';
 import { Arqueo } from '../../models/Arqueo';
 import { EstadoArqueo } from '../../models/EstadoArqueo';
+import { MovimientoManual } from '../../models/MovimientoManual';
 
 export interface ICajasService {
   consultarCajas(filtro: FiltrosCajas): Promise<Caja[]>;
@@ -15,4 +16,7 @@ export interface ICajasService {
   modificarArqueo(arqueo: Arqueo): Promise<SpResult>;
   eliminarArqueo(idArqueo: number): Promise<SpResult>;
   obtenerEstadosArqueo(): Promise<EstadoArqueo[]>;
+  consultarMovimientosManuales(idArqueo: number): Promise<MovimientoManual[]>;
+  registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult>;
+  eliminarMovimientoManual(idMovimiento: number): Promise<SpResult>;
 }

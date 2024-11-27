@@ -636,6 +636,24 @@ export const AppRoutes = [
     method: 'get',
     action: CajasController.obtenerEstadosArqueo,
     schema: schemaEmpty
+  },
+  {
+    path: '/cajas/registrar-movimiento-manual',
+    method: 'post',
+    action: CajasController.registrarMovimientoManual,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-movimientos-manuales/:id',
+    method: 'get',
+    action: CajasController.consultarMovimientosManuales,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-movimiento-manual/:id',
+    method: 'get',
+    action: CajasController.eliminarMovimientoManual,
+    schema: schemaEmpty
   }
   //#endregion
 ];
