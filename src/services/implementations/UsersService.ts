@@ -19,6 +19,8 @@ import { EstadoLicencia } from '../../models/EstadoLicencia';
 import { RecuperarContrasena } from '../../models/RecuperarContrasena';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import { buscarUltimosLogs } from '../../controllers';
+import { UltimosMovimientos } from '../../models/comandos/UltimosMovimientos';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -314,6 +316,30 @@ export class UsersService implements IUsersService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._usersRepository.modificarLicencia(licencia);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarUltimosClientes(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.buscarUltimosClientes();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarUltimosLogs(): Promise<UltimosMovimientos[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.buscarUltimosLogs();
         resolve(result);
       } catch (e) {
         logger.error(e);

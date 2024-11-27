@@ -22,6 +22,8 @@ import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
 import { Archivo } from '../models/Archivo';
 import { RecuperarContrasena } from '../models/RecuperarContrasena';
+import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -70,6 +72,8 @@ export interface IUsersRepository {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  buscarUltimosClientes(): Promise<Usuario[]>;
+  buscarUltimosLogs(): Promise<UltimosMovimientos[]>;
   recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
 }
@@ -695,6 +699,42 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al modificar Licencia: ' + err);
       throw new Error('Error al modificar Licencia.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarUltimosClientes(): Promise<Usuario[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<Usuario[]>('SELECT * FROM usuario where activo = 1 and idtipousuario = 2 ORDER BY idusuario DESC LIMIT 3');
+      const result: Usuario[] = plainToClass(Usuario, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar los ultimos clientes: ' + err);
+      throw new Error('Error al consultar los ultimos clientes.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para obtener los logs de los ultimos 3 dias
+   * @returns {UltimosMovimientos[]}
+   */
+  async buscarUltimosLogs(): Promise<UltimosMovimientos[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<UltimosMovimientos[]>('SELECT * FROM PUBLIC.buscar_ultimos_logs()');
+      const result: UltimosMovimientos[] = plainToClass(UltimosMovimientos, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar los ultimos logs. ' + err);
+      throw new Error('Error al buscar los ultimos logs.');
     } finally {
       client.release();
     }

@@ -12,6 +12,7 @@ import { Licencia } from '../../models/Licencia';
 import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../../models/EstadoLicencia';
 import { RecuperarContrasena } from '../../models/RecuperarContrasena';
+import { UltimosMovimientos } from '../../models/comandos/UltimosMovimientos';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -38,6 +39,8 @@ export interface IUsersService {
   consultarLicencias(filtro: FiltrosLicencias): Promise<Licencia[]>;
   obtenerEstadosLicencia(): Promise<EstadoLicencia[]>;
   modificarLicencia(licencia: Licencia): Promise<SpResult>;
+  buscarUltimosClientes(): Promise<Usuario[]>;
+  buscarUltimosLogs(): Promise<UltimosMovimientos[]>;
   recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
 }

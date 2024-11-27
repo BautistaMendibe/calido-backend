@@ -1,14 +1,14 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { UsersController } from './src/controllers/UsersController';
+import { buscarUltimosClientes, UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
-import { ProductosController } from './src/controllers/ProductosController';
+import { consultarProductosConStockLimitado, ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
-import { PedidosController } from './src/controllers/PedidosController';
+import { buscarOrdenesDeCompraHome, PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
@@ -164,6 +164,12 @@ export const AppRoutes = [
     path: '/usuarios/modificar-licencia',
     method: 'post',
     action: UsersController.modificarLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/buscar-ultimos-clientes',
+    method: 'get',
+    action: UsersController.buscarUltimosClientes,
     schema: schemaEmpty
   },
   {
@@ -352,6 +358,12 @@ export const AppRoutes = [
     action: ProductosController.consultarMovimientosPorProducto,
     schema: schemaEmpty
   },
+  {
+    path: '/productos/consultar-productos-stock-limitado',
+    method: 'get',
+    action: ProductosController.consultarProductosConStockLimitado,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // Region Marcas
@@ -451,6 +463,18 @@ export const AppRoutes = [
     action: VentasController.buscarVentasConFechaHora,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/obtener-cantidad-ventas-mensuales',
+    method: 'get',
+    action: VentasController.buscarCantidadVentasMensuales,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/obtener-cantidad-ventas-dia-hora',
+    method: 'get',
+    action: VentasController.buscarVentasPorDiaYHora,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes
@@ -491,6 +515,12 @@ export const AppRoutes = [
     path: '/pedidos/modificar-pedido',
     method: 'post',
     action: PedidosController.modificarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/buscar-ordenes-de-compra-home',
+    method: 'get',
+    action: PedidosController.buscarOrdenesDeCompraHome,
     schema: schemaEmpty
   },
 
@@ -653,6 +683,14 @@ export const AppRoutes = [
     path: '/cajas/eliminar-movimiento-manual/:id',
     method: 'get',
     action: CajasController.eliminarMovimientoManual,
+    schema: schemaEmpty
+  },
+  //#endregion
+  // region Logs
+  {
+    path: '/usuarios/buscar-ultimos-logs',
+    method: 'get',
+    action: UsersController.buscarUltimosLogs,
     schema: schemaEmpty
   }
   //#endregion
