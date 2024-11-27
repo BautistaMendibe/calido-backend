@@ -354,9 +354,9 @@ export class UsersRepository implements IUsersRepository {
     // Hashear la contraseña antes de enviarla a la base de datos
     const contrasenaHashed = await argon2.hash(usuario.contrasena, argonConfig);
 
-    const params = [usuario.nombreUsuario, usuario.nombre, usuario.apellido, contrasenaHashed];
+    const params = [usuario.nombreUsuario, usuario.nombre, usuario.apellido, contrasenaHashed, usuario.mail];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_SUPERUSUARIO($1, $2, $3, $4)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_SUPERUSUARIO($1, $2, $3, $4, $5)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
