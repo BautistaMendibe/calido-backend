@@ -180,6 +180,17 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de facturación
   private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
+    // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
+    if (venta.interes > 0) {
+      const conceptoInteres: Producto = new Producto();
+      conceptoInteres.id = 9999;
+      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
+      conceptoInteres.cantidadSeleccionada = 1;
+      venta.productos.push(conceptoInteres);
+    }
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
@@ -209,7 +220,7 @@ export class VentasService implements IVentasService {
             descripcion: producto.nombre,
             codigo: producto.id,
             lista_precios: 'standard',
-            leyenda: '',
+            leyenda: producto.leyenda ? producto.leyenda : '',
             unidad_bulto: 1,
             alicuota: 21,
             precio_unitario_sin_iva: producto.precioSinIVA,
@@ -329,7 +340,9 @@ export class VentasService implements IVentasService {
         const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
         if (anularVentaResult.mensaje === 'OK') {
           for (const producto of venta.productos) {
-            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            if (producto.id !== 9999) {
+              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            }
           }
         } else {
           throw new Error('Error al anular la venta en el repositorio');
@@ -403,6 +416,17 @@ export class VentasService implements IVentasService {
     venta.cliente = cliente;
     venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
 
+    // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
+    if (venta.interes > 0) {
+      const conceptoInteres: Producto = new Producto();
+      conceptoInteres.id = 9999;
+      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
+      conceptoInteres.cantidadSeleccionada = 1;
+      venta.productos.push(conceptoInteres);
+    }
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
@@ -432,7 +456,7 @@ export class VentasService implements IVentasService {
             descripcion: producto.nombre,
             codigo: producto.id,
             lista_precios: 'standard',
-            leyenda: '',
+            leyenda: producto.leyenda ? producto.leyenda : '',
             unidad_bulto: 1,
             alicuota: 21,
             precio_unitario_sin_iva: producto.precioSinIVA,
