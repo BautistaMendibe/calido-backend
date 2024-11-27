@@ -15,6 +15,7 @@ import { Motivo } from '../models/Motivo';
 import { Licencia } from '../models/Licencia';
 import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
+import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -347,6 +348,30 @@ export async function modificarLicencia(request: Request, response: Response): P
     });
 }
 
+export async function buscarUltimosClientes(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .buscarUltimosClientes()
+    .then((x: Usuario[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function buscarUltimosLogs(request: Request, response: Response): Promise<Response> {
+  return _usersService
+    .buscarUltimosLogs()
+    .then((x: UltimosMovimientos[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -371,5 +396,7 @@ export const UsersController = {
   eliminarLicencia,
   consultarLicencias,
   obtenerEstadosLicencia,
-  modificarLicencia
+  modificarLicencia,
+  buscarUltimosClientes,
+  buscarUltimosLogs
 };

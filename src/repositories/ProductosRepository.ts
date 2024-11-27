@@ -12,6 +12,9 @@ import { FiltrosDetallesProductos } from '../models/comandos/FiltroDetallesProdu
 import { DetalleProducto } from '../models/DetalleProducto';
 import { MovimientoProducto } from '../models/MovimientoProducto';
 import { Promocion } from '../models/Promocion';
+import { OrdenDeCompraComando } from '../models/comandos/OrdenesDeCompra.comando';
+import { EstadoPedido } from '../models/EstadoPedido';
+import { ProductoStockLimitadoComando } from '../models/comandos/ProductosStockLimitado';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -27,6 +30,7 @@ export interface IProductosRepository {
   eliminarDetalleProducto(idDetalleProducto: number): Promise<SpResult>;
   modificarDetalleProducto(detalle: DetalleProducto): Promise<SpResult>;
   consultarMovimientosPorProducto(idProducto: number): Promise<MovimientoProducto[]>;
+  consultarProductosConStockLimitado(): Promise<ProductoStockLimitadoComando[]>;
 }
 
 /**
@@ -333,6 +337,22 @@ export class ProductosRepository implements IProductosRepository {
     } catch (err) {
       logger.error('Error al consultar Movimientos del Producto: ' + err);
       throw new Error('Error al consultar Movimientos del Producto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async consultarProductosConStockLimitado(): Promise<ProductoStockLimitadoComando[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<ProductoStockLimitadoComando[]>('SELECT * FROM PUBLIC.buscar_productos_stock_limitado()');
+      const result: ProductoStockLimitadoComando[] = plainToClass(ProductoStockLimitadoComando, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar productos en home: ' + err);
+      throw new Error('Error al consultar productos en home');
     } finally {
       client.release();
     }

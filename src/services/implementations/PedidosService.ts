@@ -7,6 +7,7 @@ import { SpResult } from '../../models';
 import { Pedido } from '../../models/Pedido';
 import { FiltroPedidos } from '../../models/comandos/FiltroPedidos';
 import { EstadoPedido } from '../../models/EstadoPedido';
+import { OrdenDeCompraComando } from '../../models/comandos/OrdenesDeCompra.comando';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -82,4 +83,16 @@ export class PedidosService implements IPedidosService {
       }
     });
   }
+  public async buscarOrdenesDeCompraHome(): Promise<OrdenDeCompraComando[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._pedidosRepository.buscarOrdenesDeCompraHome();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
 }

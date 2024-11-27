@@ -13,6 +13,8 @@ import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { Promocion } from '../models/Promocion';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -32,6 +34,8 @@ export interface IVentasRepository {
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
+  buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
+  buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
 }
 
 /**
@@ -402,6 +406,46 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas en fecha y hora: ' + err);
       throw new Error('Error al buscar las ventas en fecha y hora.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas mensuales
+   * @returns {VentasMensuales[]}
+   */
+  async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasMensuales[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_mensuales()');
+      const result: VentasMensuales[] = plainToClass(VentasMensuales, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas mensuales. ' + err);
+      throw new Error('Error al buscar ventas mensuales.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas diarias
+   * @returns {VentasDiariaComando[]}
+   */
+  async buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasDiariaComando[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_hoy_ayer()');
+      const result: VentasDiariaComando[] = plainToClass(VentasDiariaComando, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas diarias. ' + err);
+      throw new Error('Error al buscar ventas diarias.');
     } finally {
       client.release();
     }
