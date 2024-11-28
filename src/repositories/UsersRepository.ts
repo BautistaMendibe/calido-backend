@@ -202,10 +202,11 @@ export class UsersRepository implements IUsersRepository {
     const client = await PoolDb.connect();
 
     const nombre = filtro.nombre;
-    const params = [nombre];
+    const nombreUsuario = filtro.nombreUsuario;
+    const cuil = filtro.cuil;
+    const params = [nombre, nombreUsuario, cuil];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1)', params);
-
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1, $2, $3)', params);
       const usuarios = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Usuario
         const provincia: Provincia = plainToClass(Provincia, row, { excludeExtraneousValues: true });
