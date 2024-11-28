@@ -1,4 +1,7 @@
 // Archivo de configuración para inversify sin repositorios
+import { ReportesService } from '../implementations/ReportesService';
+import { ReportesRepository } from '../../repositories/ReportesRepository';
+
 export const TYPES = {
   // Services
   UsersService: Symbol('IUsersService'),
@@ -15,6 +18,7 @@ export const TYPES = {
   TarjetasService: Symbol('ITarjetasService'),
   FilesService: Symbol('IFilesService'),
   CajasService: Symbol('ICajasService'),
+  ReportesService: Symbol('IReportesService'),
 
   // Repositorys
   UsersRepository: Symbol('IUsersRepository'),
@@ -30,5 +34,6 @@ export const TYPES = {
   ComprobantesRepository: Symbol('IComprobantesRepository'),
   TarjetasRepository: Symbol('ITarjetasRepository'),
   FilesRepository: Symbol('IFilesRepository'),
-  CajasRepository: Symbol('ICajasRepository')
+  CajasRepository: Symbol('ICajasRepository'),
+  ReportesRepository: Symbol('IReportesRepository')
 };
