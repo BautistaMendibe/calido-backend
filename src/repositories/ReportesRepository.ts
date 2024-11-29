@@ -18,7 +18,7 @@ export interface IReportesRepository {
  */
 @injectable()
 export class ReportesRepository implements IReportesRepository {
-  async obtenerDataReportes(reporte: ReporteComando): Promise<DataReporteComando[]> {
+  async obtenerDataReporte(reporte: ReporteComando): Promise<DataReporteComando[]> {
     const client = await PoolDb.connect();
     try {
       const res = await client.query<DataReporteComando[]>('SELECT * FROM PUBLIC.buscar_ultimos_logs()');
