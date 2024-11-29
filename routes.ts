@@ -14,6 +14,7 @@ import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
 import multer from 'multer';
 import { CajasController } from './src/controllers/CajasController';
+import { obtenerDataReporte, ReportesController } from './src/controllers/ReportesController';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -698,6 +699,14 @@ export const AppRoutes = [
     path: '/usuarios/buscar-ultimos-logs',
     method: 'get',
     action: UsersController.buscarUltimosLogs,
+    schema: schemaEmpty
+  },
+  //#endregion
+  // region Reportes
+  {
+    path: '/reportes/obtener-data-reporte',
+    method: 'post',
+    action: ReportesController.obtenerDataReporte,
     schema: schemaEmpty
   }
   //#endregion
