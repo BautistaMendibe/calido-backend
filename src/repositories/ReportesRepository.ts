@@ -20,15 +20,19 @@ export interface IReportesRepository {
 export class ReportesRepository implements IReportesRepository {
   async obtenerDataReporte(reporte: ReporteComando): Promise<DataReporteComando[]> {
     const client = await PoolDb.connect();
+    const params = [reporte.filtros.fechaDesde, reporte.filtros.fechaHasta];
+
     try {
-      const res = await client.query<DataReporteComando[]>('SELECT * FROM PUBLIC.buscar_ultimos_logs()');
+      const query = `SELECT * FROM PUBLIC.${reporte.funcionSP}($1, $2)`;
+
+      const res = await client.query<DataReporteComando[]>(query, params);
       const result: DataReporteComando[] = plainToClass(DataReporteComando, res.rows, {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al buscar los ultimos logs. ' + err);
-      throw new Error('Error al buscar los ultimos logs.');
+      logger.error('Error al buscar datos del reporte. ' + err);
+      throw new Error('Error al buscar datos del reporte.');
     } finally {
       client.release();
     }

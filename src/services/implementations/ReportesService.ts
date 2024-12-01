@@ -15,7 +15,7 @@ export class ReportesService implements IReportesService {
   private readonly _reportesRepository: IReportesRepository;
 
   constructor(
-    @inject(TYPES.CajasRepository)
+    @inject(TYPES.ReportesRepository)
     repository: IReportesRepository
   ) {
     this._reportesRepository = repository;

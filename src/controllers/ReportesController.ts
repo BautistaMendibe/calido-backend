@@ -10,7 +10,7 @@ import { DataReporteComando } from '../models/comandos/DataReporte';
 const _reportesService = container.get<ReportesService>(TYPES.ReportesService);
 
 export async function obtenerDataReporte(request: Request, response: Response): Promise<Response> {
-  const reporte: ReporteComando = request.body.reporte;
+  const reporte: ReporteComando = request.body;
   return _reportesService
     .obtenerDataReporte(reporte)
     .then((x: DataReporteComando[]) => {
