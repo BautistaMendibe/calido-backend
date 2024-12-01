@@ -601,7 +601,15 @@ export class UsersRepository implements IUsersRepository {
 
   async registrarLicencia(licencia: Licencia): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [licencia.idUsuario, licencia.fechaInicio, licencia.fechaFin, licencia.idMotivoLicencia, licencia.idEstadoLicencia, licencia.comentario, licencia.archivo.id];
+    const params = [
+      licencia.idUsuario,
+      licencia.fechaInicio,
+      licencia.fechaFin,
+      licencia.idMotivoLicencia,
+      licencia.idEstadoLicencia,
+      licencia.comentario,
+      licencia.archivo?.id || null
+    ];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_LICENCIA($1, $2, $3, $4, $5, $6, $7)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {

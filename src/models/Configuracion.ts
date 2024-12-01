@@ -33,6 +33,8 @@ export class Configuracion {
   @Expose({ name: 'facturacion_automatica' })
   @Transform((value) => value === 'S')
   facturacionAutomatica: boolean;
+  @Expose({ name: 'monto_consumidor_final' })
+  montoConsumidorFinal: number;
 
   usuario: Usuario;
 
@@ -51,7 +53,8 @@ export class Configuracion {
     ciudad?: string,
     provincia?: string,
     codigoPostal?: number,
-    facturacionAutomatica?: boolean
+    facturacionAutomatica?: boolean,
+    montoConsumidorFinal?: number
   ) {
     this.id = id!;
     this.idUsuario = idUsuario!;
@@ -68,5 +71,6 @@ export class Configuracion {
     this.provincia = provincia!;
     this.codigoPostal = codigoPostal!;
     this.facturacionAutomatica = facturacionAutomatica!;
+    this.montoConsumidorFinal = montoConsumidorFinal!;
   }
 }
