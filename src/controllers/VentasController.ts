@@ -175,6 +175,34 @@ export async function buscarVentasPorDiaYHora(request: Request, response: Respon
     });
 }
 
+export async function cancelarVenta(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .cancelarVenta(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function cancelarVentaParcialmente(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .cancelarVentaParcialmente(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -187,5 +215,7 @@ export const VentasController = {
   anularVenta,
   buscarVentasConFechaHora,
   buscarCantidadVentasMensuales,
-  buscarVentasPorDiaYHora
+  buscarVentasPorDiaYHora,
+  cancelarVenta,
+  cancelarVentaParcialmente
 };

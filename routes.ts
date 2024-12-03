@@ -475,6 +475,18 @@ export const AppRoutes = [
     action: VentasController.buscarVentasPorDiaYHora,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/cancelar-venta',
+    method: 'post',
+    action: VentasController.cancelarVenta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/cancelar-venta-parcialmente',
+    method: 'post',
+    action: VentasController.cancelarVentaParcialmente,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

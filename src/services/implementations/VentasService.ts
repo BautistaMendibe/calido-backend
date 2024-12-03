@@ -10,17 +10,15 @@ import { Producto } from '../../models/Producto';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
-import { Pool, PoolClient } from 'pg';
+import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import axios from 'axios';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
-import { error } from 'winston';
 import { IUsersRepository } from '../../repositories';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
-import { buscarVentasPorDiaYHora } from '../../controllers/VentasController';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
 
 /**
@@ -189,6 +187,15 @@ export class VentasService implements IVentasService {
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
+
+      // Calcular la bonificación en la venta
+      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
+        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
+        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
+        return sumatoria + (producto.precioSinIVA - descuento);
+      }, 0);
+
+      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
     }
 
     const payload = {
@@ -231,6 +238,7 @@ export class VentasService implements IVentasService {
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
+        bonificacion: venta.bonificacion ? venta.bonificacion : 0,
         cotizacion: 1,
         moneda: 'PES',
         punto_venta: 679,
@@ -425,6 +433,15 @@ export class VentasService implements IVentasService {
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
+
+      // Calcular la bonificación en la venta
+      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
+        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
+        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
+        return sumatoria + (producto.precioSinIVA - descuento);
+      }, 0);
+
+      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
     }
 
     const payload = {
@@ -467,6 +484,7 @@ export class VentasService implements IVentasService {
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
+        bonificacion: venta.bonificacion ? venta.bonificacion : 0,
         comprobantes_asociados: [
           {
             tipo_comprobante: venta.facturacion.nombre,
@@ -497,5 +515,35 @@ export class VentasService implements IVentasService {
       console.error('Error en la llamada a la API de facturación:', error.message);
       throw new Error('Error al llamar a la API de facturación.');
     }
+  }
+
+  public async cancelarVenta(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.cancelarVenta(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      } finally {
+        client.release();
+      }
+    });
+  }
+
+  public async cancelarVentaParcialmente(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.cancelarVentaParcialmente(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      } finally {
+        client.release();
+      }
+    });
   }
 }
