@@ -124,7 +124,7 @@ export class VentasRepository implements IVentasRepository {
   async buscarFormasDePago(): Promise<FormaDePago[]> {
     const client = await PoolDb.connect();
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.FORMA_DE_PAGO WHERE activo = 1');
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.FORMA_DE_PAGO WHERE activo = 1 AND idafip IS NOT NULL');
       const result: FormaDePago[] = plainToClass(FormaDePago, res.rows, {
         excludeExtraneousValues: true
       });
