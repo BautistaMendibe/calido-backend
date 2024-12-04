@@ -38,7 +38,6 @@ export interface IVentasRepository {
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
   cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
-  buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
 }
 

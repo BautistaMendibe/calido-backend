@@ -248,7 +248,6 @@ export const VentasController = {
   buscarVentasPorDiaYHora,
   cancelarVenta,
   cancelarVentaParcialmente,
-  buscarVentasConFechaHora,
   pagarConQRSIRO,
   consultaPagoSIROQR
 };
