@@ -10,25 +10,25 @@ import { Producto } from '../../models/Producto';
 import { Usuario } from '../../models/Usuario';
 import { FormaDePago } from '../../models/FormaDePago';
 import PoolDb from '../../data/db';
-import { Pool, PoolClient } from 'pg';
+import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import axios from 'axios';
 import { ComprobanteResponse } from '../../models/ComprobanteResponse';
-import { error } from 'winston';
 import { IUsersRepository } from '../../repositories';
 import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
-
-/**
- * Servicio que tiene como responsabilidad
- * lo vinculado a la configuración
- */
+import { VentasMensuales } from '../../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
 
 // variables para token API Sesion SIRO
 let siroToken: string | null = null;
 let siroTokenExpiration: Date | null = null;
 
+/**
+ * Servicio que tiene como responsabilidad
+ * lo vinculado a la configuración
+ */
 @injectable()
 export class VentasService implements IVentasService {
   private readonly _ventasRepository: IVentasRepository;
@@ -182,6 +182,26 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de facturación
   private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
+    // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
+    if (venta.interes > 0) {
+      const conceptoInteres: Producto = new Producto();
+      conceptoInteres.id = 9999;
+      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
+      conceptoInteres.cantidadSeleccionada = 1;
+      venta.productos.push(conceptoInteres);
+
+      // Calcular la bonificación en la venta
+      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
+        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
+        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
+        return sumatoria + (producto.precioSinIVA - descuento);
+      }, 0);
+
+      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
+    }
+
     const payload = {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
@@ -211,7 +231,7 @@ export class VentasService implements IVentasService {
             descripcion: producto.nombre,
             codigo: producto.id,
             lista_precios: 'standard',
-            leyenda: '',
+            leyenda: producto.leyenda ? producto.leyenda : '',
             unidad_bulto: 1,
             alicuota: 21,
             precio_unitario_sin_iva: producto.precioSinIVA,
@@ -222,6 +242,7 @@ export class VentasService implements IVentasService {
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
+        bonificacion: venta.bonificacion ? venta.bonificacion : 0,
         cotizacion: 1,
         moneda: 'PES',
         punto_venta: 679,
@@ -270,10 +291,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+  public async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.buscarVentasConFechaHora(fechaHora);
+        const result = await this._ventasRepository.buscarVentasConFechaHora(fechaHora, fechaHoraCierre);
         resolve(result);
       } catch (e) {
         logger.error(e);
@@ -331,7 +352,9 @@ export class VentasService implements IVentasService {
         const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
         if (anularVentaResult.mensaje === 'OK') {
           for (const producto of venta.productos) {
-            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            if (producto.id !== 9999) {
+              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            }
           }
         } else {
           throw new Error('Error al anular la venta en el repositorio');
@@ -361,6 +384,30 @@ export class VentasService implements IVentasService {
     });
   }
 
+  public async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarCantidadVentasMensuales();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentasPorDiaYHora();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   // Funcion para hacer la llamada a la API de facturación
   private async llamarApiNotaCredito(venta: Venta, client: PoolClient): Promise<SpResult> {
     const fechaHoy = new Date().toLocaleDateString('es-ES', {
@@ -380,6 +427,26 @@ export class VentasService implements IVentasService {
       : 'No registrado';
     venta.cliente = cliente;
     venta.cliente.tipoDocumento = venta.cliente.dni ? 'DNI' : venta.cliente.cuit ? 'CUIT' : 'OTRO';
+
+    // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
+    if (venta.interes > 0) {
+      const conceptoInteres: Producto = new Producto();
+      conceptoInteres.id = 9999;
+      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
+      conceptoInteres.cantidadSeleccionada = 1;
+      venta.productos.push(conceptoInteres);
+
+      // Calcular la bonificación en la venta
+      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
+        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
+        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
+        return sumatoria + (producto.precioSinIVA - descuento);
+      }, 0);
+
+      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
+    }
 
     const payload = {
       apitoken: process.env['API_TOKEN'],
@@ -410,7 +477,7 @@ export class VentasService implements IVentasService {
             descripcion: producto.nombre,
             codigo: producto.id,
             lista_precios: 'standard',
-            leyenda: '',
+            leyenda: producto.leyenda ? producto.leyenda : '',
             unidad_bulto: 1,
             alicuota: 21,
             precio_unitario_sin_iva: producto.precioSinIVA,
@@ -421,6 +488,7 @@ export class VentasService implements IVentasService {
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
+        bonificacion: venta.bonificacion ? venta.bonificacion : 0,
         comprobantes_asociados: [
           {
             tipo_comprobante: venta.facturacion.nombre,
@@ -451,6 +519,36 @@ export class VentasService implements IVentasService {
       console.error('Error en la llamada a la API de facturación:', error.message);
       throw new Error('Error al llamar a la API de facturación.');
     }
+  }
+
+  public async cancelarVenta(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.cancelarVenta(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      } finally {
+        client.release();
+      }
+    });
+  }
+
+  public async cancelarVentaParcialmente(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.cancelarVentaParcialmente(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      } finally {
+        client.release();
+      }
+    });
   }
 
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)

@@ -1,19 +1,20 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { UsersController } from './src/controllers/UsersController';
+import { buscarUltimosClientes, UsersController } from './src/controllers/UsersController';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
-import { ProductosController } from './src/controllers/ProductosController';
+import { consultarProductosConStockLimitado, ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
-import { PedidosController } from './src/controllers/PedidosController';
+import { buscarOrdenesDeCompraHome, PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
 import multer from 'multer';
 import { CajasController } from './src/controllers/CajasController';
+import { obtenerDataReporte, ReportesController } from './src/controllers/ReportesController';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -164,6 +165,24 @@ export const AppRoutes = [
     path: '/usuarios/modificar-licencia',
     method: 'post',
     action: UsersController.modificarLicencia,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/buscar-ultimos-clientes',
+    method: 'get',
+    action: UsersController.buscarUltimosClientes,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/recuperar-contrasena',
+    method: 'post',
+    action: UsersController.recuperarContrasena,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/cambiar-contrasena',
+    method: 'post',
+    action: UsersController.cambiarContrasena,
     schema: schemaEmpty
   },
 
@@ -340,6 +359,12 @@ export const AppRoutes = [
     action: ProductosController.consultarMovimientosPorProducto,
     schema: schemaEmpty
   },
+  {
+    path: '/productos/consultar-productos-stock-limitado',
+    method: 'get',
+    action: ProductosController.consultarProductosConStockLimitado,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // Region Marcas
@@ -440,6 +465,30 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/ventas/obtener-cantidad-ventas-mensuales',
+    method: 'get',
+    action: VentasController.buscarCantidadVentasMensuales,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/obtener-cantidad-ventas-dia-hora',
+    method: 'get',
+    action: VentasController.buscarVentasPorDiaYHora,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/cancelar-venta',
+    method: 'post',
+    action: VentasController.cancelarVenta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/cancelar-venta-parcialmente',
+    method: 'post',
+    action: VentasController.cancelarVentaParcialmente,
+    schema: schemaEmpty
+  },
+  {
     path: '/ventas/generar-pago',
     method: 'post',
     action: VentasController.pagarConQRSIRO,
@@ -491,6 +540,12 @@ export const AppRoutes = [
     path: '/pedidos/modificar-pedido',
     method: 'post',
     action: PedidosController.modificarPedido,
+    schema: schemaEmpty
+  },
+  {
+    path: '/pedidos/buscar-ordenes-de-compra-home',
+    method: 'get',
+    action: PedidosController.buscarOrdenesDeCompraHome,
     schema: schemaEmpty
   },
 
@@ -635,6 +690,47 @@ export const AppRoutes = [
     path: '/cajas/buscar-estados-arqueo',
     method: 'get',
     action: CajasController.obtenerEstadosArqueo,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/registrar-movimiento-manual',
+    method: 'post',
+    action: CajasController.registrarMovimientoManual,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/consultar-movimientos-manuales/:id',
+    method: 'get',
+    action: CajasController.consultarMovimientosManuales,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/eliminar-movimiento-manual/:id',
+    method: 'get',
+    action: CajasController.eliminarMovimientoManual,
+    schema: schemaEmpty
+  },
+  {
+    path: '/cajas/cerrar-arqueo',
+    method: 'post',
+    action: CajasController.cerrarArqueo,
+    schema: schemaEmpty
+  },
+  //#endregion
+
+  // region Logs
+  {
+    path: '/usuarios/buscar-ultimos-logs',
+    method: 'get',
+    action: UsersController.buscarUltimosLogs,
+    schema: schemaEmpty
+  },
+  //#endregion
+  // region Reportes
+  {
+    path: '/reportes/obtener-data-reporte',
+    method: 'post',
+    action: ReportesController.obtenerDataReporte,
     schema: schemaEmpty
   }
   //#endregion

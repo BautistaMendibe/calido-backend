@@ -16,6 +16,11 @@ import { Motivo } from '../../models/Motivo';
 import { Licencia } from '../../models/Licencia';
 import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../../models/EstadoLicencia';
+import { RecuperarContrasena } from '../../models/RecuperarContrasena';
+import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import { buscarUltimosLogs } from '../../controllers';
+import { UltimosMovimientos } from '../../models/comandos/UltimosMovimientos';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -312,6 +317,118 @@ export class UsersService implements IUsersService {
       try {
         const result = await this._usersRepository.modificarLicencia(licencia);
         resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarUltimosClientes(): Promise<Usuario[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.buscarUltimosClientes();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async buscarUltimosLogs(): Promise<UltimosMovimientos[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.buscarUltimosLogs();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.recuperarContrasena(recuperarContrasena);
+
+        if (result.mensaje === 'OK') {
+          // Generar el JWT
+
+          const token = jwt.sign({ email: recuperarContrasena.correo }, process.env.JWT_SECRET, { expiresIn: '1h' });
+          const enlaceRecuperacion = `http://localhost:4200/recuperar-contrasena?token=${token}`;
+
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.EMAIL,
+              pass: process.env.GENERATED_APP_PASSWORD
+            }
+          });
+
+          const mailOptions = {
+            from: process.env.EMAIL,
+            to: recuperarContrasena.correo,
+            subject: 'Recuperación de contraseña',
+            html: `
+              <div style="font-family: Arial, sans-serif; border: 3px solid #d35400; border-radius: 5px; padding: 20px; max-width: 600px; margin: auto;">
+                <h2 style="color: #333;">Hola!</h2>
+                <p style="font-size: 16px; color: #555;">Hemos recibido una solicitud para <strong>cambiar la contraseña de tu cuenta</strong> en Calido.</p>
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="${enlaceRecuperacion}" 
+                     style="display: inline-block; background-color: #f39c12; color: #fff; text-decoration: none; padding: 10px 20px; font-size: 16px; border-radius: 5px;">
+                     Haz clic aquí para recuperar tu contraseña
+                  </a>
+                </div>
+                <p style="font-size: 14px; color: #555;">Si crees que esto fue un error, ignora este correo electrónico.</p>
+                <p style="font-size: 14px; color: #555; font-style: italic;">El enlace de recuperación expirará en 1 hora.</p>
+              </div>
+            `
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              logger.error('Error', error);
+              result.mensaje = 'ERROR';
+            } else {
+              logger.info('Email enviado: ' + info.response);
+            }
+          });
+        }
+
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!recuperarContrasena.token) {
+          reject('Token no proporcionado');
+          return;
+        }
+
+        // Promesa que envuelve la verificación del JWT
+        jwt.verify(recuperarContrasena.token, process.env.JWT_SECRET, async (err: any, decoded: any) => {
+          if (err) {
+            reject('Token inválido o expirado');
+          } else {
+            try {
+              // Si el token es válido, procedemos con el cambio de contraseña
+              recuperarContrasena.correo = decoded.email;
+              const result = await this._usersRepository.cambiarContrasena(recuperarContrasena);
+              resolve(result);
+            } catch (e) {
+              logger.error(e);
+              reject('Error al cambiar la contraseña');
+            }
+          }
+        });
       } catch (e) {
         logger.error(e);
         reject(e);

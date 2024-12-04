@@ -8,6 +8,9 @@ import { FiltrosCajas } from '../models/comandos/FiltroCaja';
 import { FiltrosArqueos } from '../models/comandos/FiltroArqueo';
 import { Arqueo } from '../models/Arqueo';
 import { EstadoArqueo } from '../models/EstadoArqueo';
+import { MovimientoManual } from '../models/MovimientoManual';
+import { FormaDePago } from '../models/FormaDePago';
+import { Usuario } from '../models/Usuario';
 
 /**
  * Interfaz del repositorio de cajas
@@ -22,6 +25,10 @@ export interface ICajasRepository {
   modificarArqueo(arqueo: Arqueo): Promise<SpResult>;
   eliminarArqueo(idArqueo: number): Promise<SpResult>;
   obtenerEstadosArqueo(): Promise<EstadoArqueo[]>;
+  registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult>;
+  eliminarMovimientoManual(idMovimiento: number): Promise<SpResult>;
+  obtenerMovimientosManuales(idMovimiento: number): Promise<MovimientoManual[]>;
+  cerrarArqueo(arqueo: Arqueo): Promise<SpResult>;
 }
 
 /**
@@ -109,9 +116,11 @@ export class CajasRepository implements ICajasRepository {
         const caja: Caja = plainToClass(Caja, row, { excludeExtraneousValues: true });
         const estadoArqueo: EstadoArqueo = plainToClass(EstadoArqueo, row, { excludeExtraneousValues: true });
         const arqueo: Arqueo = plainToClass(Arqueo, row, { excludeExtraneousValues: true });
+        const responsable: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
 
         arqueo.caja = caja;
         arqueo.estadoArqueo = estadoArqueo;
+        arqueo.responsable = responsable;
 
         return arqueo;
       });
@@ -135,10 +144,11 @@ export class CajasRepository implements ICajasRepository {
       arqueo.usuario,
       arqueo.diferencia,
       arqueo.idEstadoArqueo,
-      arqueo.idCaja
+      arqueo.idCaja,
+      arqueo.responsable
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8, $9)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -153,9 +163,9 @@ export class CajasRepository implements ICajasRepository {
 
   async modificarArqueo(arqueo: Arqueo): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [arqueo.id, arqueo.fechaApertura, arqueo.horaApertura, arqueo.montoInicial, arqueo.idCaja];
+    const params = [arqueo.id, arqueo.fechaApertura, arqueo.horaApertura, arqueo.montoInicial, arqueo.idCaja, arqueo.responsable];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ARQUEO($1, $2, $3, $4, $5)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_ARQUEO($1, $2, $3, $4, $5, $6)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -196,6 +206,108 @@ export class CajasRepository implements ICajasRepository {
     } catch (err) {
       logger.error('Error al consultar Estados Arqueo: ' + err);
       throw new Error('Error al consultar Estados Arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [movimiento.idArqueo, movimiento.fechaMovimiento, movimiento.formaPago, movimiento.descripcion, movimiento.tipoMovimiento, movimiento.monto];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_MANUAL($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Movimiento Manual de Arqueo: ' + err);
+      throw new Error('Error al registrar Movimiento Manual de Arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarMovimientoManual(idMovimiento: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idMovimiento];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_MOVIMIENTO_MANUAL($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al eliminar el movimiento manual de arqueo: ' + err);
+      throw new Error('Error al eliminar el movimiento manual de arqueo.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async obtenerMovimientosManuales(idArqueo: number): Promise<MovimientoManual[]> {
+    const client = await PoolDb.connect();
+
+    const params = [idArqueo];
+    try {
+      const res = await client.query<MovimientoManual[]>('SELECT * FROM public.BUSCAR_MOVIMIENTOS_MANUALES($1)', params);
+      const movimientos: MovimientoManual[] = res.rows.map((row: any) => {
+        // Mapeo de objetos del movimiento (forma de pago)
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const movimiento: MovimientoManual = plainToClass(MovimientoManual, row, { excludeExtraneousValues: true });
+
+        movimiento.formaPago = formaDePago;
+
+        return movimiento;
+      });
+      return movimientos;
+    } catch (err) {
+      logger.error('Error al consultar Movimientos: ' + err);
+      throw new Error('Error al consultar Movimientos.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async cerrarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const horaUTC = new Date(arqueo.horaCierre);
+
+    // Ajustar la hora y la fecha a la zona horaria de Argentina
+    const horaArgentina = new Date(horaUTC.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+
+    // Verificar si la hora es pasada de medianoche
+    if (horaArgentina.getHours() === 0 && horaArgentina.getMinutes() === 0 && horaArgentina.getSeconds() === 0) {
+      // Ajustar a 23:59:59 del día anterior
+      horaArgentina.setHours(23, 59, 59);
+      horaArgentina.setDate(horaArgentina.getDate() - 1); // Ajustar la fecha al día anterior
+    }
+
+    // Formatear la hora en el formato hh:mm:ss
+    const horaFormatoArgentina = `${horaArgentina.getHours().toString().padStart(2, '0')}:${horaArgentina.getMinutes().toString().padStart(2, '0')}:${horaArgentina
+      .getSeconds()
+      .toString()
+      .padStart(2, '0')}`;
+
+    const params = [
+      arqueo.id,
+      horaFormatoArgentina,
+      arqueo.diferencia,
+      arqueo.diferenciaOtros,
+      arqueo.montoSistemaCaja,
+      arqueo.montoSistemaOtros,
+      arqueo.cantidadDineroCajaUsuario,
+      arqueo.cantidadDineroOtrosUsuario
+    ];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CERRAR_ARQUEO($1, $2, $3, $4, $5, $6, $7, $8)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al cerrar el arqueo: ' + err);
+      throw new Error('Error al cerrar el arqueo.');
     } finally {
       client.release();
     }

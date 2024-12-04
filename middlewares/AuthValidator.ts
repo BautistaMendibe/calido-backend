@@ -17,7 +17,9 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     '/usuarios/validar-inicio-sesion',
     '/configuraciones/existe-configuracion',
     '/usuarios/registrar-superusuario',
-    '/configuraciones/registrar-configuracion'
+    '/configuraciones/registrar-configuracion',
+    '/usuarios/recuperar-contrasena',
+    '/usuarios/cambiar-contrasena'
   ];
 
   if (rutasExceptuadas.includes(req.path)) return next();

@@ -11,6 +11,8 @@ import { TipoFactura } from '../models/TipoFactura';
 import { CondicionIva } from '../models/CondicionIva';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -122,9 +124,10 @@ export async function buscarVentasPorCC(request: Request, response: Response): P
 
 export async function buscarVentasConFechaHora(request: Request, response: Response): Promise<Response> {
   const fechaHora: string = request.body.fechaHora;
+  const fechaHoraCierre: string = request.body.fechaHoraCierre;
 
   return _ventasService
-    .buscarVentasConFechaHora(fechaHora)
+    .buscarVentasConFechaHora(fechaHora, fechaHoraCierre)
     .then((x: Venta[]) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -139,6 +142,58 @@ export async function anularVenta(request: Request, response: Response): Promise
 
   return _ventasService
     .anularVenta(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function buscarCantidadVentasMensuales(request: Request, response: Response): Promise<Response> {
+  return _ventasService
+    .buscarCantidadVentasMensuales()
+    .then((x: VentasMensuales[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function buscarVentasPorDiaYHora(request: Request, response: Response): Promise<Response> {
+  return _ventasService
+    .buscarVentasPorDiaYHora()
+    .then((x: VentasDiariaComando[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function cancelarVenta(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .cancelarVenta(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function cancelarVentaParcialmente(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .cancelarVentaParcialmente(venta)
     .then((x: SpResult) => {
       return response.status(HttpCodes.OK).json(x);
     })
@@ -188,6 +243,11 @@ export const VentasController = {
   buscarVentas,
   buscarVentasPorCC,
   anularVenta,
+  buscarVentasConFechaHora,
+  buscarCantidadVentasMensuales,
+  buscarVentasPorDiaYHora,
+  cancelarVenta,
+  cancelarVentaParcialmente,
   buscarVentasConFechaHora,
   pagarConQRSIRO,
   consultaPagoSIROQR

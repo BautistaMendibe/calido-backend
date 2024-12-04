@@ -71,10 +71,11 @@ export class ConfiguracionesRepository implements IConfiguracionesRepository {
       configuracion.ciudad,
       configuracion.provincia,
       configuracion.codigoPostal,
-      configuracion.facturacionAutomatica ? 'S' : 'N'
+      configuracion.facturacionAutomatica ? 'S' : 'N',
+      configuracion.montoConsumidorFinal
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.MODIFICAR_CONFIGURACION($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

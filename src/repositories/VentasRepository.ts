@@ -13,6 +13,8 @@ import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { Promocion } from '../models/Promocion';
+import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -31,6 +33,11 @@ export interface IVentasRepository {
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
+  buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
+  buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
+  cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
+  cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
 }
@@ -57,10 +64,11 @@ export class VentasRepository implements IVentasRepository {
       venta.interes ? venta.interes : null,
       venta.descuento ? venta.descuento : null,
       venta.facturacion.id ? venta.facturacion.id : null,
-      venta.idCaja ? venta.idCaja : null
+      venta.idCaja ? venta.idCaja : null,
+      venta.bonificacion ? venta.bonificacion : null
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -320,9 +328,15 @@ export class VentasRepository implements IVentasRepository {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
         const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
         const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
+        const condicionIva: CondicionIva = plainToClass(CondicionIva, row, { excludeExtraneousValues: true });
 
         venta.formaDePago = formaDePago;
         venta.comprobanteAfip = comprobante;
+        venta.cliente = cliente;
+        venta.facturacion = facturacion;
+        venta.cliente.condicionIva = condicionIva;
 
         return venta;
       });
@@ -343,7 +357,7 @@ export class VentasRepository implements IVentasRepository {
    */
   async anularVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA($1)', [venta.id]);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA($1, $2)', [venta.id, venta.cliente?.id || null]);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -378,24 +392,45 @@ export class VentasRepository implements IVentasRepository {
    * Método asíncrono para consultar las ventas generadas en una fecha determinada a partir de una hora.
    * @returns {Venta[]}
    */
-  async buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]> {
+  async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     const client = await PoolDb.connect();
-    const params = [new Date(fechaHora) || null];
+
+    // Convertir fechas a formato 'YYYY-MM-DD HH:mm:ss' en la zona horaria de Argentina
+    const formatToSQLTimestamp = (date: string | null, isCierre = false): string | null => {
+      if (!date) return null;
+
+      const fecha = new Date(date);
+
+      // Convertir la fecha a la zona horaria de Argentina
+      const fechaArgentina = new Date(fecha.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+
+      // Si es fechaHoraCierre, ajustar a 23:59:59 si la hora es mayor a 00:00:00
+      if (isCierre && (fechaArgentina.getHours() > 0 || fechaArgentina.getMinutes() > 0 || fechaArgentina.getSeconds() > 0)) {
+        fechaArgentina.setHours(23, 59, 59);
+      }
+
+      // Formatear la fecha al estilo SQL
+      const year = fechaArgentina.getFullYear();
+      const month = String(fechaArgentina.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaArgentina.getDate()).padStart(2, '0');
+      const hours = String(fechaArgentina.getHours()).padStart(2, '0');
+      const minutes = String(fechaArgentina.getMinutes()).padStart(2, '0');
+      const seconds = String(fechaArgentina.getSeconds()).padStart(2, '0');
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const params = [formatToSQLTimestamp(fechaHora), formatToSQLTimestamp(fechaHoraCierre, true)];
+
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_FECHAHORA($1, $2)', params);
 
       const ventas: Venta[] = res.rows.map((row) => {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
-        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
-        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
-        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
-        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
-
-        venta.formaDePago = formaDePago;
-        venta.comprobanteAfip = comprobante;
-        venta.cliente = cliente;
-        venta.facturacion = facturacion;
-
+        venta.formaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        venta.comprobanteAfip = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        venta.cliente = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        venta.facturacion = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
         return venta;
       });
 
@@ -405,6 +440,82 @@ export class VentasRepository implements IVentasRepository {
       throw new Error('Error al buscar las ventas en fecha y hora.');
     } finally {
       client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas mensuales
+   * @returns {VentasMensuales[]}
+   */
+  async buscarCantidadVentasMensuales(): Promise<VentasMensuales[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasMensuales[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_mensuales()');
+      const result: VentasMensuales[] = plainToClass(VentasMensuales, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas mensuales. ' + err);
+      throw new Error('Error al buscar ventas mensuales.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas diarias
+   * @returns {VentasDiariaComando[]}
+   */
+  async buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<VentasDiariaComando[]>('SELECT * FROM PUBLIC.buscar_cantidad_ventas_hoy_ayer()');
+      const result: VentasDiariaComando[] = plainToClass(VentasDiariaComando, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al buscar ventas diarias. ' + err);
+      throw new Error('Error al buscar ventas diarias.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para setear el valor cancelado con saldo igual a 1
+   * @param {Venta}
+   * @returns {SpResult}
+   */
+  async cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA($1)', [venta.id]);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al cancelar la venta: ' + err);
+      throw new Error('Error al cancelar la venta.');
+    }
+  }
+
+  /**
+   * Método asíncrono para cancelar venta parcialmente (solo hacer actualización de saldo en cuenta)
+   * @param {Venta}
+   * @returns {SpResult}
+   */
+  async cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult> {
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA_PARCIALMENTE($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al cancelar la venta: ' + err);
+      throw new Error('Error al cancelar la venta.');
     }
   }
 

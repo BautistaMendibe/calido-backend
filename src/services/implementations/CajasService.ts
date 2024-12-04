@@ -9,6 +9,7 @@ import { ICajasRepository } from '../../repositories/CajasRepository';
 import { Arqueo } from '../../models/Arqueo';
 import { FiltrosArqueos } from '../../models/comandos/FiltroArqueo';
 import { EstadoArqueo } from '../../models/EstadoArqueo';
+import { MovimientoManual } from '../../models/MovimientoManual';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -125,6 +126,54 @@ export class CajasService implements ICajasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._cajasRepository.obtenerEstadosArqueo();
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async registrarMovimientoManual(movimiento: MovimientoManual): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.registrarMovimientoManual(movimiento);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarMovimientosManuales(idArqueo: number): Promise<MovimientoManual[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.obtenerMovimientosManuales(idArqueo);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async eliminarMovimientoManual(idMovimiento: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.eliminarMovimientoManual(idMovimiento);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async cerrarArqueo(arqueo: Arqueo): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._cajasRepository.cerrarArqueo(arqueo);
         resolve(result);
       } catch (e) {
         logger.error(e);

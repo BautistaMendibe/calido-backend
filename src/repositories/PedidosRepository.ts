@@ -13,6 +13,7 @@ import { TipoProveedor } from '../models/TipoProveedor';
 import { Provincia } from '../models/Provincia';
 import { Localidad } from '../models/Localidad';
 import { Domicilio } from '../models/Domicilio';
+import { OrdenDeCompraComando } from '../models/comandos/OrdenesDeCompra.comando';
 
 /**
  * Interfaz del repositorio de Proveedores
@@ -23,6 +24,7 @@ export interface IPedidosRepository {
   eliminarPedido(idPedido: number): Promise<SpResult>;
   obtenerEstadosPedido(): Promise<EstadoPedido[]>;
   modificarPedido(pedido: Pedido): Promise<SpResult>;
+  buscarOrdenesDeCompraHome(): Promise<OrdenDeCompraComando[]>;
 }
 
 /**
@@ -194,6 +196,22 @@ export class PedidosRepository implements IPedidosRepository {
     } catch (err) {
       logger.error('Error al modificar el pedido: ' + err);
       throw new Error('Error al modificar el pedido.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarOrdenesDeCompraHome(): Promise<OrdenDeCompraComando[]> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<OrdenDeCompraComando[]>('SELECT * FROM PUBLIC.BUSCAR_ORDENES_COMPRA_HOME()');
+      const result: OrdenDeCompraComando[] = plainToClass(OrdenDeCompraComando, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar ordenes de compra en home: ' + err);
+      throw new Error('Error al consultar ordenes de compra en home');
     } finally {
       client.release();
     }

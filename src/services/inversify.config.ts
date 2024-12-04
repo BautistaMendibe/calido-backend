@@ -42,6 +42,9 @@ import { FilesRepository, IFilesRepository } from '../repositories/FilesReposito
 import { ICajasService } from './interfaces/ICajasService';
 import { CajasService } from './implementations/CajasService';
 import { CajasRepository, ICajasRepository } from '../repositories/CajasRepository';
+import { IReportesService } from './interfaces/IReportesService';
+import { ReportesService } from './implementations/ReportesService';
+import { IReportesRepository, ReportesRepository } from '../repositories/ReportesRepository';
 
 /**
  * Clase encargada de hacer el registro de todas las interfaces, con sus respectivos tipos e implementaciones
@@ -65,6 +68,7 @@ container.bind<IComprobantesService>(TYPES.ComprobantesService).to(ComprobantesS
 container.bind<ITarjetasService>(TYPES.TarjetasService).to(TarjetasService);
 container.bind<IFilesService>(TYPES.FilesService).to(FilesService);
 container.bind<ICajasService>(TYPES.CajasService).to(CajasService);
+container.bind<IReportesService>(TYPES.ReportesService).to(ReportesService);
 
 // Repositorys
 container.bind<IUsersRepository>(TYPES.UsersRepository).to(UsersRepository);
@@ -81,5 +85,6 @@ container.bind<IComprobantesRepository>(TYPES.ComprobantesRepository).to(Comprob
 container.bind<ITarjetasRepository>(TYPES.TarjetasRepository).to(TarjetasRepository);
 container.bind<IFilesRepository>(TYPES.FilesRepository).to(FilesRepository);
 container.bind<ICajasRepository>(TYPES.CajasRepository).to(CajasRepository);
+container.bind<IReportesRepository>(TYPES.ReportesRepository).to(ReportesRepository);
 
 export default container;

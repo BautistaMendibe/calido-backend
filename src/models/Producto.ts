@@ -37,6 +37,7 @@ export class Producto {
   promocion: Promocion;
   @Expose({ name: 'precioconiva' })
   precioConIVA: number;
+  leyenda: string;
 
   constructor(
     id?: number,
@@ -54,7 +55,8 @@ export class Producto {
     margenGanancia?: number,
     subTotalVenta?: number,
     promocion?: Promocion,
-    precioConIVA?: number
+    precioConIVA?: number,
+    leyenda?: string
   ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
@@ -72,5 +74,6 @@ export class Producto {
     this.margenGanancia = margenGanancia ? margenGanancia : null;
     this.promocion = promocion ? promocion : null;
     this.precioConIVA = precioConIVA ? precioConIVA : null;
+    this.leyenda = leyenda ? leyenda : null;
   }
 }

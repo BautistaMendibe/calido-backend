@@ -7,6 +7,8 @@ import { PoolClient } from 'pg';
 import { CondicionIva } from '../../models/CondicionIva';
 import { TipoFactura } from '../../models/TipoFactura';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
+import { VentasMensuales } from '../../models/comandos/VentasMensuales';
+import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -24,4 +26,9 @@ export interface IVentasService {
   buscarVentasConFechaHora(fechaHora: string): Promise<Venta[]>;
   pagarConSIROQR(venta: Venta): Promise<SpResult>;
   consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult>;
+  buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
+  buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
+  buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
+  cancelarVenta(venta: Venta): Promise<SpResult>;
+  cancelarVentaParcialmente(venta: Venta): Promise<SpResult>;
 }
