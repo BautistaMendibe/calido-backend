@@ -456,10 +456,16 @@ export class VentasService implements IVentasService {
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
     console.log(venta.cliente.id.toString().padStart(9, '0'));
+
+    if (venta.cliente.id == -1) {
+      venta.cliente.id = 0;
+    }
+
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
-      console.log('Número de venta más alto:', numeroVentaMasAlto + 1);
-      console.log('Número de venta más alto:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
+      console.log('Número de venta más alto + 1:', numeroVentaMasAlto + 1);
+      console.log('Número de venta más alto + 1:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
+      console.log(venta.montoTotal);
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
@@ -468,7 +474,7 @@ export class VentasService implements IVentasService {
           nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
           nro_cliente_empresa: venta.cliente.id.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
           nro_comprobante: (numeroVentaMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
-          Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal - venta.descuento + venta.interes) consultar estos valores
+          Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal) consultar estos valores
           URL_OK: 'https://www.youtube.com/',
           URL_ERROR: 'https://www.youtube.com/error',
           IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString()
