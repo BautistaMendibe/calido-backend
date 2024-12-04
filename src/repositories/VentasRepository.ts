@@ -488,7 +488,7 @@ export class VentasRepository implements IVentasRepository {
    */
   async cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA($1)', [venta.id]);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
