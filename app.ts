@@ -27,6 +27,13 @@ app.use(authenticateToken);
 // Middleware para verificar roles de administrador
 app.use(requireAdminRole);
 
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store'); // Evita almacenamiento en caché
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // register all application routes
 AppRoutes.forEach((route) => {
   const middlewares = route.middleware || [];
