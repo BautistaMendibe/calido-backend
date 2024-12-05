@@ -203,6 +203,36 @@ export async function cancelarVentaParcialmente(request: Request, response: Resp
     });
 }
 
+export async function pagarConQRSIRO(request: Request, response: Response): Promise<Response> {
+  //console.log('Payload recibido en el backend pagarConQRSIRO:', request.body);
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .pagarConSIROQR(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultaPagoSIROQR(request: Request, response: Response): Promise<Response> {
+  //console.log('Payload recibido en el backend consultaPagoSIROQR:', request.body);
+  //console.log('Payload recibido en el backend consultaPagoSIROQR ID:', request.body.IdReferenciaOperacion);
+
+  return _ventasService
+    .consultaPagoSIROQR(request.body.IdReferenciaOperacion)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -217,5 +247,7 @@ export const VentasController = {
   buscarCantidadVentasMensuales,
   buscarVentasPorDiaYHora,
   cancelarVenta,
-  cancelarVentaParcialmente
+  cancelarVentaParcialmente,
+  pagarConQRSIRO,
+  consultaPagoSIROQR
 };
