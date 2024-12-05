@@ -204,7 +204,7 @@ export async function cancelarVentaParcialmente(request: Request, response: Resp
 }
 
 export async function pagarConQRSIRO(request: Request, response: Response): Promise<Response> {
-  console.log('Payload recibido en el backend pagarConQRSIRO:', request.body);
+  //console.log('Payload recibido en el backend pagarConQRSIRO:', request.body);
   const venta: Venta = request.body;
 
   return _ventasService
@@ -219,8 +219,8 @@ export async function pagarConQRSIRO(request: Request, response: Response): Prom
 }
 
 export async function consultaPagoSIROQR(request: Request, response: Response): Promise<Response> {
-  console.log('Payload recibido en el backend consultaPagoSIROQR:', request.body);
-  console.log('Payload recibido en el backend consultaPagoSIROQR ID:', request.body.IdReferenciaOperacion);
+  //console.log('Payload recibido en el backend consultaPagoSIROQR:', request.body);
+  //console.log('Payload recibido en el backend consultaPagoSIROQR ID:', request.body.IdReferenciaOperacion);
 
   return _ventasService
     .consultaPagoSIROQR(request.body.IdReferenciaOperacion)

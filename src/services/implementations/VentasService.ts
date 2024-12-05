@@ -553,7 +553,7 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
-    console.log(venta.cliente.id.toString().padStart(9, '0'));
+    //console.log(venta.cliente.id.toString().padStart(9, '0'));
 
     if (venta.cliente.id == -1) {
       venta.cliente.id = 0;
@@ -561,9 +561,9 @@ export class VentasService implements IVentasService {
 
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
-      console.log('Número de venta más alto + 1:', numeroVentaMasAlto + 1);
-      console.log('Número de venta más alto + 1:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
-      console.log(venta.montoTotal);
+      //console.log('Número de venta más alto + 1:', numeroVentaMasAlto + 1);
+      //console.log('Número de venta más alto + 1:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
+      //console.log(venta.montoTotal);
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
@@ -584,13 +584,13 @@ export class VentasService implements IVentasService {
           }
         }
       );
-      console.log(response.data);
+      //console.log(response.data);
       return {
         ...response.data, // Mantiene los datos originales
         IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString() // Incluye el ID en el retorno
       };
     } catch (error) {
-      console.error('Error al crear el pago:', error.response?.data || error.message);
+      //console.error('Error al crear el pago:', error.response?.data || error.message);
       throw new Error('Error al crear la intención de pago.');
     }
   }
@@ -615,20 +615,20 @@ export class VentasService implements IVentasService {
 
       // Calcular y almacenar la fecha/hora de expiración del token (menos un segundo)
       siroTokenExpiration = new Date(new Date().getTime() + (expiresIn - 1) * 1000);
-      console.log(siroToken);
-      console.log(siroTokenExpiration);
+      //console.log(siroToken);
+      //console.log(siroTokenExpiration);
       return siroToken;
     } catch (error) {
-      console.error('Error al obtener el token de SIRO:', error.message);
+      //console.error('Error al obtener el token de SIRO:', error.message);
       throw new Error('No se pudo obtener el token de SIRO.');
     }
   }
 
   // Funcion para hacer la llamada a la API consulta de SIRO
   public async consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult> {
-    console.log(IdReferenciaOperacion);
-    console.log(new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString());
-    console.log(new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString());
+    //console.log(IdReferenciaOperacion);
+    //console.log(new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString());
+    //console.log(new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString());
     try {
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
@@ -647,10 +647,10 @@ export class VentasService implements IVentasService {
           }
         }
       );
-      console.log('respuesta:', response.data);
+      //console.log('respuesta:', response.data);
       return response.data; // Devuelve la respuesta de la API
     } catch (error) {
-      console.error('Error al consultar el pago:', error.response?.data || error.message);
+      //console.error('Error al consultar el pago:', error.response?.data || error.message);
       throw new Error('Error al consultar el pago.');
     }
   }
