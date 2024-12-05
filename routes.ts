@@ -488,6 +488,18 @@ export const AppRoutes = [
     action: VentasController.cancelarVentaParcialmente,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/generar-pago',
+    method: 'post',
+    action: VentasController.pagarConQRSIRO,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/consultar-pago',
+    method: 'post',
+    action: VentasController.consultaPagoSIROQR,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes
