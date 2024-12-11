@@ -201,10 +201,9 @@ export class UsersRepository implements IUsersRepository {
   async consultarEmpleados(filtro: FiltroEmpleados): Promise<Usuario[]> {
     const client = await PoolDb.connect();
 
-    const nombre = filtro.nombre;
-    const params = [nombre];
+    const params = [filtro.nombre || null, filtro.usuario || null, filtro.cuil || null];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_EMPLEADOS($1, $2, $3)', params);
 
       const usuarios = res.rows.map((row) => {
         // Armamos los objetos necesarios para la clase Usuario
