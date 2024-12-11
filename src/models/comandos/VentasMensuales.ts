@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 
 export class VentasMensuales {
-  @Expose({ name: 'mes' })
+  @Expose({ name: 'mes_anio' })
   mes: string;
   @Expose({ name: 'total_ventas' })
   total: number;
