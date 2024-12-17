@@ -7,7 +7,7 @@ import { Venta } from '../models/Venta';
 import { Producto } from '../models/Producto';
 import { Usuario } from '../models/Usuario';
 import { FormaDePago } from '../models/FormaDePago';
-import { PoolClient } from 'pg';
+import { Client, PoolClient } from 'pg';
 import { CondicionIva } from '../models/CondicionIva';
 import { TipoFactura } from '../models/TipoFactura';
 import { ComprobanteResponse } from '../models/ComprobanteResponse';
@@ -26,13 +26,14 @@ export interface IVentasRepository {
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
-  guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
+  guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
   modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
@@ -215,8 +216,7 @@ export class VentasRepository implements IVentasRepository {
    * @param {idCategoria}
    * @returns {CondicionIva[]}
    */
-  async guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
+  async guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult> {
     const params = [
       venta.id,
       comprobanteResponse.comprobante_nro,
@@ -239,8 +239,6 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al guardar el comprobante de venta: ' + err);
       throw new Error('Error al guardar el comprobante de venta.');
-    } finally {
-      client.release();
     }
   }
 
@@ -364,6 +362,26 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al anular la venta: ' + err);
       throw new Error('Error al anular la venta.');
+    }
+  }
+
+  /**
+   * Método asíncrono para actualizar el stock de un producto dada una venta
+   * @param {idVenta}
+   * @param {producto}
+   * @returns {SpResult}
+   */
+  async actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    const params = [producto.id, producto.cantidadSeleccionada, false, idVenta, 'Anulacion de venta'];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_inventario_venta($1, $2, $3, $4, $5)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al actualizar el stock de un producto dada una venta: ' + err);
+      throw new Error('Error al actualizar el stock de un producto dada una venta.');
     }
   }
 

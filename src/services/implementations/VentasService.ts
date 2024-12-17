@@ -182,6 +182,8 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de facturación
   private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+
     // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
@@ -255,20 +257,36 @@ export class VentasService implements IVentasService {
       const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
 
       if (response.data.error === 'N') {
+        await client.query('BEGIN');
+
         const comprobante = new ComprobanteResponse(response.data);
         comprobante.fechaComprobante = new Date().toLocaleDateString('es-ES', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric'
         });
-        return await this._ventasRepository.guardarComprobanteAfip(comprobante, venta);
+
+        const guardarComprobante = await this._ventasRepository.guardarComprobanteAfip(comprobante, venta, client);
+
+        if (guardarComprobante.mensaje == 'OK') {
+          for (const producto of venta.productos) {
+            if (producto.id !== 9999) {
+              const actualizarStock: SpResult = await this.actualizarStockPorVenta(producto, venta.id, client);
+            }
+          }
+        }
+        await client.query('COMMIT');
+        return guardarComprobante;
       } else {
+        await client.query('ROLLBACK');
         console.error('Error en la facturación:', response.data.errores);
         throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));
       }
     } catch (error) {
       console.error('Error en la llamada a la API de facturación:', error.message);
       throw new Error('Error al llamar a la API de facturación.');
+    } finally {
+      client.release();
     }
   }
 
@@ -371,6 +389,18 @@ export class VentasService implements IVentasService {
     } finally {
       client.release();
     }
+  }
+
+  public async actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.actualizarStockPorVenta(producto, idVenta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
   }
 
   public async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
