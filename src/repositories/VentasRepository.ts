@@ -29,6 +29,7 @@ export interface IVentasRepository {
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta): Promise<SpResult>;
   modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
+  buscarVentasPaginadas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -281,6 +282,50 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al buscar las ventas: ' + err);
       throw new Error('Error al buscar las ventas.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar las ventas generadas con paginación.
+   * @returns {Venta[]}
+   */
+  async buscarVentasPaginadas(filtros: FiltrosVentas): Promise<Venta[]> {
+    const client = await PoolDb.connect();
+    const params = [
+      filtros.numero ? filtros.numero : null,
+      filtros.fechaDesde ? filtros.fechaDesde : null,
+      filtros.fechaHasta ? filtros.fechaHasta : null,
+      filtros.formaDePago ? filtros.formaDePago : null,
+      filtros.tipoFacturacion ? filtros.tipoFacturacion : null,
+      filtros.limit ? filtros.limit : null,
+      filtros.offset ? filtros.offset : null
+    ];
+    try {
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_PAGINADAS($1, $2, $3, $4, $5, $6, $7)', params);
+
+      const ventas: Venta[] = res.rows.map((row) => {
+        const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const comprobante: ComprobanteResponse = plainToClass(ComprobanteResponse, row, { excludeExtraneousValues: true });
+        const cliente: Usuario = plainToClass(Usuario, row, { excludeExtraneousValues: true });
+        const facturacion: TipoFactura = plainToClass(TipoFactura, row, { excludeExtraneousValues: true });
+        const condicionIva: CondicionIva = plainToClass(CondicionIva, row, { excludeExtraneousValues: true });
+
+        venta.formaDePago = formaDePago;
+        venta.comprobanteAfip = comprobante;
+        venta.cliente = cliente;
+        venta.facturacion = facturacion;
+        venta.cliente.condicionIva = condicionIva;
+
+        return venta;
+      });
+
+      return ventas;
+    } catch (err) {
+      logger.error('Error al buscar las ventas paginadas: ' + err);
+      throw new Error('Error al buscar las ventas paginadas.');
     } finally {
       client.release();
     }
