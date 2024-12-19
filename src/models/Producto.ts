@@ -41,7 +41,7 @@ export class Producto {
   @Expose({ name: 'cantidad_anulada' })
   cantidadAnulada: number;
   @Expose({ name: 'anulado' })
-  @Transform(({ value }) => value === 1)
+  @Transform((value: number) => value == 1)
   anulado: boolean;
 
   constructor(
