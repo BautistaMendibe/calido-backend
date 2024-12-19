@@ -459,6 +459,12 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/ventas/anular-venta-sin-facturacion',
+    method: 'post',
+    action: VentasController.anularVentaSinFacturacion,
+    schema: schemaEmpty
+  },
+  {
     path: '/ventas/buscar-ventas-fecha-hora',
     method: 'post',
     action: VentasController.buscarVentasConFechaHora,

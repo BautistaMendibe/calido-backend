@@ -32,7 +32,9 @@ export interface IVentasRepository {
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
+  anularVentaSinFacturacion(venta: Venta): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  actualizarDetalleDeVentaPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
@@ -86,7 +88,7 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.costo, idVenta, producto.id];
+    const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.precioConIVA, idVenta, producto.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_VENTA($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
@@ -366,6 +368,27 @@ export class VentasRepository implements IVentasRepository {
   }
 
   /**
+   * Método asíncrono para setear el valor anulado de venta igual a 0
+   * @param {Venta}
+   * @returns {SpResult}
+   */
+  async anularVentaSinFacturacion(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ANULAR_VENTA($1, $2)', [venta.id, venta.cliente?.id || null]);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al anular la venta: ' + err);
+      throw new Error('Error al anular la venta.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Método asíncrono para actualizar el stock de un producto dada una venta
    * @param {idVenta}
    * @param {producto}
@@ -386,13 +409,33 @@ export class VentasRepository implements IVentasRepository {
   }
 
   /**
-   * Método asíncrono para actualizar el stock de un producto dada una venta anulada
+   * Método asíncrono para actualizar el detalle de una venta dada su anulacion
+   * @param {idVenta}
+   * @param {producto}
+   * @returns {SpResult}
+   */
+  async actualizarDetalleDeVentaPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    const params = [producto.id, producto.cantidadAnulada, idVenta];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_detalle_venta_anulacion($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al actualizar el detalle de una venta dada una venta anulada: ' + err);
+      throw new Error('Error al actualizar el detalle de una venta dada una venta anulada.');
+    }
+  }
+
+  /**
+   * Método asíncrono para actualizar la tabla detalle de venta por una respectiva anulacion
    * @param {idVenta}
    * @param {producto}
    * @returns {SpResult}
    */
   async actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.id, producto.cantidadSeleccionada, true, idVenta, 'Anulacion de venta'];
+    const params = [producto.id, producto.cantidadAnulada, true, idVenta, 'Anulacion de venta'];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_inventario_venta($1, $2, $3, $4, $5)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {

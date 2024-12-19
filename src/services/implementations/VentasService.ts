@@ -20,6 +20,7 @@ import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
+import { anularVentaSinFacturacion } from '../../controllers/VentasController';
 
 // variables para token API Sesion SIRO
 let siroToken: string | null = null;
@@ -373,6 +374,7 @@ export class VentasService implements IVentasService {
           for (const producto of venta.productos) {
             if (producto.id !== 9999) {
               const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+              const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
             }
           }
         } else {
@@ -391,6 +393,18 @@ export class VentasService implements IVentasService {
     }
   }
 
+  public async anularVentaSinFacturacion(venta: Venta): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.anularVentaSinFacturacion(venta);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -407,6 +421,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.actualizarStockPorAnulacion(producto, idVenta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async actualizarDetalleDeVentaPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.actualizarDetalleDeVentaPorAnulacion(producto, idVenta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);
@@ -500,8 +526,8 @@ export class VentasService implements IVentasService {
         rubro: 'Tienda de indumentaria',
         tipo: venta.notaCredito,
         operacion: 'V',
-        detalle: venta.productos.map((producto) => ({
-          cantidad: producto.cantidadSeleccionada,
+        detalle: venta.productosSeleccionadoParaAnular.map((producto) => ({
+          cantidad: producto.cantidadAnulada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
           bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
@@ -519,7 +545,7 @@ export class VentasService implements IVentasService {
         fecha: fechaHoy,
         vencimiento: '12/12/2025',
         rubro_grupo_contable: 'Productos',
-        total: venta.montoTotal,
+        total: venta.totalAnulado,
         bonificacion: venta.bonificacion ? venta.bonificacion : 0,
         comprobantes_asociados: [
           {

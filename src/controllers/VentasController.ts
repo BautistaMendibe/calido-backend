@@ -151,6 +151,20 @@ export async function anularVenta(request: Request, response: Response): Promise
     });
 }
 
+export async function anularVentaSinFacturacion(request: Request, response: Response): Promise<Response> {
+  const venta: Venta = request.body;
+
+  return _ventasService
+    .anularVentaSinFacturacion(venta)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function buscarCantidadVentasMensuales(request: Request, response: Response): Promise<Response> {
   return _ventasService
     .buscarCantidadVentasMensuales()
@@ -243,6 +257,7 @@ export const VentasController = {
   buscarVentas,
   buscarVentasPorCC,
   anularVenta,
+  anularVentaSinFacturacion,
   buscarVentasConFechaHora,
   buscarCantidadVentasMensuales,
   buscarVentasPorDiaYHora,

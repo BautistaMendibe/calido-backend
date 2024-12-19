@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { TipoProducto } from './TipoProducto';
 import { Marca } from './Marca';
 import { Proveedor } from './Proveedor';
@@ -38,6 +38,11 @@ export class Producto {
   @Expose({ name: 'precioconiva' })
   precioConIVA: number;
   leyenda: string;
+  @Expose({ name: 'cantidad_anulada' })
+  cantidadAnulada: number;
+  @Expose({ name: 'anulado' })
+  @Transform(({ value }) => value === 1)
+  anulado: boolean;
 
   constructor(
     id?: number,
@@ -56,7 +61,9 @@ export class Producto {
     subTotalVenta?: number,
     promocion?: Promocion,
     precioConIVA?: number,
-    leyenda?: string
+    leyenda?: string,
+    cantidadAnulada?: number,
+    anulado?: boolean
   ) {
     this.id = id ? id : null;
     this.nombre = nombre ? nombre : null;
@@ -75,5 +82,7 @@ export class Producto {
     this.promocion = promocion ? promocion : null;
     this.precioConIVA = precioConIVA ? precioConIVA : null;
     this.leyenda = leyenda ? leyenda : null;
+    this.cantidadAnulada = cantidadAnulada ? cantidadAnulada : null;
+    this.anulado = anulado ? anulado : null;
   }
 }
