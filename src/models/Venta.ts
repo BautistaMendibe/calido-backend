@@ -48,6 +48,8 @@ export class Venta {
   @Expose({ name: 'bonificacion' })
   bonificacion: number;
   saldoACancelarParcialmente: number;
+  productosSeleccionadoParaAnular: Producto[];
+  totalAnulado: number;
 
   @Expose({ name: 'totaldeventas' })
   totalDeVentas: number;
@@ -77,6 +79,8 @@ export class Venta {
     canceladaConSaldo?: number,
     bonificacion?: number,
     saldoACancelarParcialmente?: number,
+    productosSeleccionadoParaAnular?: Producto[],
+    totalAnulado?: number,
     totalDeVentas?: number
   ) {
     this.id = id!;
@@ -103,6 +107,8 @@ export class Venta {
     this.canceladaConSaldo = canceladaConSaldo!;
     this.bonificacion = bonificacion!;
     this.saldoACancelarParcialmente = saldoACancelarParcialmente!;
+    this.productosSeleccionadoParaAnular = productosSeleccionadoParaAnular!;
+    this.totalAnulado = totalAnulado!;
     this.totalDeVentas = totalDeVentas!;
   }
 }
