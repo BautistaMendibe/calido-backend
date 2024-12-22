@@ -22,6 +22,8 @@ export interface IVentasService {
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
   buscarVentasPorCC(idUsuario: number): Promise<Venta[]>;
   anularVenta(venta: Venta): Promise<SpResult>;
+  anularVentaSinFacturacion(venta: Venta): Promise<SpResult>;
+  actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   actualizarStockPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   pagarConSIROQR(venta: Venta): Promise<SpResult>;
   consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult>;
