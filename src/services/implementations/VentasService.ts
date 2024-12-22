@@ -311,6 +311,26 @@ export class VentasService implements IVentasService {
     });
   }
 
+  public async buscarVentasPaginadas(filtros: FiltrosVentas): Promise<Venta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.buscarVentasPaginadas(filtros);
+
+        const ventas: Venta[] = await Promise.all(
+          result.map(async (venta) => {
+            venta.productos = await this.buscarProductosPorVenta(venta.id);
+            return venta;
+          })
+        );
+
+        resolve(ventas);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]> {
     return new Promise(async (resolve, reject) => {
       try {

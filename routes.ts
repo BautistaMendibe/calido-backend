@@ -447,6 +447,12 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
+    path: '/ventas/buscar-ventas-paginadas',
+    method: 'post',
+    action: VentasController.buscarVentasPaginadas,
+    schema: schemaEmpty
+  },
+  {
     path: '/ventas/buscar-ventas-por-cc/:idUsuario',
     method: 'get',
     action: VentasController.buscarVentasPorCC,

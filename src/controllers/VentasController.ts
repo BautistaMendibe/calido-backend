@@ -108,6 +108,20 @@ export async function buscarVentas(request: Request, response: Response): Promis
     });
 }
 
+export async function buscarVentasPaginadas(request: Request, response: Response): Promise<Response> {
+  const filtros: FiltrosVentas = request.body;
+
+  return _ventasService
+    .buscarVentasPaginadas(filtros)
+    .then((x: Venta[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export async function buscarVentasPorCC(request: Request, response: Response): Promise<Response> {
   const idUsuario = +request.params.idUsuario;
 
@@ -255,6 +269,7 @@ export const VentasController = {
   obtenerTipoFacturacion,
   facturarVentaConAfip,
   buscarVentas,
+  buscarVentasPaginadas,
   buscarVentasPorCC,
   anularVenta,
   anularVentaSinFacturacion,

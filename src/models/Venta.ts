@@ -51,6 +51,9 @@ export class Venta {
   productosSeleccionadoParaAnular: Producto[];
   totalAnulado: number;
 
+  @Expose({ name: 'totaldeventas' })
+  totalDeVentas: number;
+
   constructor(
     id?: number,
     montoTotal?: number,
@@ -77,7 +80,8 @@ export class Venta {
     bonificacion?: number,
     saldoACancelarParcialmente?: number,
     productosSeleccionadoParaAnular?: Producto[],
-    totalAnulado?: number
+    totalAnulado?: number,
+    totalDeVentas?: number
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -105,5 +109,6 @@ export class Venta {
     this.saldoACancelarParcialmente = saldoACancelarParcialmente!;
     this.productosSeleccionadoParaAnular = productosSeleccionadoParaAnular!;
     this.totalAnulado = totalAnulado!;
+    this.totalDeVentas = totalDeVentas!;
   }
 }
