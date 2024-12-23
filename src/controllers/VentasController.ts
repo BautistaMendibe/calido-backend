@@ -13,6 +13,10 @@ import { ComprobanteResponse } from '../models/ComprobanteResponse';
 import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
+import { FiltrosMovimientosCuentaCorriente } from '../models/comandos/FiltroMovimientoCuentaCorriente';
+import { MovimientoCuentaCorriente } from '../models/MovimientoCuentaCorriente';
+import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../models/DetalleVenta';
 
 const _ventasService = container.get<VentasService>(TYPES.VentasService);
 
@@ -261,6 +265,20 @@ export async function consultaPagoSIROQR(request: Request, response: Response): 
     });
 }
 
+export async function buscarDetallesVenta(request: Request, response: Response): Promise<Response> {
+  const filtros: FiltrosDetallesVenta = request.body;
+
+  return _ventasService
+    .consultarDetallesVenta(filtros)
+    .then((x: DetalleVenta[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const VentasController = {
   registrarVentaConDetalles,
   buscarUsuariosClientes,
@@ -279,5 +297,6 @@ export const VentasController = {
   cancelarVenta,
   cancelarVentaParcialmente,
   pagarConQRSIRO,
-  consultaPagoSIROQR
+  consultaPagoSIROQR,
+  buscarDetallesVenta
 };

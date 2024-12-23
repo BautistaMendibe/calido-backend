@@ -21,6 +21,8 @@ import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { buscarUltimosLogs } from '../../controllers';
 import { UltimosMovimientos } from '../../models/comandos/UltimosMovimientos';
+import { FiltrosMovimientosCuentaCorriente } from '../../models/comandos/FiltroMovimientoCuentaCorriente';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 /**
  * Servicio que tiene como responsabilidad
@@ -429,6 +431,18 @@ export class UsersService implements IUsersService {
             }
           }
         });
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.consultarMovimientosCuentaCorriente(filtro);
+        resolve(result);
       } catch (e) {
         logger.error(e);
         reject(e);

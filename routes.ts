@@ -185,6 +185,12 @@ export const AppRoutes = [
     action: UsersController.cambiarContrasena,
     schema: schemaEmpty
   },
+  {
+    path: '/usuarios/consultar-movimientos-cuenta-corriente',
+    method: 'post',
+    action: UsersController.consultarMovimientosCuentaCorriente,
+    schema: schemaEmpty
+  },
 
   //#endregion
 
@@ -510,6 +516,12 @@ export const AppRoutes = [
     path: '/ventas/consultar-pago',
     method: 'post',
     action: VentasController.consultaPagoSIROQR,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/buscar-detalles-venta',
+    method: 'post',
+    action: VentasController.buscarDetallesVenta,
     schema: schemaEmpty
   },
   //#endregion

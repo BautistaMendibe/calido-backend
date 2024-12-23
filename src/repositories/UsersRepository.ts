@@ -23,7 +23,10 @@ import { EstadoLicencia } from '../models/EstadoLicencia';
 import { Archivo } from '../models/Archivo';
 import { RecuperarContrasena } from '../models/RecuperarContrasena';
 import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
-import { VentasMensuales } from '../models/comandos/VentasMensuales';
+import { DetalleVenta } from '../models/DetalleVenta';
+import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
+import { MovimientoCuentaCorriente } from '../models/MovimientoCuentaCorriente';
+import { FiltrosMovimientosCuentaCorriente } from '../models/comandos/FiltroMovimientoCuentaCorriente';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -76,6 +79,7 @@ export interface IUsersRepository {
   buscarUltimosLogs(): Promise<UltimosMovimientos[]>;
   recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
+  consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]>;
 }
 
 /**
@@ -780,6 +784,28 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al cambiar contraseña: ' + err);
       throw new Error('Error al cambiar contraseña.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar movimientos de cuenta corriente
+   * @returns {MovimientoCuentaCorriente []} arreglo de movimientos de cuenta corriente (pagos)
+   */
+  async consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]> {
+    const client = await PoolDb.connect();
+    const params = [filtro.idUsuario];
+
+    try {
+      const res = await client.query<Asistencia>('SELECT * FROM PUBLIC.BUSCAR_MOVIMIENTOS_CUENTA_CORRIENTE($1)', params);
+      const result: MovimientoCuentaCorriente[] = plainToClass(MovimientoCuentaCorriente, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar movimientos de cuenta corriente: ' + err);
+      throw new Error('Error al consultar movimientos de cuenta corriente.');
     } finally {
       client.release();
     }

@@ -13,6 +13,8 @@ import { FiltrosLicencias } from '../../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../../models/EstadoLicencia';
 import { RecuperarContrasena } from '../../models/RecuperarContrasena';
 import { UltimosMovimientos } from '../../models/comandos/UltimosMovimientos';
+import { FiltrosMovimientosCuentaCorriente } from '../../models/comandos/FiltroMovimientoCuentaCorriente';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 export interface IUsersService {
   validarInicioSesion(nombreUsuario: string, contrasena: string): Promise<string>;
@@ -43,4 +45,5 @@ export interface IUsersService {
   buscarUltimosLogs(): Promise<UltimosMovimientos[]>;
   recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
+  consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]>;
 }

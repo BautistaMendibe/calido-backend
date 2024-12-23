@@ -15,6 +15,9 @@ import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { Promocion } from '../models/Promocion';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
+import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../models/DetalleVenta';
+import { Asistencia } from '../models/Asistencia';
 
 /**
  * Interfaz del repositorio de Ventas
@@ -43,6 +46,7 @@ export interface IVentasRepository {
   cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
   cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
+  consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
 }
 
 /**
@@ -636,6 +640,28 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al obtener el número de venta más alto: ' + err);
       throw new Error('Error al obtener el número de venta más alto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar detalles de ventas
+   * @returns {DetalleVenta []} arreglo de detalles de ventas
+   */
+  async consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]> {
+    const client = await PoolDb.connect();
+    const params = [filtro.idUsuario];
+
+    try {
+      const res = await client.query<Asistencia>('SELECT * FROM PUBLIC.BUSCAR_DETALLES_VENTA($1)', params);
+      const result: DetalleVenta[] = plainToClass(DetalleVenta, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar detalles de venta: ' + err);
+      throw new Error('Error al consultar detalles de venta.');
     } finally {
       client.release();
     }

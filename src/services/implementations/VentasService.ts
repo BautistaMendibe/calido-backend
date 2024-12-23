@@ -20,7 +20,8 @@ import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
-import { anularVentaSinFacturacion } from '../../controllers/VentasController';
+import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../../models/DetalleVenta';
 
 // variables para token API Sesion SIRO
 let siroToken: string | null = null;
@@ -28,7 +29,7 @@ let siroTokenExpiration: Date | null = null;
 
 /**
  * Servicio que tiene como responsabilidad
- * lo vinculado a la configuración
+ * lo vinculado a las ventas
  */
 @injectable()
 export class VentasService implements IVentasService {
@@ -194,16 +195,6 @@ export class VentasService implements IVentasService {
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
-
-      // Calcular la bonificación en la venta
-      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
-        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
-        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
-        const precioConDescuento = producto.precioSinIVA - descuento;
-        return sumatoria + precioConDescuento * producto.cantidadSeleccionada;
-      }, 0);
-
-      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
     }
 
     const payload = {
@@ -514,16 +505,6 @@ export class VentasService implements IVentasService {
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
-
-      // Calcular la bonificación en la venta
-      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
-        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
-        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
-        const precioConDescuento = producto.precioSinIVA - descuento;
-        return sumatoria + precioConDescuento * producto.cantidadSeleccionada;
-      }, 0);
-
-      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
     }
 
     const payload = {
@@ -731,5 +712,17 @@ export class VentasService implements IVentasService {
       //console.error('Error al consultar el pago:', error.response?.data || error.message);
       throw new Error('Error al consultar el pago.');
     }
+  }
+
+  public async consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.consultarDetallesVenta(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
   }
 }

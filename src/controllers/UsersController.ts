@@ -17,6 +17,8 @@ import { FiltrosLicencias } from '../models/comandos/FiltroLicencias';
 import { EstadoLicencia } from '../models/EstadoLicencia';
 import { RecuperarContrasena } from '../models/RecuperarContrasena';
 import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
+import { FiltrosMovimientosCuentaCorriente } from '../models/comandos/FiltroMovimientoCuentaCorriente';
+import { MovimientoCuentaCorriente } from '../models/MovimientoCuentaCorriente';
 
 const _usersService = container.get<UsersService>(TYPES.UsersService);
 
@@ -401,6 +403,20 @@ export async function buscarUltimosLogs(request: Request, response: Response): P
     });
 }
 
+export async function consultarMovimientosCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const filtro: FiltrosMovimientosCuentaCorriente = request.body;
+
+  return _usersService
+    .consultarMovimientosCuentaCorriente(filtro)
+    .then((x: MovimientoCuentaCorriente[]) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -429,5 +445,6 @@ export const UsersController = {
   recuperarContrasena,
   cambiarContrasena,
   buscarUltimosClientes,
-  buscarUltimosLogs
+  buscarUltimosLogs,
+  consultarMovimientosCuentaCorriente
 };

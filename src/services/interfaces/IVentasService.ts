@@ -9,6 +9,8 @@ import { TipoFactura } from '../../models/TipoFactura';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
+import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../../models/DetalleVenta';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -33,4 +35,5 @@ export interface IVentasService {
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
   cancelarVenta(venta: Venta): Promise<SpResult>;
   cancelarVentaParcialmente(venta: Venta): Promise<SpResult>;
+  consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
 }
