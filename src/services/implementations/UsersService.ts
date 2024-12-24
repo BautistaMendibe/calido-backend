@@ -449,4 +449,16 @@ export class UsersService implements IUsersService {
       }
     });
   }
+
+  public async eliminarMovimientoCuentaCorriente(idMovimiento: number): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._usersRepository.eliminarMovimientoCuentaCorriente(idMovimiento);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
 }

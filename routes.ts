@@ -191,7 +191,12 @@ export const AppRoutes = [
     action: UsersController.consultarMovimientosCuentaCorriente,
     schema: schemaEmpty
   },
-
+  {
+    path: '/usuarios/eliminar-movimiento-cuenta-corriente/:id',
+    method: 'get',
+    action: UsersController.eliminarMovimientoCuentaCorriente,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores

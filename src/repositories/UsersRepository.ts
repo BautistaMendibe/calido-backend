@@ -27,6 +27,7 @@ import { DetalleVenta } from '../models/DetalleVenta';
 import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
 import { MovimientoCuentaCorriente } from '../models/MovimientoCuentaCorriente';
 import { FiltrosMovimientosCuentaCorriente } from '../models/comandos/FiltroMovimientoCuentaCorriente';
+import { FormaDePago } from '../models/FormaDePago';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -80,6 +81,7 @@ export interface IUsersRepository {
   recuperarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]>;
+  eliminarMovimientoCuentaCorriente(idMovimiento: number): Promise<SpResult>;
 }
 
 /**
@@ -799,13 +801,40 @@ export class UsersRepository implements IUsersRepository {
 
     try {
       const res = await client.query<Asistencia>('SELECT * FROM PUBLIC.BUSCAR_MOVIMIENTOS_CUENTA_CORRIENTE($1)', params);
-      const result: MovimientoCuentaCorriente[] = plainToClass(MovimientoCuentaCorriente, res.rows, {
+      const movimientos = res.rows.map((row) => {
+        // Armamos los objetos necesarios para la clase Movimientos Cuenta Corriente
+        const movimiento: MovimientoCuentaCorriente = plainToClass(MovimientoCuentaCorriente, row, { excludeExtraneousValues: true });
+        const cuentaCorriente: CuentaCorriente = plainToClass(CuentaCorriente, row, { excludeExtraneousValues: true });
+        const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+
+        // Asignaciones
+        movimiento.cuentaCorriente = cuentaCorriente;
+        movimiento.formaDePago = formaDePago;
+
+        return movimiento;
+      });
+
+      return movimientos;
+    } catch (err) {
+      logger.error('Error al consultar movimientos de cuenta corriente: ' + err);
+      throw new Error('Error al consultar movimientos de cuenta corriente.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async eliminarMovimientoCuentaCorriente(idMovimiento: number): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [idMovimiento];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.ELIMINAR_MOVIMIENTO_CUENTA_CORRIENTE($1)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
       return result;
     } catch (err) {
-      logger.error('Error al consultar movimientos de cuenta corriente: ' + err);
-      throw new Error('Error al consultar movimientos de cuenta corriente.');
+      logger.error('Error al eliminar Movimiento de Cuenta Corriente: ' + err);
+      throw new Error('Error al eliminar Movimiento de Cuenta Corriente.');
     } finally {
       client.release();
     }
