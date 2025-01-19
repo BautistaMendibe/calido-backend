@@ -69,13 +69,11 @@ export class VentasRepository implements IVentasRepository {
       venta.tarjeta ? venta.tarjeta : null,
       venta.cantidadCuotas ? venta.cantidadCuotas : null,
       venta.interes ? venta.interes : null,
-      venta.descuento ? venta.descuento : null,
       venta.facturacion.id ? venta.facturacion.id : null,
-      venta.idCaja ? venta.idCaja : null,
-      venta.bonificacion ? venta.bonificacion : null
+      venta.idCaja ? venta.idCaja : null
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

@@ -47,4 +47,5 @@ export interface IUsersService {
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]>;
   eliminarMovimientoCuentaCorriente(idMovimiento: number): Promise<SpResult>;
+  registrarMovimientoCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult>;
 }

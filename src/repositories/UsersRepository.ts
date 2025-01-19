@@ -23,11 +23,10 @@ import { EstadoLicencia } from '../models/EstadoLicencia';
 import { Archivo } from '../models/Archivo';
 import { RecuperarContrasena } from '../models/RecuperarContrasena';
 import { UltimosMovimientos } from '../models/comandos/UltimosMovimientos';
-import { DetalleVenta } from '../models/DetalleVenta';
-import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
 import { MovimientoCuentaCorriente } from '../models/MovimientoCuentaCorriente';
 import { FiltrosMovimientosCuentaCorriente } from '../models/comandos/FiltroMovimientoCuentaCorriente';
 import { FormaDePago } from '../models/FormaDePago';
+import { TipoMovimientoCuentaCorriente } from '../models/TipoMovimientoCuentaCorriente';
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -82,6 +81,7 @@ export interface IUsersRepository {
   cambiarContrasena(recuperarContrasena: RecuperarContrasena): Promise<SpResult>;
   consultarMovimientosCuentaCorriente(filtro: FiltrosMovimientosCuentaCorriente): Promise<MovimientoCuentaCorriente[]>;
   eliminarMovimientoCuentaCorriente(idMovimiento: number): Promise<SpResult>;
+  registrarMovimientoCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult>;
 }
 
 /**
@@ -806,10 +806,12 @@ export class UsersRepository implements IUsersRepository {
         const movimiento: MovimientoCuentaCorriente = plainToClass(MovimientoCuentaCorriente, row, { excludeExtraneousValues: true });
         const cuentaCorriente: CuentaCorriente = plainToClass(CuentaCorriente, row, { excludeExtraneousValues: true });
         const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
+        const tipoMovimientoCuentaCorriente: TipoMovimientoCuentaCorriente = plainToClass(TipoMovimientoCuentaCorriente, row, { excludeExtraneousValues: true });
 
         // Asignaciones
         movimiento.cuentaCorriente = cuentaCorriente;
         movimiento.formaDePago = formaDePago;
+        movimiento.tipoMovimientoCuentaCorriente = tipoMovimientoCuentaCorriente;
 
         return movimiento;
       });
@@ -835,6 +837,23 @@ export class UsersRepository implements IUsersRepository {
     } catch (err) {
       logger.error('Error al eliminar Movimiento de Cuenta Corriente: ' + err);
       throw new Error('Error al eliminar Movimiento de Cuenta Corriente.');
+    } finally {
+      client.release();
+    }
+  }
+
+  async registrarMovimientoCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    const params = [movimiento.idCuentaCorriente, movimiento.idVenta, movimiento.fecha, movimiento.monto, movimiento.idFormaDePago, movimiento.descripcion];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_CUENTA_CORRIENTE($1, $2, $3, $4, $5, $6)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al registrar Movimiento de Cuenta Corriente: ' + err);
+      throw new Error('Error al registrar Movimiento de Cuenta Corriente.');
     } finally {
       client.release();
     }

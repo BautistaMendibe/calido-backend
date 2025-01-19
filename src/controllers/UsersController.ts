@@ -431,6 +431,20 @@ export async function eliminarMovimientoCuentaCorriente(request: Request, respon
     });
 }
 
+export async function registrarMovimientoCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const movimiento: MovimientoCuentaCorriente = request.body;
+
+  return _usersService
+    .registrarMovimientoCuentaCorriente(movimiento)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
 export const UsersController = {
   validarInicioSesion,
   registrarUsuario,
@@ -461,5 +475,6 @@ export const UsersController = {
   buscarUltimosClientes,
   buscarUltimosLogs,
   consultarMovimientosCuentaCorriente,
-  eliminarMovimientoCuentaCorriente
+  eliminarMovimientoCuentaCorriente,
+  registrarMovimientoCuentaCorriente
 };

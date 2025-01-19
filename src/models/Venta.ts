@@ -29,8 +29,6 @@ export class Venta {
   cantidadCuotas: number;
   @Expose({ name: 'interes' })
   interes: number;
-  @Expose({ name: 'descuento' })
-  descuento: number;
   @Expose({ name: 'anulada' })
   @Transform((value) => value == 1)
   anulada: boolean;
@@ -69,7 +67,6 @@ export class Venta {
     tarjeta?: string,
     cantidadCuotas?: number,
     interes?: number,
-    descuento?: number,
     anulada?: boolean,
     idCaja?: number,
     notaCredito?: string,
@@ -97,7 +94,6 @@ export class Venta {
     this.tarjeta = tarjeta!;
     this.cantidadCuotas = cantidadCuotas!;
     this.interes = interes!;
-    this.descuento = descuento!;
     this.anulada = anulada!;
     this.idCaja = idCaja!;
     this.notaCredito = notaCredito!;
