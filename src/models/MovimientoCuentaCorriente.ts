@@ -16,10 +16,10 @@ export class MovimientoCuentaCorriente {
   monto: number;
   @Expose({ name: 'idformadepago' })
   idFormaDePago: number;
-  @Expose({ name: 'descripcion' })
-  descripcion: string;
   @Expose({ name: 'idtipomovimientocuentacorriente' })
   idTipoMovimientoCuentaCorriente: number;
+  @Expose({ name: 'comprobante' })
+  comprobante: string;
 
   cuentaCorriente: CuentaCorriente;
   formaDePago: FormaDePago;
@@ -34,9 +34,9 @@ export class MovimientoCuentaCorriente {
     idFormaDePago?: number,
     cuentaCorriente?: CuentaCorriente,
     formaDePago?: FormaDePago,
-    descripcion?: string,
     idTipoMovimientoCuentaCorriente?: number,
-    tipoMovimientoCuentaCorriente?: TipoMovimientoCuentaCorriente
+    tipoMovimientoCuentaCorriente?: TipoMovimientoCuentaCorriente,
+    comprobante?: string
   ) {
     this.id = id ? id : null;
     this.idCuentaCorriente = idCuentaCorriente;
@@ -46,8 +46,8 @@ export class MovimientoCuentaCorriente {
     this.idFormaDePago = idFormaDePago!;
     this.cuentaCorriente = cuentaCorriente!;
     this.formaDePago = formaDePago!;
-    this.descripcion = descripcion!;
     this.idTipoMovimientoCuentaCorriente = idTipoMovimientoCuentaCorriente!;
     this.tipoMovimientoCuentaCorriente = tipoMovimientoCuentaCorriente!;
+    this.comprobante = comprobante!;
   }
 }
