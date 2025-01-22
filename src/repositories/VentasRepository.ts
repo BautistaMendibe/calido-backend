@@ -24,7 +24,7 @@ import { Asistencia } from '../models/Asistencia';
  */
 export interface IVentasRepository {
   registarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  registarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
@@ -90,8 +90,11 @@ export class VentasRepository implements IVentasRepository {
    * @param {idVenta}
    * @returns {SpResult}
    */
-  async registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.precioConIVA, idVenta, producto.id];
+  async registarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    const subTotalVenta: number =
+      producto.precioConIVA * (1 - (producto.promocion ? producto.promocion.porcentajeDescuento : 0) / 100) * producto.cantidadSeleccionada * (1 + venta.interes / 100);
+
+    const params = [producto.cantidadSeleccionada, subTotalVenta, idVenta, producto.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_VENTA($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {

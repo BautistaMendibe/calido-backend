@@ -54,7 +54,7 @@ export class VentasService implements IVentasService {
       // Registrar detalles de venta para cada producto
       if (ventaId) {
         for (const producto of venta.productos) {
-          const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
+          const detalleResult: SpResult = await this.registrarDetalleVenta(venta, producto, ventaId, client);
 
           // Si el detalleResult no es OK, lanzar un error
           if (detalleResult.mensaje !== 'OK') {
@@ -88,10 +88,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async registrarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+  public async registrarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.registarDetalleVenta(producto, idVenta, client);
+        const result = await this._ventasRepository.registarDetalleVenta(venta, producto, idVenta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);
@@ -190,8 +190,10 @@ export class VentasService implements IVentasService {
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
       conceptoInteres.id = 9999;
-      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
-      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
+        venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
+      } (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
@@ -380,15 +382,19 @@ export class VentasService implements IVentasService {
       }
 
       if (result.mensaje === 'OK') {
-        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
-        if (anularVentaResult.mensaje === 'OK') {
-          for (const producto of venta.productos) {
-            if (producto.id !== 9999) {
-              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
-              const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
+        for (const producto of venta.productos) {
+          if (producto.id !== 9999) {
+            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+            const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
+
+            if (actualizarStock.mensaje !== 'OK' || actualizarDetalle.mensaje !== 'OK') {
+              throw new Error('Error al actualizar stock o detalle de la venta');
             }
           }
-        } else {
+        }
+
+        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
+        if (anularVentaResult.mensaje !== 'OK') {
           throw new Error('Error al anular la venta en el repositorio');
         }
       }
@@ -500,11 +506,19 @@ export class VentasService implements IVentasService {
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
       conceptoInteres.id = 9999;
-      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
-      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
-      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
-      conceptoInteres.cantidadSeleccionada = 1;
-      venta.productos.push(conceptoInteres);
+      conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
+        venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
+      } (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
+
+      // Acumular el subtotal de los productos seleccionados para anular
+      const subtotalAnulacion = venta.productosSeleccionadoParaAnular.reduce((total, producto) => total + Number(producto.subTotalVenta), 0);
+
+      // Calcular el precio sin IVA del interés basado en el subtotal acumulado
+      conceptoInteres.precioSinIVA = (subtotalAnulacion * (venta.interes / (100 + venta.interes))) / 1.21;
+
+      conceptoInteres.cantidadAnulada = 1;
+      venta.productosSeleccionadoParaAnular.push(conceptoInteres);
     }
 
     const payload = {

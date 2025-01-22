@@ -14,7 +14,7 @@ import { DetalleVenta } from '../../models/DetalleVenta';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  registrarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  registrarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
