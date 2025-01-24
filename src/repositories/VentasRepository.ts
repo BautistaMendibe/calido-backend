@@ -47,6 +47,7 @@ export interface IVentasRepository {
   cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
+  generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
 }
 
 /**
@@ -92,7 +93,10 @@ export class VentasRepository implements IVentasRepository {
    */
   async registarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     const subTotalVenta: number =
-      producto.precioConIVA * (1 - (producto.promocion ? producto.promocion.porcentajeDescuento : 0) / 100) * producto.cantidadSeleccionada * (1 + venta.interes / 100);
+      Number(producto.precioConIVA) *
+      (1 - (producto.promocion ? Number(producto.promocion.porcentajeDescuento) : 0) / 100) *
+      Number(producto.cantidadSeleccionada) *
+      (1 + Number(venta.interes ?? 0) / 100);
 
     const params = [producto.cantidadSeleccionada, subTotalVenta, idVenta, producto.id];
     try {
@@ -665,6 +669,26 @@ export class VentasRepository implements IVentasRepository {
       throw new Error('Error al consultar detalles de venta.');
     } finally {
       client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para generar un movimiento de cuenta corriente por anulación de venta
+   * @returns {SpResult}
+   * @param venta
+   * @param client
+   */
+  async generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult> {
+    const params = [venta.id, venta.cliente?.id || null, Number(venta.montoTotal)];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.GENERAR_ANULACION_CUENTA_CORRIENTE($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al generar movimiento de anulación para cuenta corriente: ' + err);
+      throw new Error('Error al generar movimiento de anulación para cuenta corriente.');
     }
   }
 }

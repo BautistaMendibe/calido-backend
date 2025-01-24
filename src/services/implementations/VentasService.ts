@@ -382,19 +382,34 @@ export class VentasService implements IVentasService {
       }
 
       if (result.mensaje === 'OK') {
-        for (const producto of venta.productos) {
-          if (producto.id !== 9999) {
-            const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
-            const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
+        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
+        if (anularVentaResult.mensaje === 'OK') {
+          let todasActualizacionesExitosas = true;
 
-            if (actualizarStock.mensaje !== 'OK' || actualizarDetalle.mensaje !== 'OK') {
-              throw new Error('Error al actualizar stock o detalle de la venta');
+          for (const producto of venta.productos) {
+            if (producto.id !== 9999) {
+              const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+              if (actualizarStock.mensaje !== 'OK') {
+                todasActualizacionesExitosas = false;
+                throw new Error(`Error al actualizar stock del producto con ID ${producto.id}`);
+              }
+
+              const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
+              if (actualizarDetalle.mensaje !== 'OK') {
+                todasActualizacionesExitosas = false;
+                throw new Error(`Error al actualizar detalle de la venta para el producto con ID ${producto.id}`);
+              }
             }
           }
-        }
 
-        const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
-        if (anularVentaResult.mensaje !== 'OK') {
+          // Si todas las actualizaciones fueron exitosas y formaDePago.id es 6, generar un movimiento de cuenta corriente
+          if (todasActualizacionesExitosas && venta.formaDePago.id === 6) {
+            const generarAnulacionCuentaCorriente: SpResult = await this.generarAnulacionCuentaCorriente(venta, client);
+            if (generarAnulacionCuentaCorriente.mensaje !== 'OK') {
+              throw new Error('Error al generar la anulación en cuenta corriente');
+            }
+          }
+        } else {
           throw new Error('Error al anular la venta en el repositorio');
         }
       }
@@ -438,6 +453,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.actualizarStockPorAnulacion(producto, idVenta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.generarAnulacionCuentaCorriente(venta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);
