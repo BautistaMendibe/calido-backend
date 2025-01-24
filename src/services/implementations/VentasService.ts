@@ -186,6 +186,13 @@ export class VentasService implements IVentasService {
   private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
     const client = await PoolDb.connect();
 
+    // Obtener fecha de vencimiento (fecha de venta + 10 días)
+    const fechaVencimiento: string = new Date(new Date(venta.fecha).setDate(new Date(venta.fecha).getDate() + 10)).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
@@ -236,7 +243,9 @@ export class VentasService implements IVentasService {
           }
         })),
         fecha: venta.fechaString,
-        vencimiento: '12/12/2025',
+        periodo_facturado_desde: venta.fechaString,
+        periodo_facturado_hasta: venta.fechaString,
+        vencimiento: fechaVencimiento,
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
         bonificacion: venta.bonificacion ? venta.bonificacion : 0,
@@ -517,6 +526,13 @@ export class VentasService implements IVentasService {
       year: 'numeric'
     });
 
+    // Obtener fecha de vencimiento (fecha de hoy + 10 días)
+    const fechaVencimiento: string = new Date(new Date().setDate(new Date().getDate() + 10)).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     venta.notaCredito = venta.facturacion.nombre == 'FACTURA B' ? 'NOTA DE CREDITO B' : 'NOTA DE CREDITO A';
 
     const filtroCliente = new FiltroEmpleados();
@@ -585,7 +601,9 @@ export class VentasService implements IVentasService {
           }
         })),
         fecha: fechaHoy,
-        vencimiento: '12/12/2025',
+        periodo_facturado_desde: fechaHoy,
+        periodo_facturado_hasta: fechaHoy,
+        vencimiento: fechaVencimiento,
         rubro_grupo_contable: 'Productos',
         total: venta.totalAnulado,
         bonificacion: venta.bonificacion ? venta.bonificacion : 0,
