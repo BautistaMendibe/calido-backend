@@ -844,9 +844,17 @@ export class UsersRepository implements IUsersRepository {
 
   async registrarMovimientoCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult> {
     const client = await PoolDb.connect();
-    const params = [movimiento.idCuentaCorriente, movimiento.idVenta, movimiento.fecha, movimiento.monto, movimiento.idFormaDePago, movimiento.idTipoMovimientoCuentaCorriente];
+    const params = [
+      movimiento.idCuentaCorriente,
+      movimiento.idVenta,
+      movimiento.fecha,
+      movimiento.monto,
+      movimiento.idFormaDePago,
+      movimiento.idTipoMovimientoCuentaCorriente,
+      movimiento.id || null // Solo no será null cuando se registre una devolución de un pago
+    ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_CUENTA_CORRIENTE($1, $2, $3, $4, $5, $6)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_CUENTA_CORRIENTE($1, $2, $3, $4, $5, $6, $7)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
