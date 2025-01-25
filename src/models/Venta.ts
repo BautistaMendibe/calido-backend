@@ -39,13 +39,8 @@ export class Venta {
   fechaFacturacion: Date;
   @Expose({ name: 'fechaanulacion' })
   fechaAnulacion: Date;
-  @Expose({ name: 'saldodisponible' })
-  saldoDisponible: number;
-  @Expose({ name: 'canceladaconsaldo' })
-  canceladaConSaldo: number;
   @Expose({ name: 'bonificacion' })
   bonificacion: number;
-  saldoACancelarParcialmente: number;
   productosSeleccionadoParaAnular: Producto[];
   totalAnulado: number;
 
@@ -72,10 +67,7 @@ export class Venta {
     notaCredito?: string,
     fechaFacturacion?: Date,
     fechaAnulacion?: Date,
-    saldoDisponible?: number,
-    canceladaConSaldo?: number,
     bonificacion?: number,
-    saldoACancelarParcialmente?: number,
     productosSeleccionadoParaAnular?: Producto[],
     totalAnulado?: number,
     totalDeVentas?: number
@@ -99,10 +91,7 @@ export class Venta {
     this.notaCredito = notaCredito!;
     this.fechaFacturacion = fechaFacturacion!;
     this.fechaAnulacion = fechaAnulacion!;
-    this.saldoDisponible = saldoDisponible!;
-    this.canceladaConSaldo = canceladaConSaldo!;
     this.bonificacion = bonificacion!;
-    this.saldoACancelarParcialmente = saldoACancelarParcialmente!;
     this.productosSeleccionadoParaAnular = productosSeleccionadoParaAnular!;
     this.totalAnulado = totalAnulado!;
     this.totalDeVentas = totalDeVentas!;

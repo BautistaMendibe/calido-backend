@@ -33,8 +33,6 @@ export interface IVentasService {
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
-  cancelarVenta(venta: Venta): Promise<SpResult>;
-  cancelarVentaParcialmente(venta: Venta): Promise<SpResult>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
 }

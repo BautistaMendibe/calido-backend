@@ -1,20 +1,20 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { buscarUltimosClientes, UsersController } from './src/controllers/UsersController';
+import { UsersController } from './src/controllers';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
-import { consultarProductosConStockLimitado, ProductosController } from './src/controllers/ProductosController';
+import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
-import { buscarOrdenesDeCompraHome, PedidosController } from './src/controllers/PedidosController';
+import { PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
 import multer from 'multer';
 import { CajasController } from './src/controllers/CajasController';
-import { obtenerDataReporte, ReportesController } from './src/controllers/ReportesController';
+import { ReportesController } from './src/controllers/ReportesController';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -503,18 +503,6 @@ export const AppRoutes = [
     path: '/ventas/obtener-cantidad-ventas-dia-hora',
     method: 'get',
     action: VentasController.buscarVentasPorDiaYHora,
-    schema: schemaEmpty
-  },
-  {
-    path: '/ventas/cancelar-venta',
-    method: 'post',
-    action: VentasController.cancelarVenta,
-    schema: schemaEmpty
-  },
-  {
-    path: '/ventas/cancelar-venta-parcialmente',
-    method: 'post',
-    action: VentasController.cancelarVentaParcialmente,
     schema: schemaEmpty
   },
   {

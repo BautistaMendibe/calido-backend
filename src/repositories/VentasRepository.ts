@@ -43,8 +43,6 @@ export interface IVentasRepository {
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
-  cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -594,42 +592,6 @@ export class VentasRepository implements IVentasRepository {
       throw new Error('Error al buscar ventas diarias.');
     } finally {
       client.release();
-    }
-  }
-
-  /**
-   * Método asíncrono para setear el valor cancelado con saldo igual a 1
-   * @param {Venta}
-   * @returns {SpResult}
-   */
-  async cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
-    try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
-      const result: SpResult = plainToClass(SpResult, res.rows[0], {
-        excludeExtraneousValues: true
-      });
-      return result;
-    } catch (err) {
-      logger.error('Error al cancelar la venta: ' + err);
-      throw new Error('Error al cancelar la venta.');
-    }
-  }
-
-  /**
-   * Método asíncrono para cancelar venta parcialmente (solo hacer actualización de saldo en cuenta)
-   * @param {Venta}
-   * @returns {SpResult}
-   */
-  async cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult> {
-    try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA_PARCIALMENTE($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
-      const result: SpResult = plainToClass(SpResult, res.rows[0], {
-        excludeExtraneousValues: true
-      });
-      return result;
-    } catch (err) {
-      logger.error('Error al cancelar la venta: ' + err);
-      throw new Error('Error al cancelar la venta.');
     }
   }
 

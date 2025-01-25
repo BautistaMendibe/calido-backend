@@ -639,36 +639,6 @@ export class VentasService implements IVentasService {
     }
   }
 
-  public async cancelarVenta(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this._ventasRepository.cancelarVenta(venta, client);
-        resolve(result);
-      } catch (e) {
-        logger.error(e);
-        reject(e);
-      } finally {
-        client.release();
-      }
-    });
-  }
-
-  public async cancelarVentaParcialmente(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this._ventasRepository.cancelarVentaParcialmente(venta, client);
-        resolve(result);
-      } catch (e) {
-        logger.error(e);
-        reject(e);
-      } finally {
-        client.release();
-      }
-    });
-  }
-
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
     //console.log(venta.cliente.id.toString().padStart(9, '0'));
