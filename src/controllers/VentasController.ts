@@ -208,7 +208,6 @@ export async function buscarVentasPorDiaYHora(request: Request, response: Respon
 }
 
 export async function pagarConQRSIRO(request: Request, response: Response): Promise<Response> {
-  //console.log('Payload recibido en el backend pagarConQRSIRO:', request.body);
   const venta: Venta = request.body;
 
   return _ventasService
@@ -222,10 +221,21 @@ export async function pagarConQRSIRO(request: Request, response: Response): Prom
     });
 }
 
-export async function consultaPagoSIROQR(request: Request, response: Response): Promise<Response> {
-  //console.log('Payload recibido en el backend consultaPagoSIROQR:', request.body);
-  //console.log('Payload recibido en el backend consultaPagoSIROQR ID:', request.body.IdReferenciaOperacion);
+export async function pagarConQRSIROPagosDeCuentaCorriente(request: Request, response: Response): Promise<Response> {
+  const movimiento: MovimientoCuentaCorriente = request.body;
 
+  return _ventasService
+    .pagarConSIROQRPagosDeCuentaCorriente(movimiento)
+    .then((x: SpResult) => {
+      return response.status(HttpCodes.OK).json(x);
+    })
+    .catch((error) => {
+      logger.error(error);
+      return response.status(HttpCodes.CONFLICT).json(error.message);
+    });
+}
+
+export async function consultaPagoSIROQR(request: Request, response: Response): Promise<Response> {
   return _ventasService
     .consultaPagoSIROQR(request.body.IdReferenciaOperacion)
     .then((x: SpResult) => {
@@ -268,5 +278,6 @@ export const VentasController = {
   buscarVentasPorDiaYHora,
   pagarConQRSIRO,
   consultaPagoSIROQR,
-  buscarDetallesVenta
+  buscarDetallesVenta,
+  pagarConQRSIROPagosDeCuentaCorriente
 };

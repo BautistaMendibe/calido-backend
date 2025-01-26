@@ -22,6 +22,7 @@ import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
 import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
 import { DetalleVenta } from '../../models/DetalleVenta';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 // variables para token API Sesion SIRO
 let siroToken: string | null = null;
@@ -670,9 +671,6 @@ export class VentasService implements IVentasService {
 
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
-      //console.log('Número de venta más alto + 1:', numeroVentaMasAlto + 1);
-      //console.log('Número de venta más alto + 1:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
-      //console.log(venta.montoTotal);
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
@@ -704,6 +702,41 @@ export class VentasService implements IVentasService {
     }
   }
 
+  // Funcion para hacer la llamada a la API de SIRO para pagos de cuenta corriente (definir si separar en dos funciones)
+  public async pagarConSIROQRPagosDeCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult> {
+    try {
+      const numeroMovimientoMasAlto = await this._ventasRepository.obtenerNumeroMovimientoCuentaCorrienteMasAlto();
+
+      const token = await this.obtenerTokenSIRO();
+      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
+      const response = await axios.post(
+        'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
+        {
+          nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
+          nro_cliente_empresa: movimiento.idUsuario.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
+          nro_comprobante: (numeroMovimientoMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
+          Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal) consultar estos valores
+          URL_OK: 'https://www.youtube.com/',
+          URL_ERROR: 'https://www.youtube.com/error',
+          IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log(response);
+      return {
+        ...response.data, // Mantiene los datos originales
+        IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
+      };
+    } catch (error) {
+      throw new Error('Error al crear la intención de pago.');
+    }
+  }
+
   private async obtenerTokenSIRO(): Promise<string> {
     // Verifica si el token es válido
     if (siroToken && siroTokenExpiration && siroTokenExpiration > new Date()) {
@@ -724,20 +757,15 @@ export class VentasService implements IVentasService {
 
       // Calcular y almacenar la fecha/hora de expiración del token (menos un segundo)
       siroTokenExpiration = new Date(new Date().getTime() + (expiresIn - 1) * 1000);
-      //console.log(siroToken);
-      //console.log(siroTokenExpiration);
+
       return siroToken;
     } catch (error) {
-      //console.error('Error al obtener el token de SIRO:', error.message);
       throw new Error('No se pudo obtener el token de SIRO.');
     }
   }
 
   // Funcion para hacer la llamada a la API consulta de SIRO
   public async consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult> {
-    //console.log(IdReferenciaOperacion);
-    //console.log(new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString());
-    //console.log(new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString());
     try {
       const token = await this.obtenerTokenSIRO();
       // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
@@ -756,10 +784,8 @@ export class VentasService implements IVentasService {
           }
         }
       );
-      //console.log('respuesta:', response.data);
       return response.data; // Devuelve la respuesta de la API
     } catch (error) {
-      //console.error('Error al consultar el pago:', error.response?.data || error.message);
       throw new Error('Error al consultar el pago.');
     }
   }

@@ -9,7 +9,6 @@ import { SpResult } from '../../models';
 import { FiltrosPromociones } from '../../models/comandos/FiltroPromociones';
 import { Producto } from '../../models/Producto';
 import PoolDb from '../../data/db';
-import { buscarPromocionPorProducto } from '../../controllers/PromocionesController';
 
 /**
  * Servicio que tiene como responsabilidad

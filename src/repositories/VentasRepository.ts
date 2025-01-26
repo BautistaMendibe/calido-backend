@@ -44,6 +44,7 @@ export interface IVentasRepository {
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
+  obtenerNumeroMovimientoCuentaCorrienteMasAlto(): Promise<number>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
   generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -608,6 +609,23 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al obtener el número de venta más alto: ' + err);
       throw new Error('Error al obtener el número de venta más alto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar el numero del ultimo movimiento de cuenta corriente
+   * @returns number
+   */
+  async obtenerNumeroMovimientoCuentaCorrienteMasAlto(): Promise<number> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query('SELECT MAX(idmovimientoscuentacorriente) AS numero_mas_alto FROM movimientos_cuenta_corriente');
+      return res.rows[0].numero_mas_alto || 0; // Retorna 0 si no hay movimientos
+    } catch (err) {
+      logger.error('Error al obtener el número de movimiento de cuenta corriente más alto: ' + err);
+      throw new Error('Error al obtener el número de movimiento de cuenta corriente más alto.');
     } finally {
       client.release();
     }

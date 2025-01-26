@@ -11,6 +11,7 @@ import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
 import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
 import { DetalleVenta } from '../../models/DetalleVenta';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
@@ -36,4 +37,5 @@ export interface IVentasService {
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
   generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
+  pagarConSIROQRPagosDeCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult>;
 }

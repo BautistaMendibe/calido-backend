@@ -523,6 +523,12 @@ export const AppRoutes = [
     action: VentasController.buscarDetallesVenta,
     schema: schemaEmpty
   },
+  {
+    path: '/ventas/generar-pago-cuenta-corriente',
+    method: 'post',
+    action: VentasController.pagarConQRSIROPagosDeCuentaCorriente,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Transportes

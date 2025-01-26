@@ -2,6 +2,7 @@ import { Expose } from 'class-transformer';
 import { CuentaCorriente } from './CuentaCorriente';
 import { FormaDePago } from './FormaDePago';
 import { TipoMovimientoCuentaCorriente } from './TipoMovimientoCuentaCorriente';
+import { Usuario } from './Usuario';
 
 export class MovimientoCuentaCorriente {
   @Expose({ name: 'idmovimientoscuentacorriente' })
@@ -26,6 +27,8 @@ export class MovimientoCuentaCorriente {
   devuelto: number;
   @Expose({ name: 'idcaja' })
   idCaja: number;
+  @Expose({ name: 'idusuario' })
+  idUsuario: number;
 
   cuentaCorriente: CuentaCorriente;
   formaDePago: FormaDePago;
@@ -45,7 +48,8 @@ export class MovimientoCuentaCorriente {
     comprobante?: string,
     anulado?: number,
     devuelto?: number,
-    idCaja?: number
+    idCaja?: number,
+    idUsuario?: number
   ) {
     this.id = id ? id : null;
     this.idCuentaCorriente = idCuentaCorriente;
@@ -61,5 +65,6 @@ export class MovimientoCuentaCorriente {
     this.anulado = anulado!;
     this.devuelto = devuelto!;
     this.idCaja = idCaja!;
+    this.idUsuario = idUsuario!;
   }
 }

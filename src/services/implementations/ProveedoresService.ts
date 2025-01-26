@@ -7,10 +7,8 @@ import { IProveedoresRepository } from '../../repositories/ProveedoresRepository
 import { Proveedor } from '../../models/Proveedor';
 import { SpResult } from '../../models';
 import { FiltrosProveedores } from '../../models/comandos/FiltroProveedores';
-import { consultarProveedores, modificarProveedor } from '../../controllers/ProveedoresController';
 import { TipoProveedor } from '../../models/TipoProveedor';
 import { IDomicilioRepository } from '../../repositories/DomicilioRepository';
-import { Marca } from '../../models/Marca';
 
 /**
  * Servicio que tiene como responsabilidad
