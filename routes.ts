@@ -1,20 +1,20 @@
 import { schemaEmpty } from './middlewares/ValidationSchema';
-import { buscarUltimosClientes, UsersController } from './src/controllers/UsersController';
+import { UsersController } from './src/controllers';
 import { ProveedoresController } from './src/controllers/ProveedoresController';
 import { PromocionesController } from './src/controllers/PromocionesController';
 import { DomicilioController } from './src/controllers/DomicilioController';
 import { ConfiguracionesController } from './src/controllers/ConfiguracionesController';
-import { consultarProductosConStockLimitado, ProductosController } from './src/controllers/ProductosController';
+import { ProductosController } from './src/controllers/ProductosController';
 import { MarcasController } from './src/controllers/MarcaController';
 import { VentasController } from './src/controllers/VentasController';
 import { TransportesController } from './src/controllers/TransportesController';
-import { buscarOrdenesDeCompraHome, PedidosController } from './src/controllers/PedidosController';
+import { PedidosController } from './src/controllers/PedidosController';
 import { ComprobantesController } from './src/controllers/ComprobantesController';
 import { TarjetasController } from './src/controllers/TarjetasController';
 import { FilesController } from './src/controllers/FilesController';
 import multer from 'multer';
 import { CajasController } from './src/controllers/CajasController';
-import { obtenerDataReporte, ReportesController } from './src/controllers/ReportesController';
+import { ReportesController } from './src/controllers/ReportesController';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -185,7 +185,24 @@ export const AppRoutes = [
     action: UsersController.cambiarContrasena,
     schema: schemaEmpty
   },
-
+  {
+    path: '/usuarios/consultar-movimientos-cuenta-corriente',
+    method: 'post',
+    action: UsersController.consultarMovimientosCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/eliminar-movimiento-cuenta-corriente/:id',
+    method: 'get',
+    action: UsersController.eliminarMovimientoCuentaCorriente,
+    schema: schemaEmpty
+  },
+  {
+    path: '/usuarios/registrar-movimiento-cuenta-corriente',
+    method: 'post',
+    action: UsersController.registrarMovimientoCuentaCorriente,
+    schema: schemaEmpty
+  },
   //#endregion
 
   // region Proveedores
@@ -489,18 +506,6 @@ export const AppRoutes = [
     schema: schemaEmpty
   },
   {
-    path: '/ventas/cancelar-venta',
-    method: 'post',
-    action: VentasController.cancelarVenta,
-    schema: schemaEmpty
-  },
-  {
-    path: '/ventas/cancelar-venta-parcialmente',
-    method: 'post',
-    action: VentasController.cancelarVentaParcialmente,
-    schema: schemaEmpty
-  },
-  {
     path: '/ventas/generar-pago',
     method: 'post',
     action: VentasController.pagarConQRSIRO,
@@ -510,6 +515,18 @@ export const AppRoutes = [
     path: '/ventas/consultar-pago',
     method: 'post',
     action: VentasController.consultaPagoSIROQR,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/buscar-detalles-venta',
+    method: 'post',
+    action: VentasController.buscarDetallesVenta,
+    schema: schemaEmpty
+  },
+  {
+    path: '/ventas/generar-pago-cuenta-corriente',
+    method: 'post',
+    action: VentasController.pagarConQRSIROPagosDeCuentaCorriente,
     schema: schemaEmpty
   },
   //#endregion

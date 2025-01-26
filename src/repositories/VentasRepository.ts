@@ -15,13 +15,16 @@ import { FiltrosVentas } from '../models/comandos/FiltroVentas';
 import { Promocion } from '../models/Promocion';
 import { VentasMensuales } from '../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../models/comandos/VentasDiariaComando';
+import { FiltrosDetallesVenta } from '../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../models/DetalleVenta';
+import { Asistencia } from '../models/Asistencia';
 
 /**
  * Interfaz del repositorio de Ventas
  */
 export interface IVentasRepository {
   registarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  registarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
@@ -40,9 +43,11 @@ export interface IVentasRepository {
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
-  cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult>;
   obtenerNumeroVentaMasAlto(): Promise<number>;
+  obtenerNumeroMovimientoCuentaCorrienteMasAlto(): Promise<number>;
+  consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
+  generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
+  generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
 }
 
 /**
@@ -65,13 +70,11 @@ export class VentasRepository implements IVentasRepository {
       venta.tarjeta ? venta.tarjeta : null,
       venta.cantidadCuotas ? venta.cantidadCuotas : null,
       venta.interes ? venta.interes : null,
-      venta.descuento ? venta.descuento : null,
       venta.facturacion.id ? venta.facturacion.id : null,
-      venta.idCaja ? venta.idCaja : null,
-      venta.bonificacion ? venta.bonificacion : null
+      venta.idCaja ? venta.idCaja : null
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -88,8 +91,14 @@ export class VentasRepository implements IVentasRepository {
    * @param {idVenta}
    * @returns {SpResult}
    */
-  async registarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.cantidadSeleccionada, producto.cantidadSeleccionada * producto.precioConIVA, idVenta, producto.id];
+  async registarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+    const subTotalVenta: number =
+      Number(producto.precioConIVA) *
+      (1 - (producto.promocion ? Number(producto.promocion.porcentajeDescuento) : 0) / 100) *
+      Number(producto.cantidadSeleccionada) *
+      (1 + Number(venta.interes ?? 0) / 100);
+
+    const params = [producto.cantidadSeleccionada, subTotalVenta, idVenta, producto.id];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_DETALLE_VENTA($1, $2, $3, $4)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
@@ -589,42 +598,6 @@ export class VentasRepository implements IVentasRepository {
   }
 
   /**
-   * Método asíncrono para setear el valor cancelado con saldo igual a 1
-   * @param {Venta}
-   * @returns {SpResult}
-   */
-  async cancelarVenta(venta: Venta, client: PoolClient): Promise<SpResult> {
-    try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
-      const result: SpResult = plainToClass(SpResult, res.rows[0], {
-        excludeExtraneousValues: true
-      });
-      return result;
-    } catch (err) {
-      logger.error('Error al cancelar la venta: ' + err);
-      throw new Error('Error al cancelar la venta.');
-    }
-  }
-
-  /**
-   * Método asíncrono para cancelar venta parcialmente (solo hacer actualización de saldo en cuenta)
-   * @param {Venta}
-   * @returns {SpResult}
-   */
-  async cancelarVentaParcialmente(venta: Venta, client: PoolClient): Promise<SpResult> {
-    try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.CANCELAR_VENTA_PARCIALMENTE($1, $2)', [venta.id, venta.saldoACancelarParcialmente]);
-      const result: SpResult = plainToClass(SpResult, res.rows[0], {
-        excludeExtraneousValues: true
-      });
-      return result;
-    } catch (err) {
-      logger.error('Error al cancelar la venta: ' + err);
-      throw new Error('Error al cancelar la venta.');
-    }
-  }
-
-  /**
    * Método asíncrono para consultar el numero de la ultima venta
    * @returns number
    */
@@ -638,6 +611,85 @@ export class VentasRepository implements IVentasRepository {
       throw new Error('Error al obtener el número de venta más alto.');
     } finally {
       client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar el numero del ultimo movimiento de cuenta corriente
+   * @returns number
+   */
+  async obtenerNumeroMovimientoCuentaCorrienteMasAlto(): Promise<number> {
+    const client = await PoolDb.connect();
+    try {
+      const res = await client.query('SELECT MAX(idmovimientoscuentacorriente) AS numero_mas_alto FROM movimientos_cuenta_corriente');
+      return res.rows[0].numero_mas_alto || 0; // Retorna 0 si no hay movimientos
+    } catch (err) {
+      logger.error('Error al obtener el número de movimiento de cuenta corriente más alto: ' + err);
+      throw new Error('Error al obtener el número de movimiento de cuenta corriente más alto.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para consultar detalles de ventas
+   * @returns {DetalleVenta []} arreglo de detalles de ventas
+   */
+  async consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]> {
+    const client = await PoolDb.connect();
+    const params = [filtro.idUsuario];
+
+    try {
+      const res = await client.query<Asistencia>('SELECT * FROM PUBLIC.BUSCAR_DETALLES_VENTA($1)', params);
+      const result: DetalleVenta[] = plainToClass(DetalleVenta, res.rows, {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al consultar detalles de venta: ' + err);
+      throw new Error('Error al consultar detalles de venta.');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Método asíncrono para generar un movimiento de cuenta corriente por anulación de venta
+   * @returns {SpResult}
+   * @param venta
+   * @param client
+   */
+  async generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult> {
+    const params = [venta.id, venta.cliente?.id || null, Number(venta.montoTotal)];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.GENERAR_ANULACION_CUENTA_CORRIENTE($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al generar movimiento de anulación para cuenta corriente: ' + err);
+      throw new Error('Error al generar movimiento de anulación para cuenta corriente.');
+    }
+  }
+
+  /**
+   * Método asíncrono para generar un movimiento de caja por anulación de venta
+   * @returns {SpResult}
+   * @param venta
+   * @param client
+   */
+  async generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult> {
+    const params = [venta.id, venta.formaDePago?.id, venta.idCaja];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.GENERAR_ANULACION_CAJA($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al generar movimiento de anulación para caja: ' + err);
+      throw new Error('Error al generar movimiento de anulación para caja.');
     }
   }
 }

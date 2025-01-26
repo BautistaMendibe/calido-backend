@@ -9,10 +9,13 @@ import { TipoFactura } from '../../models/TipoFactura';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
+import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../../models/DetalleVenta';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 export interface IVentasService {
   registrarVenta(venta: Venta, client: PoolClient): Promise<SpResult>;
-  registrarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
+  registrarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult>;
   buscarUsuariosClientes(): Promise<Usuario[]>;
   buscarFormasDePago(): Promise<FormaDePago[]>;
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
@@ -31,6 +34,8 @@ export interface IVentasService {
   buscarVentasConFechaHora(fechaHora: string, fechaHoraCierre: string): Promise<Venta[]>;
   buscarCantidadVentasMensuales(): Promise<VentasMensuales[]>;
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
-  cancelarVenta(venta: Venta): Promise<SpResult>;
-  cancelarVentaParcialmente(venta: Venta): Promise<SpResult>;
+  consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
+  generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
+  generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
+  pagarConSIROQRPagosDeCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult>;
 }

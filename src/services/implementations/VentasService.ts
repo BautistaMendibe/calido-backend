@@ -20,7 +20,9 @@ import { FiltroEmpleados } from '../../models/comandos/FiltroEmpleados';
 import { FiltrosVentas } from '../../models/comandos/FiltroVentas';
 import { VentasMensuales } from '../../models/comandos/VentasMensuales';
 import { VentasDiariaComando } from '../../models/comandos/VentasDiariaComando';
-import { anularVentaSinFacturacion } from '../../controllers/VentasController';
+import { FiltrosDetallesVenta } from '../../models/comandos/FiltroDetalleVenta';
+import { DetalleVenta } from '../../models/DetalleVenta';
+import { MovimientoCuentaCorriente } from '../../models/MovimientoCuentaCorriente';
 
 // variables para token API Sesion SIRO
 let siroToken: string | null = null;
@@ -28,7 +30,7 @@ let siroTokenExpiration: Date | null = null;
 
 /**
  * Servicio que tiene como responsabilidad
- * lo vinculado a la configuración
+ * lo vinculado a las ventas
  */
 @injectable()
 export class VentasService implements IVentasService {
@@ -53,7 +55,7 @@ export class VentasService implements IVentasService {
       // Registrar detalles de venta para cada producto
       if (ventaId) {
         for (const producto of venta.productos) {
-          const detalleResult: SpResult = await this.registrarDetalleVenta(producto, ventaId, client);
+          const detalleResult: SpResult = await this.registrarDetalleVenta(venta, producto, ventaId, client);
 
           // Si el detalleResult no es OK, lanzar un error
           if (detalleResult.mensaje !== 'OK') {
@@ -87,10 +89,10 @@ export class VentasService implements IVentasService {
     });
   }
 
-  public async registrarDetalleVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
+  public async registrarDetalleVenta(venta: Venta, producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this._ventasRepository.registarDetalleVenta(producto, idVenta, client);
+        const result = await this._ventasRepository.registarDetalleVenta(venta, producto, idVenta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);
@@ -185,25 +187,24 @@ export class VentasService implements IVentasService {
   private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
     const client = await PoolDb.connect();
 
+    // Obtener fecha de vencimiento (fecha de venta + 10 días)
+    const fechaVencimiento: string = new Date(new Date(venta.fecha).setDate(new Date(venta.fecha).getDate() + 10)).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
       conceptoInteres.id = 9999;
-      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
-      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
+      conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
+        venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
+      } (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
       conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
       conceptoInteres.cantidadSeleccionada = 1;
       venta.productos.push(conceptoInteres);
-
-      // Calcular la bonificación en la venta
-      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
-        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
-        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
-        const precioConDescuento = producto.precioSinIVA - descuento;
-        return sumatoria + precioConDescuento * producto.cantidadSeleccionada;
-      }, 0);
-
-      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
     }
 
     const payload = {
@@ -243,7 +244,9 @@ export class VentasService implements IVentasService {
           }
         })),
         fecha: venta.fechaString,
-        vencimiento: '12/12/2025',
+        periodo_facturado_desde: venta.fechaString,
+        periodo_facturado_hasta: venta.fechaString,
+        vencimiento: fechaVencimiento,
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
         bonificacion: venta.bonificacion ? venta.bonificacion : 0,
@@ -391,10 +394,38 @@ export class VentasService implements IVentasService {
       if (result.mensaje === 'OK') {
         const anularVentaResult = await this._ventasRepository.anularVenta(venta, client);
         if (anularVentaResult.mensaje === 'OK') {
+          let todasActualizacionesExitosas = true;
+
           for (const producto of venta.productos) {
             if (producto.id !== 9999) {
               const actualizarStock: SpResult = await this.actualizarStockPorAnulacion(producto, venta.id, client);
+              if (actualizarStock.mensaje !== 'OK') {
+                todasActualizacionesExitosas = false;
+                throw new Error(`Error al actualizar stock del producto con ID ${producto.id}`);
+              }
+
               const actualizarDetalle: SpResult = await this.actualizarDetalleDeVentaPorAnulacion(producto, venta.id, client);
+              if (actualizarDetalle.mensaje !== 'OK') {
+                todasActualizacionesExitosas = false;
+                throw new Error(`Error al actualizar detalle de la venta para el producto con ID ${producto.id}`);
+              }
+            }
+          }
+
+          // Si todas las actualizaciones fueron exitosas y formaDePago.id es 6, generar un movimiento de cuenta corriente
+          if (todasActualizacionesExitosas && venta.formaDePago.id === 6) {
+            const generarAnulacionCuentaCorriente: SpResult = await this.generarAnulacionCuentaCorriente(venta, client);
+            if (generarAnulacionCuentaCorriente.mensaje !== 'OK') {
+              throw new Error('Error al generar la anulación en cuenta corriente');
+            }
+          }
+
+          // Llamar a generarMovimientoAnulacionCaja si todas las actualizaciones fueron exitosas
+          if (todasActualizacionesExitosas) {
+            try {
+              await this.generarMovimientoAnulacionCaja(venta, client);
+            } catch (error) {
+              throw new Error(`Error al generar movimiento de anulación en caja: ${error.message}`);
             }
           }
         } else {
@@ -449,6 +480,30 @@ export class VentasService implements IVentasService {
     });
   }
 
+  public async generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.generarAnulacionCuentaCorriente(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.generarMovimientoAnulacionCaja(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   public async actualizarDetalleDeVentaPorAnulacion(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -493,6 +548,13 @@ export class VentasService implements IVentasService {
       year: 'numeric'
     });
 
+    // Obtener fecha de vencimiento (fecha de hoy + 10 días)
+    const fechaVencimiento: string = new Date(new Date().setDate(new Date().getDate() + 10)).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     venta.notaCredito = venta.facturacion.nombre == 'FACTURA B' ? 'NOTA DE CREDITO B' : 'NOTA DE CREDITO A';
 
     const filtroCliente = new FiltroEmpleados();
@@ -509,21 +571,19 @@ export class VentasService implements IVentasService {
     if (venta.interes > 0) {
       const conceptoInteres: Producto = new Producto();
       conceptoInteres.id = 9999;
-      conceptoInteres.nombre = `Interés por financiación en cuotas. Plan ${venta.cantidadCuotas} cuotas (${venta.interes}% de interés)`;
-      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} cuotas, con un ${venta.interes}#&# de interés.`;
-      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
-      conceptoInteres.cantidadSeleccionada = 1;
-      venta.productos.push(conceptoInteres);
+      conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
+        venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
+      } (${venta.interes}% de interés)`;
+      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
 
-      // Calcular la bonificación en la venta
-      const sumatoriaProductos = venta.productos.reduce((sumatoria, producto) => {
-        const porcentajeDescuento = producto.promocion?.porcentajeDescuento || 0; // Si no tiene promoción, el descuento es 0
-        const descuento = (producto.precioSinIVA * porcentajeDescuento) / 100;
-        const precioConDescuento = producto.precioSinIVA - descuento;
-        return sumatoria + precioConDescuento * producto.cantidadSeleccionada;
-      }, 0);
+      // Acumular el subtotal de los productos seleccionados para anular
+      const subtotalAnulacion = venta.productosSeleccionadoParaAnular.reduce((total, producto) => total + Number(producto.subTotalVenta), 0);
 
-      venta.bonificacion = -(venta.montoTotal / 1.21) + sumatoriaProductos;
+      // Calcular el precio sin IVA del interés basado en el subtotal acumulado
+      conceptoInteres.precioSinIVA = (subtotalAnulacion * (venta.interes / (100 + venta.interes))) / 1.21;
+
+      conceptoInteres.cantidadAnulada = 1;
+      venta.productosSeleccionadoParaAnular.push(conceptoInteres);
     }
 
     const payload = {
@@ -563,7 +623,9 @@ export class VentasService implements IVentasService {
           }
         })),
         fecha: fechaHoy,
-        vencimiento: '12/12/2025',
+        periodo_facturado_desde: fechaHoy,
+        periodo_facturado_hasta: fechaHoy,
+        vencimiento: fechaVencimiento,
         rubro_grupo_contable: 'Productos',
         total: venta.totalAnulado,
         bonificacion: venta.bonificacion ? venta.bonificacion : 0,
@@ -599,51 +661,15 @@ export class VentasService implements IVentasService {
     }
   }
 
-  public async cancelarVenta(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this._ventasRepository.cancelarVenta(venta, client);
-        resolve(result);
-      } catch (e) {
-        logger.error(e);
-        reject(e);
-      } finally {
-        client.release();
-      }
-    });
-  }
-
-  public async cancelarVentaParcialmente(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await this._ventasRepository.cancelarVentaParcialmente(venta, client);
-        resolve(result);
-      } catch (e) {
-        logger.error(e);
-        reject(e);
-      } finally {
-        client.release();
-      }
-    });
-  }
-
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
-    //console.log(venta.cliente.id.toString().padStart(9, '0'));
-
     if (venta.cliente.id == -1) {
       venta.cliente.id = 0;
     }
 
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
-      //console.log('Número de venta más alto + 1:', numeroVentaMasAlto + 1);
-      //console.log('Número de venta más alto + 1:', (numeroVentaMasAlto + 1).toString().padStart(20, '0'));
-      //console.log(venta.montoTotal);
       const token = await this.obtenerTokenSIRO();
-      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
         {
@@ -657,18 +683,49 @@ export class VentasService implements IVentasService {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      //console.log(response.data);
       return {
-        ...response.data, // Mantiene los datos originales
-        IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString() // Incluye el ID en el retorno
+        ...response.data,
+        IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString()
       };
     } catch (error) {
-      //console.error('Error al crear el pago:', error.response?.data || error.message);
+      throw new Error('Error al crear la intención de pago.');
+    }
+  }
+
+  // Funcion para hacer la llamada a la API de SIRO para pagos de cuenta corriente (definir si separar en dos funciones)
+  public async pagarConSIROQRPagosDeCuentaCorriente(movimiento: MovimientoCuentaCorriente): Promise<SpResult> {
+    try {
+      const numeroMovimientoMasAlto = await this._ventasRepository.obtenerNumeroMovimientoCuentaCorrienteMasAlto();
+
+      const token = await this.obtenerTokenSIRO();
+      const response = await axios.post(
+        'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
+        {
+          nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
+          nro_cliente_empresa: movimiento.idUsuario.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
+          nro_comprobante: (numeroMovimientoMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id movimiento transformado para 20 digitos
+          Importe: 1, // hardcodeo para NO pagar de verdad (movimiento.monto) consultar estos valores
+          URL_OK: 'https://www.youtube.com/',
+          URL_ERROR: 'https://www.youtube.com/error',
+          IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return {
+        ...response.data,
+        IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
+      };
+    } catch (error) {
       throw new Error('Error al crear la intención de pago.');
     }
   }
@@ -683,8 +740,8 @@ export class VentasService implements IVentasService {
     try {
       const response = await axios.post('https://apisesionh.bancoroela.com.ar/auth/sesion', {
         // Parámetros de autenticación según la API
-        Usuario: '20233953270',
-        Password: 'Lei9PkpoPq'
+        Usuario: process.env.SIRO_USER,
+        Password: process.env.SIRO_PASSWORD
       });
 
       // Extraer el token y la duración de validez
@@ -693,23 +750,17 @@ export class VentasService implements IVentasService {
 
       // Calcular y almacenar la fecha/hora de expiración del token (menos un segundo)
       siroTokenExpiration = new Date(new Date().getTime() + (expiresIn - 1) * 1000);
-      //console.log(siroToken);
-      //console.log(siroTokenExpiration);
+
       return siroToken;
     } catch (error) {
-      //console.error('Error al obtener el token de SIRO:', error.message);
       throw new Error('No se pudo obtener el token de SIRO.');
     }
   }
 
   // Funcion para hacer la llamada a la API consulta de SIRO
   public async consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult> {
-    //console.log(IdReferenciaOperacion);
-    //console.log(new Date(new Date().getTime() - (3 * 60 * 60 * 1000 + 10 * 60 * 1000)).toISOString());
-    //console.log(new Date(new Date().getTime() - 3 * 60 * 60 * 1000 + 1000).toISOString());
     try {
       const token = await this.obtenerTokenSIRO();
-      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/Consulta',
         {
@@ -720,16 +771,26 @@ export class VentasService implements IVentasService {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      //console.log('respuesta:', response.data);
-      return response.data; // Devuelve la respuesta de la API
+      return response.data;
     } catch (error) {
-      //console.error('Error al consultar el pago:', error.response?.data || error.message);
       throw new Error('Error al consultar el pago.');
     }
+  }
+
+  public async consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.consultarDetallesVenta(filtro);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
   }
 }
