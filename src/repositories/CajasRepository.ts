@@ -11,6 +11,7 @@ import { EstadoArqueo } from '../models/EstadoArqueo';
 import { MovimientoManual } from '../models/MovimientoManual';
 import { FormaDePago } from '../models/FormaDePago';
 import { Usuario } from '../models/Usuario';
+import { TipoMovimientoArqueo } from '../models/TipoMovimientoArqueo';
 
 /**
  * Interfaz del repositorio de cajas
@@ -255,8 +256,10 @@ export class CajasRepository implements ICajasRepository {
         // Mapeo de objetos del movimiento (forma de pago)
         const formaDePago: FormaDePago = plainToClass(FormaDePago, row, { excludeExtraneousValues: true });
         const movimiento: MovimientoManual = plainToClass(MovimientoManual, row, { excludeExtraneousValues: true });
+        const tipoMovimiento: TipoMovimientoArqueo = plainToClass(TipoMovimientoArqueo, row, { excludeExtraneousValues: true });
 
         movimiento.formaPago = formaDePago;
+        movimiento.tipoMovimientoArqueo = tipoMovimiento;
 
         return movimiento;
       });

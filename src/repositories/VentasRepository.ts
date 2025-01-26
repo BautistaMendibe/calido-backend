@@ -46,6 +46,7 @@ export interface IVentasRepository {
   obtenerNumeroVentaMasAlto(): Promise<number>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
+  generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
 }
 
 /**
@@ -651,6 +652,26 @@ export class VentasRepository implements IVentasRepository {
     } catch (err) {
       logger.error('Error al generar movimiento de anulación para cuenta corriente: ' + err);
       throw new Error('Error al generar movimiento de anulación para cuenta corriente.');
+    }
+  }
+
+  /**
+   * Método asíncrono para generar un movimiento de caja por anulación de venta
+   * @returns {SpResult}
+   * @param venta
+   * @param client
+   */
+  async generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult> {
+    const params = [venta.id, venta.formaDePago?.id, venta.idCaja];
+    try {
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.GENERAR_ANULACION_CAJA($1, $2, $3)', params);
+      const result: SpResult = plainToClass(SpResult, res.rows[0], {
+        excludeExtraneousValues: true
+      });
+      return result;
+    } catch (err) {
+      logger.error('Error al generar movimiento de anulación para caja: ' + err);
+      throw new Error('Error al generar movimiento de anulación para caja.');
     }
   }
 }

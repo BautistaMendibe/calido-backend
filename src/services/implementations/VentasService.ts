@@ -418,6 +418,15 @@ export class VentasService implements IVentasService {
               throw new Error('Error al generar la anulación en cuenta corriente');
             }
           }
+
+          // Llamar a generarMovimientoAnulacionCaja si todas las actualizaciones fueron exitosas
+          if (todasActualizacionesExitosas) {
+            try {
+              await this.generarMovimientoAnulacionCaja(venta, client);
+            } catch (error) {
+              throw new Error(`Error al generar movimiento de anulación en caja: ${error.message}`);
+            }
+          }
         } else {
           throw new Error('Error al anular la venta en el repositorio');
         }
@@ -474,6 +483,18 @@ export class VentasService implements IVentasService {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this._ventasRepository.generarAnulacionCuentaCorriente(venta, client);
+        resolve(result);
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this._ventasRepository.generarMovimientoAnulacionCaja(venta, client);
         resolve(result);
       } catch (e) {
         logger.error(e);

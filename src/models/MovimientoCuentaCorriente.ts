@@ -24,6 +24,8 @@ export class MovimientoCuentaCorriente {
   anulado: number;
   @Expose({ name: 'devuelto' })
   devuelto: number;
+  @Expose({ name: 'idcaja' })
+  idCaja: number;
 
   cuentaCorriente: CuentaCorriente;
   formaDePago: FormaDePago;
@@ -42,7 +44,8 @@ export class MovimientoCuentaCorriente {
     tipoMovimientoCuentaCorriente?: TipoMovimientoCuentaCorriente,
     comprobante?: string,
     anulado?: number,
-    devuelto?: number
+    devuelto?: number,
+    idCaja?: number
   ) {
     this.id = id ? id : null;
     this.idCuentaCorriente = idCuentaCorriente;
@@ -57,5 +60,6 @@ export class MovimientoCuentaCorriente {
     this.comprobante = comprobante!;
     this.anulado = anulado!;
     this.devuelto = devuelto!;
+    this.idCaja = idCaja!;
   }
 }

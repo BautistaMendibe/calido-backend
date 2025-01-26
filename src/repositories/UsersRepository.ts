@@ -851,10 +851,11 @@ export class UsersRepository implements IUsersRepository {
       movimiento.monto,
       movimiento.idFormaDePago,
       movimiento.idTipoMovimientoCuentaCorriente,
-      movimiento.id || null // Solo no será null cuando se registre una devolución de un pago
+      movimiento.id || null, // Solo no será null cuando se registre una devolución de un pago
+      movimiento.idCaja || null // Solo no será null cuando sea pago o devolución de un pago
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_CUENTA_CORRIENTE($1, $2, $3, $4, $5, $6, $7)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_MOVIMIENTO_CUENTA_CORRIENTE($1, $2, $3, $4, $5, $6, $7, $8)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });

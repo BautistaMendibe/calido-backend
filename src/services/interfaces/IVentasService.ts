@@ -35,4 +35,5 @@ export interface IVentasService {
   buscarVentasPorDiaYHora(): Promise<VentasDiariaComando[]>;
   consultarDetallesVenta(filtro: FiltrosDetallesVenta): Promise<DetalleVenta[]>;
   generarAnulacionCuentaCorriente(venta: Venta, client: PoolClient): Promise<SpResult>;
+  generarMovimientoAnulacionCaja(venta: Venta, client: PoolClient): Promise<SpResult>;
 }
