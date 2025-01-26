@@ -663,8 +663,6 @@ export class VentasService implements IVentasService {
 
   // Funcion para hacer la llamada a la API de SIRO (definir si separar en dos funciones)
   public async pagarConSIROQR(venta: Venta): Promise<SpResult> {
-    //console.log(venta.cliente.id.toString().padStart(9, '0'));
-
     if (venta.cliente.id == -1) {
       venta.cliente.id = 0;
     }
@@ -672,7 +670,6 @@ export class VentasService implements IVentasService {
     try {
       const numeroVentaMasAlto = await this._ventasRepository.obtenerNumeroVentaMasAlto();
       const token = await this.obtenerTokenSIRO();
-      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
         {
@@ -686,18 +683,16 @@ export class VentasService implements IVentasService {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      //console.log(response.data);
       return {
-        ...response.data, // Mantiene los datos originales
-        IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString() // Incluye el ID en el retorno
+        ...response.data,
+        IdReferenciaOperacion: 'QRE' + (numeroVentaMasAlto + 1).toString()
       };
     } catch (error) {
-      //console.error('Error al crear el pago:', error.response?.data || error.message);
       throw new Error('Error al crear la intención de pago.');
     }
   }
@@ -708,28 +703,26 @@ export class VentasService implements IVentasService {
       const numeroMovimientoMasAlto = await this._ventasRepository.obtenerNumeroMovimientoCuentaCorrienteMasAlto();
 
       const token = await this.obtenerTokenSIRO();
-      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/QREstatico',
         {
           nro_terminal: 'N1', // hardcodeo por no tener distintas cajas
           nro_cliente_empresa: movimiento.idUsuario.toString().padStart(9, '0') + '5150058293', // al id del cliente lo transformo para que sea de 9 digitos + cuenta de prueba
-          nro_comprobante: (numeroMovimientoMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id venta transformado para 20 digitos
-          Importe: 1, // hardcodeo para NO pagar de verdad (venta.montoTotal) consultar estos valores
+          nro_comprobante: (numeroMovimientoMasAlto + 1).toString().padStart(20, '0'), // lo armo con el id movimiento transformado para 20 digitos
+          Importe: 1, // hardcodeo para NO pagar de verdad (movimiento.monto) consultar estos valores
           URL_OK: 'https://www.youtube.com/',
           URL_ERROR: 'https://www.youtube.com/error',
           IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      console.log(response);
       return {
-        ...response.data, // Mantiene los datos originales
+        ...response.data,
         IdReferenciaOperacion: 'QRE' + (numeroMovimientoMasAlto + 1).toString()
       };
     } catch (error) {
@@ -747,8 +740,8 @@ export class VentasService implements IVentasService {
     try {
       const response = await axios.post('https://apisesionh.bancoroela.com.ar/auth/sesion', {
         // Parámetros de autenticación según la API
-        Usuario: '20233953270',
-        Password: 'Lei9PkpoPq'
+        Usuario: process.env.SIRO_USER,
+        Password: process.env.SIRO_PASSWORD
       });
 
       // Extraer el token y la duración de validez
@@ -768,7 +761,6 @@ export class VentasService implements IVentasService {
   public async consultaPagoSIROQR(IdReferenciaOperacion: string): Promise<SpResult> {
     try {
       const token = await this.obtenerTokenSIRO();
-      // llamar a API Sesion para que se cargue solo 20233953270 Lei9PkpoPq
       const response = await axios.post(
         'https://siropagos.bancoroela.com.ar/api/Pago/Consulta',
         {
@@ -779,12 +771,12 @@ export class VentasService implements IVentasService {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Aquí se incluye el token en el header
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      return response.data; // Devuelve la respuesta de la API
+      return response.data;
     } catch (error) {
       throw new Error('Error al consultar el pago.');
     }
