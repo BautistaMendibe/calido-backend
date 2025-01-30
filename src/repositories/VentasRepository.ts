@@ -196,7 +196,7 @@ export class VentasRepository implements IVentasRepository {
   /**
    * Método asíncrono para guardar el comprobante generado y vincularlo a la venta
    * @param {idCategoria}
-   * @returns {CondicionIva[]}
+   * @returns {CondicionIva[]}|
    */
   async modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult> {
     const params = [
@@ -452,7 +452,7 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.id, producto.cantidadSeleccionada, false, idVenta, 'Anulacion de venta'];
+    const params = [producto.id, producto.cantidadSeleccionada, false, idVenta, 'Registro venta número: ' + idVenta.toString()];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_inventario_venta($1, $2, $3, $4, $5)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
