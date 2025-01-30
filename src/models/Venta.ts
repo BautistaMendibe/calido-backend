@@ -47,6 +47,9 @@ export class Venta {
   @Expose({ name: 'totaldeventas' })
   totalDeVentas: number;
 
+  @Expose({ name: 'ultimos4DigitosTarjeta' })
+  ultimosCuatroDigitosTarjeta: string;
+
   constructor(
     id?: number,
     montoTotal?: number,
@@ -70,7 +73,8 @@ export class Venta {
     bonificacion?: number,
     productosSeleccionadoParaAnular?: Producto[],
     totalAnulado?: number,
-    totalDeVentas?: number
+    totalDeVentas?: number,
+    ultimosCuatroDigitosTarjeta?: string
   ) {
     this.id = id!;
     this.montoTotal = montoTotal!;
@@ -95,5 +99,6 @@ export class Venta {
     this.productosSeleccionadoParaAnular = productosSeleccionadoParaAnular!;
     this.totalAnulado = totalAnulado!;
     this.totalDeVentas = totalDeVentas!;
+    this.ultimosCuatroDigitosTarjeta = ultimosCuatroDigitosTarjeta!;
   }
 }

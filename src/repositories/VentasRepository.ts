@@ -71,10 +71,11 @@ export class VentasRepository implements IVentasRepository {
       venta.cantidadCuotas ? venta.cantidadCuotas : null,
       venta.interes ? venta.interes : null,
       venta.facturacion.id ? venta.facturacion.id : null,
-      venta.idCaja ? venta.idCaja : null
+      venta.idCaja ? venta.idCaja : null,
+      venta.ultimosCuatroDigitosTarjeta ? venta.ultimosCuatroDigitosTarjeta : null
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_VENTA($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -265,10 +266,11 @@ export class VentasRepository implements IVentasRepository {
       filtros.fechaDesde ? filtros.fechaDesde : null,
       filtros.fechaHasta ? filtros.fechaHasta : null,
       filtros.formaDePago ? filtros.formaDePago : null,
-      filtros.tipoFacturacion ? filtros.tipoFacturacion : null
+      filtros.tipoFacturacion ? filtros.tipoFacturacion : null,
+      filtros.ultimosCuatroDigitosTarjeta ? filtros.ultimosCuatroDigitosTarjeta : null
     ];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS($1, $2, $3, $4, $5)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS($1, $2, $3, $4, $5, $6)', params);
 
       const ventas: Venta[] = res.rows.map((row) => {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });
