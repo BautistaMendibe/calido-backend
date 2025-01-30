@@ -311,10 +311,11 @@ export class VentasRepository implements IVentasRepository {
       filtros.formaDePago ? filtros.formaDePago : null,
       filtros.tipoFacturacion ? filtros.tipoFacturacion : null,
       filtros.limit ? filtros.limit : null,
-      filtros.offset ? filtros.offset : null
+      filtros.offset ? filtros.offset : null,
+      filtros.ultimosCuatroDigitosTarjeta ? filtros.ultimosCuatroDigitosTarjeta : null
     ];
     try {
-      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_PAGINADAS($1, $2, $3, $4, $5, $6, $7)', params);
+      const res = await client.query('SELECT * FROM PUBLIC.BUSCAR_VENTAS_PAGINADAS($1, $2, $3, $4, $5, $6, $7, $8)', params);
 
       const ventas: Venta[] = res.rows.map((row) => {
         const venta: Venta = plainToClass(Venta, row, { excludeExtraneousValues: true });

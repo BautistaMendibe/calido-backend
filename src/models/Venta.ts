@@ -47,7 +47,7 @@ export class Venta {
   @Expose({ name: 'totaldeventas' })
   totalDeVentas: number;
 
-  @Expose({ name: 'ultimos4DigitosTarjeta' })
+  @Expose({ name: 'ultimos4digitostarjeta' })
   ultimosCuatroDigitosTarjeta: string;
 
   constructor(
