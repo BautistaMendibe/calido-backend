@@ -650,7 +650,7 @@ export class VentasService implements IVentasService {
 
       if (response.data.error === 'N') {
         const comprobante = new ComprobanteResponse(response.data);
-        return await this._ventasRepository.modificarComprobanteAfip(comprobante, venta, client);
+        return await this._ventasRepository.modificarComprobanteAfip(comprobante, venta, client, true);
       } else {
         console.error('Error en la facturación:', response.data.errores);
         throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));

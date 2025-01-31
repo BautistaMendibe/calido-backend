@@ -30,7 +30,7 @@ export interface IVentasRepository {
   obtenerCondicionesIva(): Promise<CondicionIva[]>;
   obtenerTipoFacturacion(): Promise<TipoFactura[]>;
   guardarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
-  modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult>;
+  modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient, esAnulacion: boolean): Promise<SpResult>;
   buscarVentas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarVentasPaginadas(filtros: FiltrosVentas): Promise<Venta[]>;
   buscarProductosPorVenta(idVenta: number): Promise<Producto[]>;
@@ -195,10 +195,13 @@ export class VentasRepository implements IVentasRepository {
 
   /**
    * Método asíncrono para guardar el comprobante generado y vincularlo a la venta
-   * @param {idCategoria}
-   * @returns {CondicionIva[]}
+   * @returns {CondicionIva[]}|
+   * @param comprobanteResponse
+   * @param venta
+   * @param client
+   * @param esAnulacion
    */
-  async modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient): Promise<SpResult> {
+  async modificarComprobanteAfip(comprobanteResponse: ComprobanteResponse, venta: Venta, client: PoolClient, esAnulacion = false): Promise<SpResult> {
     const params = [
       venta.id,
       comprobanteResponse.comprobante_nro,
@@ -210,10 +213,11 @@ export class VentasRepository implements IVentasRepository {
       comprobanteResponse.vencimiento_pago,
       comprobanteResponse.afip_codigo_barras,
       comprobanteResponse.vencimiento_cae,
-      comprobanteResponse.fechaComprobante
+      comprobanteResponse.fechaComprobante,
+      esAnulacion
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -241,10 +245,11 @@ export class VentasRepository implements IVentasRepository {
       comprobanteResponse.vencimiento_pago,
       comprobanteResponse.afip_codigo_barras,
       comprobanteResponse.vencimiento_cae,
-      comprobanteResponse.fechaComprobante
+      comprobanteResponse.fechaComprobante,
+      false // no es anulación
     ];
     try {
-      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', params);
+      const res = await client.query<SpResult>('SELECT * FROM PUBLIC.REGISTRAR_COMPROBANTE_AFIP($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
@@ -452,7 +457,7 @@ export class VentasRepository implements IVentasRepository {
    * @returns {SpResult}
    */
   async actualizarStockPorVenta(producto: Producto, idVenta: number, client: PoolClient): Promise<SpResult> {
-    const params = [producto.id, producto.cantidadSeleccionada, false, idVenta, 'Anulacion de venta'];
+    const params = [producto.id, producto.cantidadSeleccionada, false, idVenta, 'Registro venta número: ' + idVenta.toString()];
     try {
       const res = await client.query<SpResult>('SELECT * FROM PUBLIC.actualizar_inventario_venta($1, $2, $3, $4, $5)', params);
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
