@@ -577,11 +577,13 @@ export class VentasService implements IVentasService {
       conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
 
       // Acumular el subtotal de los productos seleccionados para anular
-      const subtotalAnulacion = venta.productosSeleccionadoParaAnular.reduce((total, producto) => total + Number(producto.subTotalVenta), 0);
+      const subtotalAnulacion = venta.productosSeleccionadoParaAnular.reduce(
+        (total, producto) => total + (Number(producto.subTotalVenta) / Number(producto.cantidadSeleccionada)) * Number(producto.cantidadAnulada),
+        0
+      );
 
       // Calcular el precio sin IVA del interés basado en el subtotal acumulado
       conceptoInteres.precioSinIVA = (subtotalAnulacion * (venta.interes / (100 + venta.interes))) / 1.21;
-
       conceptoInteres.cantidadAnulada = 1;
       venta.productosSeleccionadoParaAnular.push(conceptoInteres);
     }
