@@ -150,76 +150,117 @@ export class VentasService implements IVentasService {
   }
 
   public async facturarVentaConAfip(venta: Venta): Promise<SpResult> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (venta.cliente?.id) {
-          // buscar info del usuario vinculado a la venta
-          const filtroCliente = new FiltroEmpleados();
-          filtroCliente.id = venta.cliente.id;
-          const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
-          const cliente = usuarios[0];
-          cliente.domicilioString = cliente.domicilio.localidad?.nombre
-            ? `${cliente.domicilio?.localidad?.nombre + ' ' + cliente.domicilio?.calle + ' ' + cliente.domicilio?.numero + ','}`
-            : 'No registrado';
-          cliente.tipoDocumento = cliente.dni ? 'DNI' : cliente.cuit ? 'CUIT' : 'OTRO';
-          // Asignar el usuario actualizado
-          venta.cliente = cliente;
-        } else {
-          venta.cliente = new Usuario();
+    try {
+      if (venta.cliente?.id) {
+        const filtroCliente = new FiltroEmpleados();
+        filtroCliente.id = venta.cliente.id;
+        const usuarios = await this._usuariosRepository.consultarClientes(filtroCliente);
+
+        if (usuarios.length === 0) {
+          throw new Error('Cliente no encontrado.');
         }
 
-        venta.fechaString = new Date(venta.fecha).toLocaleDateString('es-ES', {
+        const cliente = usuarios[0];
+        cliente.domicilioString = cliente.domicilio.localidad?.nombre
+          ? `${cliente.domicilio.localidad.nombre} ${cliente.domicilio.calle} ${cliente.domicilio.numero},`
+          : 'No registrado';
+        cliente.tipoDocumento = cliente.dni ? 'DNI' : cliente.cuit ? 'CUIT' : 'OTRO';
+        venta.cliente = cliente;
+      } else {
+        venta.cliente = new Usuario();
+      }
+
+      venta.fechaString = new Date(venta.fecha).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      return await this.llamarApiFacturacion(venta);
+    } catch (error) {
+      logger.error('Error en facturarVentaConAfip:', error);
+      return new SpResult(error);
+    }
+  }
+
+  private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
+    const client = await PoolDb.connect();
+    let transactionStarted = false;
+
+    try {
+      await client.query('BEGIN');
+      transactionStarted = true;
+
+      const fechaVencimiento = new Date(new Date(venta.fecha).setDate(new Date(venta.fecha).getDate() + 10)).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      if (venta.interes > 0) {
+        const conceptoInteres: Producto = new Producto();
+        conceptoInteres.id = 9999;
+        conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
+          venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
+        } (${venta.interes}% de interés)`;
+        conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
+        conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
+        conceptoInteres.cantidadSeleccionada = 1;
+        venta.productos.push(conceptoInteres);
+      }
+
+      const payload = this.generarPayload(venta, fechaVencimiento);
+
+      const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
+
+      if (response.data.error === 'N') {
+        const comprobante = new ComprobanteResponse(response.data);
+        comprobante.fechaComprobante = new Date().toLocaleDateString('es-ES', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric'
         });
 
-        const result = await this.llamarApiFacturacion(venta);
-        resolve(result);
-      } catch (e) {
-        logger.error(e);
-        reject(e);
+        const guardarComprobante = await this._ventasRepository.guardarComprobanteAfip(comprobante, venta, client);
+
+        if (guardarComprobante.mensaje === 'OK') {
+          for (const producto of venta.productos) {
+            if (producto.id !== 9999) {
+              await this.actualizarStockPorVenta(producto, venta.id, client);
+            }
+          }
+        }
+
+        await client.query('COMMIT');
+        return guardarComprobante;
+      } else {
+        throw new Error(`Error al generar el comprobante: ${response.data.errores.join(', ')}`);
       }
-    });
+    } catch (error) {
+      if (transactionStarted) {
+        await client.query('ROLLBACK');
+      }
+      logger.error('Error en la llamada a la API de facturación:', error);
+      throw new Error(error instanceof Error ? error.message : 'Error al llamar a la API de facturación.');
+    } finally {
+      client.release();
+    }
   }
 
-  // Funcion para hacer la llamada a la API de facturación
-  private async llamarApiFacturacion(venta: Venta): Promise<SpResult> {
-    const client = await PoolDb.connect();
-
-    // Obtener fecha de vencimiento (fecha de venta + 10 días)
-    const fechaVencimiento: string = new Date(new Date(venta.fecha).setDate(new Date(venta.fecha).getDate() + 10)).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-
-    // Tenemos que obtener cuanto del total corresponde a un interés por tarjeta
-    if (venta.interes > 0) {
-      const conceptoInteres: Producto = new Producto();
-      conceptoInteres.id = 9999;
-      conceptoInteres.nombre = `Interés por financiación en ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}. Plan ${venta.cantidadCuotas} ${
-        venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'
-      } (${venta.interes}% de interés)`;
-      conceptoInteres.leyenda = `Aplica plan ${venta.cantidadCuotas} ${venta.cantidadCuotas === 1 ? 'cuota' : 'cuotas'}, con un ${venta.interes}% de interés.`;
-      conceptoInteres.precioSinIVA = (venta.montoTotal * (venta.interes / (100 + venta.interes))) / 1.21;
-      conceptoInteres.cantidadSeleccionada = 1;
-      venta.productos.push(conceptoInteres);
-    }
-
-    const payload = {
+  private generarPayload(venta: Venta, fechaVencimiento: string) {
+    return {
       apitoken: process.env['API_TOKEN'],
       apikey: process.env['API_KEY'],
       usertoken: process.env['USER_TOKEN'],
       cliente: {
         documento_tipo: venta.cliente.tipoDocumento,
-        condicion_iva: venta.cliente?.condicionIva?.abreviatura ? venta.cliente?.condicionIva.abreviatura : 'CF',
+        condicion_iva: venta.cliente?.condicionIva?.abreviatura ?? 'CF',
         domicilio: venta.cliente.domicilioString,
         condicion_pago: venta.formaDePago.idAfip,
-        documento_nro: venta.cliente?.dni ? venta.cliente.dni : venta.cliente?.cuit ? venta.cliente.cuit : '0',
-        razon_social: venta.cliente.nombre + ' ' + venta.cliente.apellido,
-        provincia: venta.cliente.domicilio.localidad?.provincia?.id ? venta.cliente.domicilio.localidad?.provincia?.id : '26',
-        email: venta.cliente.mail ? venta.cliente.mail : '',
+        documento_nro: venta.cliente?.dni || venta.cliente?.cuit || '0',
+        razon_social: `${venta.cliente.nombre} ${venta.cliente.apellido}`,
+        provincia: venta.cliente.domicilio.localidad?.provincia?.id ?? '26',
+        email: venta.cliente.mail ?? '',
         envia_por_mail: venta.cliente.mail ? 'S' : 'N',
         rg5329: 'N'
       },
@@ -231,12 +272,12 @@ export class VentasService implements IVentasService {
           cantidad: producto.cantidadSeleccionada,
           afecta_stock: 'S',
           actualiza_precio: 'S',
-          bonificacion_porcentaje: producto.promocion ? producto.promocion.porcentajeDescuento : 0,
+          bonificacion_porcentaje: producto.promocion?.porcentajeDescuento ?? 0,
           producto: {
             descripcion: producto.nombre,
             codigo: producto.id,
             lista_precios: 'standard',
-            leyenda: producto.leyenda ? producto.leyenda : '',
+            leyenda: producto.leyenda ?? '',
             unidad_bulto: 1,
             alicuota: 21,
             precio_unitario_sin_iva: producto.precioSinIVA,
@@ -249,49 +290,13 @@ export class VentasService implements IVentasService {
         vencimiento: fechaVencimiento,
         rubro_grupo_contable: 'Productos',
         total: venta.montoTotal,
-        bonificacion: venta.bonificacion ? venta.bonificacion : 0,
+        bonificacion: venta.bonificacion ?? 0,
         cotizacion: 1,
         moneda: 'PES',
         punto_venta: 679,
         tributos: {}
       }
     };
-
-    try {
-      const response = await axios.post('https://www.tusfacturas.app/app/api/v2/facturacion/nuevo', payload);
-
-      if (response.data.error === 'N') {
-        await client.query('BEGIN');
-
-        const comprobante = new ComprobanteResponse(response.data);
-        comprobante.fechaComprobante = new Date().toLocaleDateString('es-ES', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-
-        const guardarComprobante = await this._ventasRepository.guardarComprobanteAfip(comprobante, venta, client);
-
-        if (guardarComprobante.mensaje == 'OK') {
-          for (const producto of venta.productos) {
-            if (producto.id !== 9999) {
-              const actualizarStock: SpResult = await this.actualizarStockPorVenta(producto, venta.id, client);
-            }
-          }
-        }
-        await client.query('COMMIT');
-        return guardarComprobante;
-      } else {
-        await client.query('ROLLBACK');
-        console.error('Error en la facturación:', response.data.errores);
-        throw new Error('Error al generar el comprobante: ' + response.data.errores.join(', '));
-      }
-    } catch (error) {
-      console.error('Error en la llamada a la API de facturación:', error.message);
-      throw new Error('Error al llamar a la API de facturación.');
-    } finally {
-      client.release();
-    }
   }
 
   public async buscarVentas(filtros: FiltrosVentas): Promise<Venta[]> {
