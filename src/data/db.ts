@@ -6,14 +6,11 @@ import { Schedulers } from '../schedulers/Schedulers';
  * The pool will manage multiple clients and handle the connection to the database.
  */
 const PoolDb = new Pool({
-  user: 'CALIDO-DESARROLLO_owner',
-  host: 'ep-dark-bird-a5pxkbln.us-east-2.aws.neon.tech',
+  user: 'postgres',
+  host: 'localhost',
   database: 'CALIDO_DESARROLLO',
-  password: 'fcwzrF0QJj1Y',
+  password: '42699303',
   port: 5432,
-  ssl: {
-    rejectUnauthorized: false
-  },
   connectionTimeoutMillis: 250000,
   idleTimeoutMillis: 250000,
   max: 10
