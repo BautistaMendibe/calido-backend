@@ -8,7 +8,7 @@ import { Schedulers } from '../schedulers/Schedulers';
 const PoolDb = new Pool({
   user: 'postgres',
   host: 'localhost',
-  database: 'CALIDO_DESARROLLO',
+  database: 'calido_desa',
   password: '42699303',
   port: 5432,
   connectionTimeoutMillis: 250000,
