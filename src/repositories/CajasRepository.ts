@@ -153,6 +153,7 @@ export class CajasRepository implements ICajasRepository {
       const result: SpResult = plainToClass(SpResult, res.rows[0], {
         excludeExtraneousValues: true
       });
+      console.log(result);
       return result;
     } catch (err) {
       logger.error('Error al registrar Arqueo: ' + err);

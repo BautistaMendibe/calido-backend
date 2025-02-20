@@ -6,7 +6,7 @@ import { Schedulers } from '../schedulers/Schedulers';
  * The pool will manage multiple clients and handle the connection to the database.
  */
 const PoolDb = new Pool({
-  user: 'postgres',
+  user: 'CALIDO-DESARROLLO_owner',
   host: 'localhost',
   database: 'calido_desa',
   password: '42699303',
