@@ -1,8 +1,6 @@
 
-# ejemplos
+##  Backend para calido - ERP para tiendas
 
-##  Acerca de y objetivo :scroll:
-El micro-servicio ejemplos es el encargado de la lógica de negocio para la crecion y visualización de ejemplos.
 
 Se utilizan las siguientes tecnologías:
 
